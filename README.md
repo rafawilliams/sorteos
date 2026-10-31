@@ -1,5 +1,7 @@
 # Lotería de Panamá — Estadísticas y Predicciones
 
+[![Tests](https://github.com/rafawilliams/sorteos/actions/workflows/tests.yml/badge.svg)](https://github.com/rafawilliams/sorteos/actions/workflows/tests.yml)
+
 Aplicación web para analizar los resultados históricos de la Lotería Nacional de Panamá y generar números recomendados con estadística y machine learning.
 
 > **Aviso:** la lotería es un juego de azar. Las "predicciones" de esta app son un ejercicio de análisis de datos, no una garantía de acierto. La sección **Precisión** compara cada método con el azar sobre sorteos pasados.
@@ -91,6 +93,8 @@ Todas las rutas tienen límite de peticiones por IP: 120/min por defecto, `/api/
 pytest                         # suite completa
 pip-audit -r requirements.txt  # vulnerabilidades conocidas en dependencias
 ```
+
+GitHub Actions ejecuta ambos en cada Pull Request, contra un MariaDB con sorteos sintéticos (`tests/seed_db.py`).
 
 ## Estructura
 
