@@ -46,6 +46,9 @@ class LotteryPredictor:
             max_bins=64,
             random_state=42,
             class_weight="balanced",
+            # Always on: the default "auto" only enables it above 10 000 samples,
+            # and the 4-digit training set is ~9 750 rows (300 overfit iterations otherwise).
+            early_stopping=True,
         )
 
     # ------------------------------------------------------------------
