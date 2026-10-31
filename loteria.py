@@ -22,3 +22,9 @@ class Loteria(Base):
         self.serie = serie
         self.segundo = segundo
         self.tercero = tercero
+
+
+def normalizar_premio(valor):
+    """Prize number as a zero-padded 4-digit string; empty/None stays "" (never "0000")."""
+    v = "" if valor is None else str(valor).strip()
+    return v.zfill(4) if v.isdigit() else v

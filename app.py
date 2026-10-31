@@ -18,7 +18,7 @@ from flask_limiter.util import get_remote_address
 from sqlalchemy import desc, func
 
 from base import Session, engine, Base, env_flag
-from loteria import Loteria
+from loteria import Loteria, normalizar_premio
 from ml_model import predictor
 
 app = Flask(__name__)
@@ -98,6 +98,21 @@ def _cache_clear():
 # ---------------------------------------------------------------------------
 
 
+def _row_to_dict(r) -> dict:
+    """DB row → API dict. Prizes are 4-digit strings, or "" when the draw has no such prize."""
+    return {
+        "id": str(r.id),
+        "fecha": r.fecha.isoformat() if r.fecha else "",
+        "cat": (r.tipo or "").strip().lower(),
+        "primero": normalizar_premio(r.primero),
+        "segundo": normalizar_premio(r.segundo),
+        "tercero": normalizar_premio(r.tercero),
+        "letra": r.letras or "",
+        "serie": r.serie or "",
+        "folio": r.folio or "",
+    }
+
+
 def get_sorteos() -> list[dict]:
     cached = _cache_get("sorteos")
     if cached is not None:
@@ -106,20 +121,7 @@ def get_sorteos() -> list[dict]:
     session = Session()
     try:
         rows = session.query(Loteria).order_by(desc(Loteria.fecha)).all()
-        data = [
-            {
-                "id": str(r.id),
-                "fecha": r.fecha.isoformat() if r.fecha else "",
-                "cat": (r.tipo or "").strip().lower(),
-                "primero": r.primero or "",
-                "segundo": r.segundo or "",
-                "tercero": r.tercero or "",
-                "letra": r.letras or "",
-                "serie": r.serie or "",
-                "folio": r.folio or "",
-            }
-            for r in rows
-        ]
+        data = [_row_to_dict(r) for r in rows]
         _cache_set("sorteos", data)
         return data
     finally:
@@ -332,7 +334,7 @@ def _extract_endings(sorteos: list[dict], category: str | None = None) -> list[d
             continue
         for prize in ("primero", "segundo", "tercero"):
             p = s.get(prize, "")
-            if p and len(p) >= 2:
+            if p:
                 results.append({
                     "ending": p.zfill(4)[-2:],
                     "prize": prize,
@@ -397,7 +399,7 @@ def endings_trend(sorteos: list[dict], months: int = 12) -> list[dict]:
             mk = fecha[:7]
             for prize in ("primero", "segundo", "tercero"):
                 p = s.get(prize, "")
-                if p and len(p) >= 2:
+                if p:
                     monthly[mk][p.zfill(4)[-2:]] += 1
 
     sorted_months = sorted(monthly.keys(), reverse=True)[:months]
@@ -850,7 +852,10 @@ def api_comparar():
         for i, s in enumerate(sorteos):
             matched = False
             for prize in ("primero", "segundo", "tercero"):
-                p = s.get(prize, "").zfill(4)
+                p = s.get(prize, "")
+                if not p:
+                    continue
+                p = p.zfill(4)
                 if p == num:
                     exact[prize] += 1
                     matched = True
@@ -916,14 +921,14 @@ def api_simulador():
     decena = numero[-2]  # tens digit
 
     # Exact matches
-    exact_1 = [s for s in filtered if s.get("primero", "").zfill(4) == numero]
-    exact_2 = [s for s in filtered if s.get("segundo", "").zfill(4) == numero]
-    exact_3 = [s for s in filtered if s.get("tercero", "").zfill(4) == numero]
+    exact_1 = [s for s in filtered if s.get("primero") and s["primero"].zfill(4) == numero]
+    exact_2 = [s for s in filtered if s.get("segundo") and s["segundo"].zfill(4) == numero]
+    exact_3 = [s for s in filtered if s.get("tercero") and s["tercero"].zfill(4) == numero]
 
     # Ending matches (last 2 digits)
-    ending_1 = [s for s in filtered if s.get("primero", "").zfill(4)[-2:] == terminacion]
-    ending_2 = [s for s in filtered if s.get("segundo", "").zfill(4)[-2:] == terminacion]
-    ending_3 = [s for s in filtered if s.get("tercero", "").zfill(4)[-2:] == terminacion]
+    ending_1 = [s for s in filtered if s.get("primero") and s["primero"].zfill(4)[-2:] == terminacion]
+    ending_2 = [s for s in filtered if s.get("segundo") and s["segundo"].zfill(4)[-2:] == terminacion]
+    ending_3 = [s for s in filtered if s.get("tercero") and s["tercero"].zfill(4)[-2:] == terminacion]
 
     # Last appearance
     def last_appearance(matches):
@@ -947,7 +952,7 @@ def api_simulador():
     gap = None
     for i, s in enumerate(filtered):
         for prize in ("primero", "segundo", "tercero"):
-            if s.get(prize, "").zfill(4) == numero:
+            if s.get(prize) and s[prize].zfill(4) == numero:
                 gap = i
                 break
         if gap is not None:
