@@ -18,7 +18,7 @@ from flask_limiter.util import get_remote_address
 from sqlalchemy import desc, func
 
 from base import Session, engine, Base, env_flag
-from loteria import Loteria, normalizar_premio
+from loteria import Loteria, premio_en_formato
 from ml_model import predictor
 
 app = Flask(__name__)
@@ -99,14 +99,16 @@ def _cache_clear():
 
 
 def _row_to_dict(r) -> dict:
-    """DB row → API dict. Prizes are 4-digit strings, or "" when the draw has no such prize."""
+    """DB row → API dict. Prizes keep their real format: "98" (2 digits), "0074" (4), "05309" (5),
+    or "" when the draw has no such prize. Use len(premio) to tell formats apart."""
+    cat = (r.tipo or "").strip().lower()
     return {
         "id": str(r.id),
         "fecha": r.fecha.isoformat() if r.fecha else "",
-        "cat": (r.tipo or "").strip().lower(),
-        "primero": normalizar_premio(r.primero),
-        "segundo": normalizar_premio(r.segundo),
-        "tercero": normalizar_premio(r.tercero),
+        "cat": cat,
+        "primero": premio_en_formato(cat, r.fecha, "primero", r.primero),
+        "segundo": premio_en_formato(cat, r.fecha, "segundo", r.segundo),
+        "tercero": premio_en_formato(cat, r.fecha, "tercero", r.tercero),
         "letra": r.letras or "",
         "serie": r.serie or "",
         "folio": r.folio or "",
@@ -161,9 +163,13 @@ CAT_LABELS = {
 
 
 def _extract_decena(primero: str) -> str | None:
-    """Extract the tens digit (index 2) from a 4-digit lottery number."""
-    p = primero.zfill(4) if primero else ""
-    return p[2] if len(p) >= 4 else None
+    """Tens digit of the prize (second to last), valid for 4- and 5-digit numbers."""
+    return primero[-2] if primero and len(primero) >= 2 else None
+
+
+def _es_4_cifras(p: str) -> bool:
+    """4-digit stats (positions, hot/cold, ML) only use real 4-digit prizes; endings use all formats."""
+    return len(p or "") == 4
 
 
 def _extract_numbers(sorteos: list[dict], category: str | None = None,
@@ -173,8 +179,8 @@ def _extract_numbers(sorteos: list[dict], category: str | None = None,
         if category and s.get("cat") != category:
             continue
         p = s.get(prize, "")
-        if p:
-            nums.append(p.zfill(4))
+        if _es_4_cifras(p):
+            nums.append(p)
     return nums
 
 
@@ -186,9 +192,9 @@ def digit_frequency(numbers: list[str]) -> dict:
     return {str(i): counter.get(str(i), 0) for i in range(10)}
 
 
-def position_frequency(numbers: list[str]) -> list[dict]:
+def position_frequency(numbers: list[str], width: int = 4) -> list[dict]:
     result = []
-    for pos in range(4):
+    for pos in range(width):
         counter = Counter()
         for n in numbers:
             if pos < len(n):
@@ -336,7 +342,7 @@ def _extract_endings(sorteos: list[dict], category: str | None = None) -> list[d
             p = s.get(prize, "")
             if p:
                 results.append({
-                    "ending": p.zfill(4)[-2:],
+                    "ending": p[-2:],
                     "prize": prize,
                     "fecha": s.get("fecha", ""),
                 })
@@ -400,7 +406,7 @@ def endings_trend(sorteos: list[dict], months: int = 12) -> list[dict]:
             for prize in ("primero", "segundo", "tercero"):
                 p = s.get(prize, "")
                 if p:
-                    monthly[mk][p.zfill(4)[-2:]] += 1
+                    monthly[mk][p[-2:]] += 1
 
     sorted_months = sorted(monthly.keys(), reverse=True)[:months]
     sorted_months.reverse()
@@ -463,6 +469,32 @@ def _prize_stats(sorteos: list[dict], prize: str) -> dict:
     }
 
 
+def formatos_stats(sorteos: list[dict]) -> dict:
+    """Stats for prizes that are not 4-digit: "2" (gordito/zodiaco 2º-3º, miercolito 1962-66)
+    and "5" (extraordinario). Kept apart so they don't skew the 4-digit stats."""
+    result = {}
+    for width in (2, 5):
+        numbers, by_cat, by_prize, fechas = [], Counter(), Counter(), []
+        for s in sorteos:
+            for prize in ("primero", "segundo", "tercero"):
+                p = s.get(prize, "")
+                if len(p) == width:
+                    numbers.append(p)
+                    by_cat[s.get("cat", "")] += 1
+                    by_prize[prize] += 1
+                    fechas.append(s.get("fecha", ""))
+        result[str(width)] = {
+            "total": len(numbers),
+            "by_category": dict(by_cat.most_common()),
+            "by_prize": dict(by_prize),
+            "date_range": {"from": min(fechas), "to": max(fechas)} if fechas else None,
+            "digit_frequency": digit_frequency(numbers),
+            "position_frequency": position_frequency(numbers, width),
+            "hot_cold": hot_cold(numbers),
+        }
+    return result
+
+
 def monthly_recommendation(sorteos: list[dict]) -> dict:
     """Analyze historical patterns by calendar month to recommend numbers
     for the upcoming month.  Returns per-month digit/position profiles and
@@ -498,8 +530,8 @@ def monthly_recommendation(sorteos: list[dict]) -> dict:
         month_draws[m] += 1
         for prize in ("primero", "segundo", "tercero"):
             p = s.get(prize, "")
-            if p:
-                month_numbers[m].append(p.zfill(4))
+            if _es_4_cifras(p):
+                month_numbers[m].append(p)
 
     # --- Per-month digit profiles (all 12 months) ---
     monthly_profiles = []
@@ -592,8 +624,8 @@ def trend_data(sorteos: list[dict], months: int = 12) -> list[dict]:
             month_key = fecha[:7]
             for prize in ("primero", "segundo", "tercero"):
                 p = s.get(prize, "")
-                if p:
-                    for d in p.zfill(4):
+                if _es_4_cifras(p):
+                    for d in p:
                         monthly[month_key][d] += 1
             monthly_total[month_key] += 1
 
@@ -730,6 +762,7 @@ def api_stats():
         "prizes": prizes,
         "trends": trend_data(sorteos, 24),
         "endings": endings_stats(recent),
+        "formatos": formatos_stats(sorteos),
         "decena_recomendada": decena_reco,
         "monthly_reco": monthly_recommendation(recent),
     }
@@ -759,14 +792,14 @@ def api_gaps():
             p = s.get(prize, "")
             if not p:
                 continue
-            n = p.zfill(4)
-            e = n[-2:]
-            if n not in number_last:
-                number_last[n] = i
+            e = p[-2:]
             if e not in ending_last:
                 ending_last[e] = i
-            number_count[n] += 1
             ending_count[e] += 1
+            if _es_4_cifras(p):
+                if p not in number_last:
+                    number_last[p] = i
+                number_count[p] += 1
 
     total = len(sorteos)
 
@@ -855,7 +888,6 @@ def api_comparar():
                 p = s.get(prize, "")
                 if not p:
                     continue
-                p = p.zfill(4)
                 if p == num:
                     exact[prize] += 1
                     matched = True
@@ -921,14 +953,14 @@ def api_simulador():
     decena = numero[-2]  # tens digit
 
     # Exact matches
-    exact_1 = [s for s in filtered if s.get("primero") and s["primero"].zfill(4) == numero]
-    exact_2 = [s for s in filtered if s.get("segundo") and s["segundo"].zfill(4) == numero]
-    exact_3 = [s for s in filtered if s.get("tercero") and s["tercero"].zfill(4) == numero]
+    exact_1 = [s for s in filtered if s.get("primero") == numero]
+    exact_2 = [s for s in filtered if s.get("segundo") == numero]
+    exact_3 = [s for s in filtered if s.get("tercero") == numero]
 
     # Ending matches (last 2 digits)
-    ending_1 = [s for s in filtered if s.get("primero") and s["primero"].zfill(4)[-2:] == terminacion]
-    ending_2 = [s for s in filtered if s.get("segundo") and s["segundo"].zfill(4)[-2:] == terminacion]
-    ending_3 = [s for s in filtered if s.get("tercero") and s["tercero"].zfill(4)[-2:] == terminacion]
+    ending_1 = [s for s in filtered if s.get("primero", "")[-2:] == terminacion]
+    ending_2 = [s for s in filtered if s.get("segundo", "")[-2:] == terminacion]
+    ending_3 = [s for s in filtered if s.get("tercero", "")[-2:] == terminacion]
 
     # Last appearance
     def last_appearance(matches):
@@ -952,7 +984,7 @@ def api_simulador():
     gap = None
     for i, s in enumerate(filtered):
         for prize in ("primero", "segundo", "tercero"):
-            if s.get(prize) and s[prize].zfill(4) == numero:
+            if s.get(prize) == numero:
                 gap = i
                 break
         if gap is not None:

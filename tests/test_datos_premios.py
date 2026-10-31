@@ -25,7 +25,7 @@ class TestNormalizarPremio:
 
 
 def _loteria(primero="74", segundo="", tercero="5"):
-    r = Loteria("gordito", date(1992, 3, 6), primero, "", "", "", segundo, tercero)
+    r = Loteria("dominical", date(1992, 3, 6), primero, "", "", "", segundo, tercero)
     r.id = 1
     return r
 

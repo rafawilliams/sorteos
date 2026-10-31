@@ -8,7 +8,7 @@ Uso:  python actualizar_db.py [--desde YYYY-MM]
 import requests
 from datetime import date
 from base import Session, engine, Base, api_credentials
-from loteria import Loteria, normalizar_premio
+from loteria import Loteria, premio_en_formato
 
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
@@ -70,16 +70,17 @@ def filtrar_nuevos(data, existentes, hasta):
 
 
 def fila_a_loteria(fila):
-    """API row → Loteria, with prizes zero-padded to 4 digits (empty stays empty)."""
+    """API row → Loteria, prizes padded to their real format (2, 4 or 5 digits; empty stays empty)."""
+    cat, fecha = fila.get("cat", ""), fila.get("fecha", "")
     return Loteria(
         fila.get("cat", ""),
         fila.get("fecha", ""),
-        normalizar_premio(fila.get("primero")),
+        premio_en_formato(cat, fecha, "primero", fila.get("primero")),
         fila.get("letra", ""),
         fila.get("folio", ""),
         fila.get("serie", ""),
-        normalizar_premio(fila.get("segundo")),
-        normalizar_premio(fila.get("tercero")),
+        premio_en_formato(cat, fecha, "segundo", fila.get("segundo")),
+        premio_en_formato(cat, fecha, "tercero", fila.get("tercero")),
     )
 
 
