@@ -43,7 +43,7 @@ Single Flask file with all routes and statistics logic:
 - **`GET /api/sorteos`** — Paginated draw results with filters (category, search, date range)
 - **`GET /api/stats`** — Comprehensive statistics: digit frequencies, hot/cold numbers, ML predictions, endings analysis, decena recommendations, trends. Expensive (~seconds), cached 5 minutes.
 - **`GET /api/backtesting?last_n=500`** — ML vs Statistical accuracy comparison over historical draws
-- **`POST /api/actualizar`** — Syncs new draws, clears cache, retrains ML model
+- **`POST /api/actualizar`** — Syncs new draws, clears cache, retrains ML model. Requires header `X-Update-Token` = `ACTUALIZAR_TOKEN` (.env); 401 on mismatch, 503 if unset. Frontend prompts for the token and keeps it in `sessionStorage`.
 
 Key patterns:
 - **Cache layer**: `_cache_get`/`_cache_set` with 5-minute TTL on `sorteos`, `stats`, `backtesting_{n}` keys

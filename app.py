@@ -3,7 +3,9 @@ Lotería de Panamá - Aplicación Web
 Backend Flask con datos desde MariaDB, estadísticas y recomendaciones.
 """
 
+import hmac
 import logging
+import os
 import random
 import subprocess
 import sys
@@ -990,7 +992,19 @@ def api_simulador():
 @app.route("/api/actualizar", methods=["POST"])
 @limiter.limit("2 per minute")
 def api_actualizar():
-    """Run the actualizar_db.py script to sync new draws from the API."""
+    """Run the actualizar_db.py script to sync new draws from the API.
+
+    Requires header X-Update-Token matching ACTUALIZAR_TOKEN from .env.
+    If ACTUALIZAR_TOKEN is not configured, the endpoint is disabled.
+    """
+    expected = os.getenv("ACTUALIZAR_TOKEN", "")
+    if not expected:
+        log.warning("Data update rejected: ACTUALIZAR_TOKEN not configured")
+        return jsonify({"ok": False, "error": "Actualización deshabilitada: falta ACTUALIZAR_TOKEN en .env"}), 503
+    given = request.headers.get("X-Update-Token", "")
+    if not hmac.compare_digest(given.encode(), expected.encode()):
+        log.warning("Data update rejected: invalid token from %s", get_remote_address())
+        return jsonify({"ok": False, "error": "Token inválido", "auth_required": True}), 401
     log.info("Data update requested")
     try:
         result = subprocess.run(
