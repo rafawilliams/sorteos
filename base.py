@@ -16,6 +16,14 @@ def require_env(name):
     return value
 
 
+def env_flag(name, default=False):
+    """Boolean env var: 1/true/yes/on (case-insensitive) → True; anything else → False."""
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
 def api_credentials():
     """Credentials for api.loteriapanama.net, read from .env."""
     return {

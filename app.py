@@ -15,7 +15,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from sqlalchemy import desc, func
 
-from base import Session, engine, Base
+from base import Session, engine, Base, env_flag
 from loteria import Loteria
 from ml_model import predictor
 
@@ -1124,4 +1124,5 @@ def api_backtesting():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    # Debug only when FLASK_DEBUG is set in .env: Werkzeug's debugger allows code execution.
+    app.run(debug=env_flag("FLASK_DEBUG"), port=5000)
