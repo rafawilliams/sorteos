@@ -1,7 +1,7 @@
 ---
 author: rafawilliams
 branch: docs/readme
-status: in-progress
+status: done
 ---
 # README del repositorio
 
@@ -21,4 +21,4 @@ El repo es público y no tenía README: nadie sabía qué es ni cómo arrancarlo
 - Hallazgo aparte: `actualizar_db.py` solo consulta 2026-02 y 2026-03 (meses fijos) → tarea propia.
 
 ## Next
-PR a main.
+Fusionado en PR #5 (2026-10-31). Nota original: PR a main.

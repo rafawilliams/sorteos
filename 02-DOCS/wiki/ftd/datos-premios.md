@@ -1,7 +1,7 @@
 ---
 author: rafawilliams
 branch: fix/datos-premios
-status: in-progress
+status: done
 ---
 # Datos de premios: vacíos que contaban como 0000 y formato al leer
 
@@ -27,4 +27,4 @@ La revisión vio premios con menos de 4 cifras, 59 sorteos sin 2º/3er premio y 
 - Simulación de normalizar la BD: 649 filas cambiarían, entre ellas el `98`/`00` del gordito 2019-05-31. Descartado: cambiaría el significado del premio.
 
 ## Next
-PR a main. Tareas aparte: (1) estadísticas por formato (2/4/5 cifras); (2) `actualizar_db.py` no guardaría un segundo sorteo con la misma fecha y categoría.
+Fusionado en PR #9 (2026-10-31). Nota original: PR a main. Tareas aparte: (1) estadísticas por formato (2/4/5 cifras); (2) `actualizar_db.py` no guardaría un segundo sorteo con la misma fecha y categoría.

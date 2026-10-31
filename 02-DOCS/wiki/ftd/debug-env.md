@@ -1,7 +1,7 @@
 ---
 author: rafawilliams
 branch: fix/debug-env
-status: in-progress
+status: done
 ---
 # Modo debug configurable por .env
 
@@ -25,4 +25,4 @@ status: in-progress
 - `.env` local con `FLASK_DEBUG=1` para conservar el comportamiento de desarrollo.
 
 ## Next
-PR a main.
+Fusionado en PR #2 (2026-10-31). Nota original: PR a main.

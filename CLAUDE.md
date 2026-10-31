@@ -41,7 +41,7 @@ External API (loteriapanama.net) → actualizar_db.py → MariaDB
                                               ml_model.py (predictions)
 ```
 
-### Backend (app.py ~700 lines)
+### Backend (app.py ~1200 lines)
 
 Single Flask file with all routes and statistics logic:
 - **`GET /api/sorteos`** — Paginated draw results with filters (category, search, date range)

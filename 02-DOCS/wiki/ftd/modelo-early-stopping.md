@@ -1,7 +1,7 @@
 ---
 author: rafawilliams
 branch: fix/modelo-early-stopping
-status: in-progress
+status: done
 ---
 # Modelo ML: early stopping siempre activo
 
@@ -22,4 +22,4 @@ Tras el PR #10, el entrenamiento usa solo premios de 4 cifras: 9 751 filas. `His
 - Backtest (500, fuera de muestra): `auto` → top-1 10,1 %, top-3 28,6 %, prob. media del dígito real por posición 9,5/10,1/9,5/9,9 %, 94 s. `True` → top-1 9,6 %, top-3 29,2 %, 9,9/10,0/10,0/10,0 %, 4 s. Ambas al nivel del azar (10 %/30 %); la diferencia de acierto es ruido (±1,3 pp).
 
 ## Next
-PR a main. Tras fusionar, reentrenar (`POST /api/actualizar` o borrar `models/predictor.joblib` y llamar a `/api/stats`).
+Fusionado en PR #11 (2026-10-31). Nota original: PR a main. Tras fusionar, reentrenar (`POST /api/actualizar` o borrar `models/predictor.joblib` y llamar a `/api/stats`).
