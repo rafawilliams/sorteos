@@ -1,7 +1,7 @@
 ---
 author: rafawilliams
 branch: fix/formatos-premios
-status: in-progress
+status: done
 ---
 # Formatos de premio: 2, 4 y 5 cifras por separado
 
@@ -26,4 +26,4 @@ Después del PR #9, todos los premios se rellenaban a 4 cifras al leer. El `98` 
 - Consola del navegador: solo el 404 de `favicon.ico`, que ya ocurría antes.
 
 ## Next
-PR a main. Tras fusionar, reiniciar el servidor: el modelo guardado en `models/` de la carpeta principal se entrenó con los datos mezclados. Hay que reentrenarlo con `POST /api/actualizar` o borrando `models/predictor.joblib`.
+Fusionado en PR #10 (2026-10-31). Nota original: PR a main. Tras fusionar, reiniciar el servidor: el modelo guardado en `models/` de la carpeta principal se entrenó con los datos mezclados. Hay que reentrenarlo con `POST /api/actualizar` o borrando `models/predictor.joblib`.

@@ -82,7 +82,7 @@ class TestActualizarErrors:
 
     def test_unexpected_exception_is_500_without_message(self, client, monkeypatch):
         def boom(*a, **k):
-            raise OSError("C:\srv\secret path exploded")
+            raise OSError(r"C:\srv\secret path exploded")
         monkeypatch.setattr(app_module.subprocess, "run", boom)
         r = client.post("/api/actualizar", headers=HEADERS)
         assert r.status_code == 500

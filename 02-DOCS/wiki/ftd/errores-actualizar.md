@@ -1,7 +1,7 @@
 ---
 author: rafawilliams
 branch: fix/errores-actualizar
-status: in-progress
+status: done
 ---
 # Errores de POST /api/actualizar: sin filtrar detalles internos
 
@@ -27,4 +27,4 @@ El endpoint devuelve al navegador `str(e)` y el `stderr` completo del script (tr
 - CI: ver check del PR.
 
 ## Next
-PR a main (requiere check `test` en verde por la protección de main).
+Fusionado en PR #8 (2026-10-31). Nota original: PR a main (requiere check `test` en verde por la protección de main).

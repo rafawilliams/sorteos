@@ -26,4 +26,4 @@ Cualquiera con acceso al servidor puede lanzar la sincronización y el reentrena
 - Frontend: no probado en navegador; `prompt()` bloquea la automatización del navegador.
 
 ## Next
-Probar el botón "Actualizar datos" en el navegador con el token de .env; luego PR a main.
+Fusionado en PR #3 (2026-10-31). Pendiente: probar el botón "Actualizar datos" en el navegador con el token de .env; luego PR a main.

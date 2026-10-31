@@ -1,7 +1,7 @@
 ---
 author: rafawilliams
 branch: fix/credenciales-env
-status: in-progress
+status: done
 ---
 # Credenciales a .env
 
@@ -27,4 +27,4 @@ Sacar del código las credenciales (API loteriapanama.net y BD) y leerlas de `.e
 - NO verificado: login real a la API — `ReadTimeout` en el handshake TLS (servidor no respondió, previo al envío de credenciales). Reintentar con `python actualizar_db.py`.
 
 ## Next
-Push de la rama y PR a main.
+Fusionado en PR #1 (2026-10-31). Nota original: Push de la rama y PR a main.
