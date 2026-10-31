@@ -23,7 +23,7 @@ python actualizar_db.py
 
 **Preview server** is configured in `.claude/launch.json` — use preview_start with name `sorteos`.
 
-**Environment**: Copy `.env.example` to `.env` and set `DATABASE_URL`. Default: `mariadb+mariadbconnector://root:root@127.0.0.1:3306/sorteos`
+**Environment**: Copy `.env.example` to `.env` and set `DATABASE_URL`, `LOTERIA_API_USER`, `LOTERIA_API_PASSWORD`. All are required (no hardcoded defaults); `base.require_env()` raises a clear error if one is missing.
 
 ## Architecture
 
