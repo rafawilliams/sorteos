@@ -31,12 +31,12 @@ jobs:
       FLASK_DEBUG: "0"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install MariaDB Connector/C
         run: sudo apt-get update && sudo apt-get install -y libmariadb-dev
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
           cache: pip
