@@ -58,9 +58,8 @@ class LotteryPredictor:
         for s in sorteos:
             for prize_idx, prize in enumerate(("primero", "segundo", "tercero")):
                 num = s.get(prize, "")
-                if not num:
+                if len(num) != 4:  # only real 4-digit prizes (skip empty, 2- and 5-digit formats)
                     continue
-                num = num.zfill(4)
                 rows.append({
                     "fecha": s.get("fecha", ""),
                     "cat": s.get("cat", ""),
@@ -220,8 +219,7 @@ class LotteryPredictor:
 
         # Score top candidates
         hist = Counter(
-            s.get(prize, "").zfill(4)
-            for s in sorteos if s.get(prize)
+            s[prize] for s in sorteos if len(s.get(prize) or "") == 4
         )
         # Pre-sort by MC count descending, take top 200
         top_idx = np.argsort(counts)[-200:][::-1]
