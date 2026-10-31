@@ -6,7 +6,7 @@ tags: [sdd, plan]
 timestamp: 2026-10-31T13:30:00Z
 topic: sdd
 slug: seguimiento-recomendaciones
-status: planned (autopilot)
+status: implemented (autopilot)
 ---
 
 # Plan — Seguimiento de recomendaciones

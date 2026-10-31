@@ -1223,7 +1223,7 @@ function renderSeguimiento(d){
     </div>`).join(''):'<p class="section-subtitle">Aún no hay recomendaciones congeladas. Se registran al calcular las estadísticas.</p>';
 
   const m=d.marcador||{};
-  document.getElementById('segMarcador').innerHTML=SEG_METODOS.map(([k,lbl])=>{const x=m[k]||{};return`<tr>
+  document.getElementById('segMarcador').innerHTML=SEG_METODOS.map(([k,lbl])=>{const x=m[k]||{};if(!x.sorteos)return`<tr><td>${lbl}</td><td>0</td><td colspan="5"><em>Sin sorteos comparados todavía</em></td></tr>`;return`<tr>
     <td>${lbl}</td><td>${x.sorteos||0}</td>
     <td>${x.exactos??0} <small>(azar ${segNum(x.exactos_azar,3)})</small></td>
     <td>${x.terminacion_numeros??0} <small>(azar ${segNum(x.terminacion_numeros_azar,1)})</small></td>
@@ -1235,7 +1235,7 @@ function renderSeguimiento(d){
   const fila=c=>{
     const s=c.sorteo;
     const celda=k=>{const r=c.metodos[k];if(!r)return'<td>—</td>';
-      const nums=r.numeros.map(n=>r.numeros_acertados.includes(n)?`<strong style="color:var(--gold-400)">${esc(n)}</strong>`:esc(n)).join(' · ');
+      const nums=r.numeros.map(n=>r.numeros_acertados.includes(n)?`<mark style="background:#4ade80;color:#0b0b0f;border-radius:4px;padding:0 4px" title="Acierto exacto">${esc(n)}</mark>`:esc(n)).join(' · ');
       const ta=r.terminaciones_acertadas.length?' ('+r.terminaciones_acertadas.map(esc).join(' ')+')':'';
       return`<td><span class="num-cell">${nums}</span><br><small>${r.exactos} exactos · dígitos ${segNum(r.digitos_media)} · term. ${r.terminaciones_aciertos}/10${ta}</small></td>`};
     return`<tr><td>${formatDate(s.fecha)}<br><small>${esc(catLabel(s.cat))}</small></td><td class="num-cell">${premiosDe(s)}</td>${celda('ml')}${celda('estadistico')}${celda('combinada')}</tr>`;
