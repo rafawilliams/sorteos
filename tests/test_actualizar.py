@@ -61,3 +61,45 @@ class TestActualizarAuth:
         r = client.post("/api/actualizar", headers={"X-Update-Token": ""})
         assert r.status_code == 503
         assert client.script_calls == []
+
+
+SECRET_TRACE = 'Traceback (most recent call last):\n  File "C:\\srv\\secret\\actualizar_db.py", line 1\nRuntimeError: boom'
+HEADERS = {"X-Update-Token": TOKEN}
+
+
+class TestActualizarErrors:
+    def test_script_failure_is_502_without_stderr(self, client, monkeypatch):
+        monkeypatch.setattr(app_module.subprocess, "run",
+                            lambda *a, **k: subprocess.CompletedProcess(a, 1, stdout="", stderr=SECRET_TRACE))
+        retrained = []
+        monkeypatch.setattr(app_module.predictor, "update", lambda *a, **k: retrained.append(1))
+        r = client.post("/api/actualizar", headers=HEADERS)
+        assert r.status_code == 502
+        body = r.get_data(as_text=True)
+        assert r.get_json()["ok"] is False
+        assert "Traceback" not in body and "secret" not in body
+        assert retrained == []
+
+    def test_unexpected_exception_is_500_without_message(self, client, monkeypatch):
+        def boom(*a, **k):
+            raise OSError("C:\srv\secret path exploded")
+        monkeypatch.setattr(app_module.subprocess, "run", boom)
+        r = client.post("/api/actualizar", headers=HEADERS)
+        assert r.status_code == 500
+        assert "secret" not in r.get_data(as_text=True)
+
+    def test_retrain_failure_is_logged_and_reported(self, client, monkeypatch, caplog):
+        def bad_update(*a, **k):
+            raise ValueError("model exploded")
+        monkeypatch.setattr(app_module.predictor, "update", bad_update)
+        with caplog.at_level("ERROR", logger="sorteos"):
+            r = client.post("/api/actualizar", headers=HEADERS)
+        assert r.status_code == 200
+        data = r.get_json()
+        assert data["ok"] is True and data["ml_retrained"] is False
+        assert any("model exploded" in (rec.exc_text or "") or "model exploded" in str(rec.exc_info) for rec in caplog.records)
+
+    def test_success_reports_retrained(self, client):
+        r = client.post("/api/actualizar", headers=HEADERS)
+        assert r.status_code == 200
+        assert r.get_json()["ml_retrained"] is True
