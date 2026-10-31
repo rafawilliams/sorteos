@@ -1,7 +1,7 @@
 ---
 author: rafawilliams
 branch: fix/actualizar-meses
-status: in-progress
+status: done
 ---
 # actualizar_db.py: consultar desde el último sorteo hasta hoy
 
@@ -27,4 +27,4 @@ status: in-progress
 - CI: ver check del PR.
 
 ## Next
-PR a main.
+Fusionado en PR #7 (2026-10-31). Nota original: PR a main.

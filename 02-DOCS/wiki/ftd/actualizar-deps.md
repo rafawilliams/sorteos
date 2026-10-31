@@ -1,7 +1,7 @@
 ---
 author: rafawilliams
 branch: chore/actualizar-deps
-status: in-progress
+status: done
 ---
 # Actualizar y fijar dependencias
 
@@ -27,4 +27,4 @@ status: in-progress
 - Servidor real reiniciado: `GET /` 200, `GET /api/sorteos` 200 con datos de MariaDB (último sorteo 2026-10-30).
 
 ## Next
-PR a main.
+Fusionado en PR #4 (2026-10-31). Nota original: PR a main.

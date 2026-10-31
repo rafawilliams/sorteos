@@ -1,7 +1,7 @@
 ---
 author: rafawilliams
 branch: fix/sorteos-misma-fecha
-status: in-progress
+status: done
 ---
 # Sincronización: dos sorteos el mismo día y categoría
 
@@ -25,4 +25,4 @@ status: in-progress
 - Una consulta a la API agotó el tiempo (15 s); al reintentar respondió bien.
 
 ## Next
-PR a main. Riesgo conocido: si la fuente corrige el 1er premio de un sorteo ya guardado, se insertaría como sorteo nuevo. La sincronización solo consulta desde el último mes guardado, así que solo afectaría a correcciones recientes.
+Fusionado en PR #12 (2026-10-31). Nota original: PR a main. Riesgo conocido: si la fuente corrige el 1er premio de un sorteo ya guardado, se insertaría como sorteo nuevo. La sincronización solo consulta desde el último mes guardado, así que solo afectaría a correcciones recientes.

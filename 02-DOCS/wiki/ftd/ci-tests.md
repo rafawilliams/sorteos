@@ -1,7 +1,7 @@
 ---
 author: rafawilliams
 branch: ci/tests
-status: in-progress
+status: done
 ---
 # CI: tests en cada PR con GitHub Actions
 
@@ -22,4 +22,4 @@ Que ningún PR entre en `main` con tests rotos o dependencias vulnerables.
 - Subidas `checkout@v5` y `setup-python@v6`. Run 41197275671: success en 1m2s, `64 passed`, sin aviso de Node.js.
 
 ## Next
-Merge a main. Opcional: exigir el check "test" en la protección de la rama main.
+Fusionado en PR #6 (2026-10-31). Nota original: Merge a main. Opcional: exigir el check "test" en la protección de la rama main.
