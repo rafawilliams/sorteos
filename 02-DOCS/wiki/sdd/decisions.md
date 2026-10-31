@@ -7,3 +7,4 @@
 - Registro automático: el primero calculado tras el último sorteo de la categoría, congelado.
 - Acierto de número: exacto en cualquier premio de 4 cifras.
 - Ponderación: «Combinada» nueva, por media de dígitos en su posición en los últimos 20 sorteos comparados; 50/50 con menos de 10.
+- 2026-10-31 — clarify: pesos proporcionales; azar teórico y «próximo sorteo» confirmados; rama feat/seguimiento; autopilot.
