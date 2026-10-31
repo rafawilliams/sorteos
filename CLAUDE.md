@@ -12,7 +12,11 @@ Lotería de Panamá — a full-stack web app for analyzing and predicting Panama
 # Setup
 python -m venv .venv
 .venv\Scripts\activate        # Windows
-pip install -r requirements.txt
+pip install -r requirements-dev.txt   # app deps + pytest + pip-audit
+
+# Tests / security audit
+pytest
+pip-audit -r requirements.txt
 
 # Run dev server (port 5000)
 python app.py
