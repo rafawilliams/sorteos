@@ -68,6 +68,7 @@ function activateNavTab(tab){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.getElementById('sec-'+tab.dataset.tab).classList.add('active');
   if(tab.dataset.tab==='precision') loadBacktesting();
+  if(tab.dataset.tab==='seguimiento') loadSeguimiento();
   if(tab.dataset.tab==='gaps') loadGaps();
   triggerReveals();
 }
@@ -1188,6 +1189,61 @@ function updateFavBadge(){
 
 // BACKTESTING / PRECISION
 let backtestData=null;
+
+// ==================== SEGUIMIENTO ====================
+const SEG_METODOS=[['ml','🤖 ML'],['estadistico','📊 Estadístico'],['combinada','⚖️ Combinada']];
+function segPct(x){return x==null?'—':(x*100).toFixed(0)+'%'}
+function segNum(x,d=2){return x==null?'—':Number(x).toFixed(d)}
+async function loadSeguimiento(){
+  const loader=document.getElementById('segLoader');
+  loader.style.display='flex';
+  document.getElementById('segContent').style.display='none';
+  let d=null;
+  try{const res=await fetch('/api/seguimiento');d=await res.json();if(!res.ok)throw new Error(d.error||res.status)}
+  catch(e){console.error('Seguimiento error:',e);loader.innerHTML='<p>No se pudo cargar el seguimiento.</p>';return}
+  loader.style.display='none';
+  document.getElementById('segContent').style.display='block';
+  renderSeguimiento(d);
+  triggerReveals();
+}
+function renderSeguimiento(d){
+  const pw=d.peso_ml??0.5, comp=d.comparados||[], pend=d.pendientes||[], sinReg=d.sin_registro||[];
+  const pesoNota=d.comparados_para_peso<d.minimo_peso?`50/50 hasta tener ${d.minimo_peso} sorteos comparados (van ${d.comparados_para_peso})`:`según los últimos ${d.comparados_para_peso} sorteos comparados`;
+  document.getElementById('segSummary').innerHTML=`
+    <div class="stat-card"><div class="stat-value">${segPct(pw)} / ${segPct(1-pw)}</div><div class="stat-label">Peso Combinada: ML / Estadístico<br><small>${esc(pesoNota)}</small></div></div>
+    <div class="stat-card"><div class="stat-value">${comp.length}</div><div class="stat-label">Sorteos comparados</div></div>
+    <div class="stat-card"><div class="stat-value">${pend.length}</div><div class="stat-label">Esperando resultado</div></div>
+    <div class="stat-card"><div class="stat-value">${sinReg.length}</div><div class="stat-label">Sorteos sin registro</div></div>`;
+
+  document.getElementById('segPendientes').innerHTML=pend.length?pend.map(p=>`
+    <div class="card reveal" aria-label="Recomendación congelada para ${esc(catLabel(p.categoria))}">
+      <div class="card-header"><h3 class="card-title">${esc(catLabel(p.categoria))}</h3><span class="card-badge badge-gold">Registrada ${esc(p.registrado_en.replace('T',' '))}</span></div>
+      ${SEG_METODOS.filter(([m])=>p.metodos[m]).map(([m,lbl])=>`<p class="section-subtitle"><strong>${lbl}</strong>: <span class="num-cell">${p.metodos[m].numeros.map(esc).join(' · ')}</span><br><small>Terminaciones: ${p.metodos[m].terminaciones.map(esc).join(' ')}</small></p>`).join('')}
+      ${p.peso_ml!=null?`<small class="section-subtitle">Peso ML de la combinada: ${segPct(p.peso_ml)}</small>`:''}
+    </div>`).join(''):'<p class="section-subtitle">Aún no hay recomendaciones congeladas. Se registran al calcular las estadísticas.</p>';
+
+  const m=d.marcador||{};
+  document.getElementById('segMarcador').innerHTML=SEG_METODOS.map(([k,lbl])=>{const x=m[k]||{};return`<tr>
+    <td>${lbl}</td><td>${x.sorteos||0}</td>
+    <td>${x.exactos??0} <small>(azar ${segNum(x.exactos_azar,3)})</small></td>
+    <td>${x.terminacion_numeros??0} <small>(azar ${segNum(x.terminacion_numeros_azar,1)})</small></td>
+    <td>${segNum(x.digitos_media,3)} <small>(azar 0.400)</small></td>
+    <td>${segNum(x.terminaciones_media)} <small>(azar ${segNum(x.terminaciones_media_azar)})</small></td>
+    <td>${x.alguna_terminacion_pct==null?'—':x.alguna_terminacion_pct.toFixed(0)+'%'} <small>(azar ${x.alguna_terminacion_pct_azar==null?'—':x.alguna_terminacion_pct_azar.toFixed(0)+'%'})</small></td></tr>`}).join('');
+
+  const premiosDe=s=>[s.primero,s.segundo,s.tercero].filter(Boolean).map(esc).join(' · ');
+  const fila=c=>{
+    const s=c.sorteo;
+    const celda=k=>{const r=c.metodos[k];if(!r)return'<td>—</td>';
+      const nums=r.numeros.map(n=>r.numeros_acertados.includes(n)?`<strong style="color:var(--gold-400)">${esc(n)}</strong>`:esc(n)).join(' · ');
+      const ta=r.terminaciones_acertadas.length?' ('+r.terminaciones_acertadas.map(esc).join(' ')+')':'';
+      return`<td><span class="num-cell">${nums}</span><br><small>${r.exactos} exactos · dígitos ${segNum(r.digitos_media)} · term. ${r.terminaciones_aciertos}/10${ta}</small></td>`};
+    return`<tr><td>${formatDate(s.fecha)}<br><small>${esc(catLabel(s.cat))}</small></td><td class="num-cell">${premiosDe(s)}</td>${celda('ml')}${celda('estadistico')}${celda('combinada')}</tr>`;
+  };
+  const sinFila=s=>`<tr style="opacity:0.55"><td>${formatDate(s.fecha)}<br><small>${esc(catLabel(s.cat))}</small></td><td class="num-cell">${premiosDe(s)}</td><td colspan="3"><em>Sin registro: nadie abrió la web entre sorteos</em></td></tr>`;
+  const rows=[...comp.map(c=>({f:c.sorteo.fecha,h:fila(c)})),...sinReg.map(s=>({f:s.fecha,h:sinFila(s)}))].sort((a,b)=>b.f.localeCompare(a.f));
+  document.getElementById('segHistorial').innerHTML=rows.length?rows.map(r=>r.h).join(''):'<tr><td colspan="5">Todavía no hay sorteos comparados.</td></tr>';
+}
 let precisionChartInstance=null;
 
 async function loadBacktesting(){
