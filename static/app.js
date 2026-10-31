@@ -227,9 +227,9 @@ async function runUpdate(){
     const res=await fetch('/api/actualizar',{method:'POST',headers:{'X-Update-Token':token}});
     const data=await res.json();
     if(res.status===401){sessionStorage.removeItem('updateToken');}
-    else if(res.ok){sessionStorage.setItem('updateToken',token);}
+    else{sessionStorage.setItem('updateToken',token);}
     if(data.ok){
-      showToast('Datos actualizados correctamente',3000);
+      showToast(data.ml_retrained===false?'Datos actualizados (el modelo ML no se pudo reentrenar)':'Datos actualizados correctamente',3000);
       await loadData();
     }else{showToast('Error: '+(data.error||'desconocido'),4000)}
   }catch(e){showToast('Error de conexión',3000)}

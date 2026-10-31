@@ -1006,27 +1006,41 @@ def api_actualizar():
         log.warning("Data update rejected: invalid token from %s", get_remote_address())
         return jsonify({"ok": False, "error": "Token inválido", "auth_required": True}), 401
     log.info("Data update requested")
+    # Error details (stderr, exception text) go to the server log only: they can contain
+    # tracebacks and server paths that must not reach the browser.
     try:
         result = subprocess.run(
             [sys.executable, "actualizar_db.py"],
             capture_output=True, text=True, timeout=60,
         )
-        _cache_clear()
-        # Retrain ML model with new data
-        try:
-            predictor.update(_filter_recent(get_sorteos()))
-        except Exception:
-            pass
-        return jsonify({
-            "ok": result.returncode == 0,
-            "output": result.stdout,
-            "error": result.stderr if result.returncode != 0 else "",
-            "last_update": get_last_update(),
-        })
     except subprocess.TimeoutExpired:
+        log.error("Data update timed out after 60s")
         return jsonify({"ok": False, "error": "Timeout: la actualización tardó más de 60s"}), 504
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)}), 500
+    except Exception:
+        log.exception("Data update could not start")
+        return jsonify({"ok": False, "error": "Error interno al lanzar la actualización. Revisa el log del servidor."}), 500
+
+    if result.returncode != 0:
+        log.error("actualizar_db.py failed (exit %s):\n%s", result.returncode, result.stderr)
+        return jsonify({
+            "ok": False,
+            "error": "La sincronización con la API de la lotería falló. Revisa el log del servidor.",
+        }), 502
+
+    _cache_clear()
+    ml_retrained = True
+    try:
+        predictor.update(_filter_recent(get_sorteos()))
+    except Exception:
+        ml_retrained = False
+        log.exception("ML retrain after data update failed")
+
+    return jsonify({
+        "ok": True,
+        "output": result.stdout,
+        "ml_retrained": ml_retrained,
+        "last_update": get_last_update(),
+    })
 
 
 # ---------------------------------------------------------------------------
