@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lotería de Panamá — Estadísticas & Predicciones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="bg-orbs" aria-hidden="true"><div class="orb"></div><div class="orb"></div><div class="orb"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<a href="#content" class="skip-link">Saltar al contenido principal</a>
+
+<div class="app">
+  <header class="hero" style="position:relative;">
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Cambiar tema claro/oscuro"><span id="themeIcon" aria-hidden="true">☀️</span> <span class="label" id="themeLabel">Claro</span></button>
+    <div class="hero-badge" aria-hidden="true"><span class="dot"></span> En vivo — Lotería de Panamá</div>
+    <h1>Sorteos & Predicciones</h1>
+    <p>Consulta resultados, analiza tendencias estadísticas y descubre los números con mayor probabilidad para el próximo sorteo.</p>
+    <div class="last-update" id="lastUpdate" role="status" aria-live="polite"></div>
+  </header>
+
+  <nav class="nav-tabs" id="navTabs" role="tablist" aria-label="Secciones principales">
+    <button class="nav-tab active" data-tab="predicciones" role="tab" aria-selected="true" aria-controls="sec-predicciones" id="tab-predicciones">★ Predicciones</button>
+    <button class="nav-tab" data-tab="decenas" role="tab" aria-selected="false" aria-controls="sec-decenas" id="tab-decenas">Decenas</button>
+    <button class="nav-tab" data-tab="terminaciones" role="tab" aria-selected="false" aria-controls="sec-terminaciones" id="tab-terminaciones">Terminaciones</button>
+    <button class="nav-tab" data-tab="resultados" role="tab" aria-selected="false" aria-controls="sec-resultados" id="tab-resultados">Resultados</button>
+    <button class="nav-tab" data-tab="estadisticas" role="tab" aria-selected="false" aria-controls="sec-estadisticas" id="tab-estadisticas">Estadísticas</button>
+    <button class="nav-tab" data-tab="tendencias" role="tab" aria-selected="false" aria-controls="sec-tendencias" id="tab-tendencias">Tendencias</button>
+    <button class="nav-tab" data-tab="analisis" role="tab" aria-selected="false" aria-controls="sec-analisis" id="tab-analisis">Análisis</button>
+    <button class="nav-tab" data-tab="comparador" role="tab" aria-selected="false" aria-controls="sec-comparador" id="tab-comparador">⚖ Comparador</button>
+    <button class="nav-tab" data-tab="gaps" role="tab" aria-selected="false" aria-controls="sec-gaps" id="tab-gaps">⏳ Gaps</button>
+    <button class="nav-tab" data-tab="simulador" role="tab" aria-selected="false" aria-controls="sec-simulador" id="tab-simulador">🎰 Simulador</button>
+    <button class="nav-tab" data-tab="favoritos" role="tab" aria-selected="false" aria-controls="sec-favoritos" id="tab-favoritos">⭐ Mis Números</button>
+    <button class="nav-tab" data-tab="mensual" role="tab" aria-selected="false" aria-controls="sec-mensual" id="tab-mensual">📅 Mensual</button>
+    <button class="nav-tab" data-tab="precision" role="tab" aria-selected="false" aria-controls="sec-precision" id="tab-precision">Precisión</button>
+  </nav>
+
+  <div id="loader" class="loader-wrap" role="status" aria-label="Cargando"><div class="spinner" aria-hidden="true"></div><p>Cargando datos de sorteos…</p></div>
+
+  <main id="content" style="display:none;">
+
+    <!-- ==================== PREDICCIONES ==================== -->
+    <section class="section active" id="sec-predicciones" role="tabpanel" aria-labelledby="tab-predicciones">
+
+      <!-- DASHBOARD RESUMEN -->
+      <div id="dashboardSummary" role="region" aria-label="Resumen rápido" style="margin-bottom:28px;"></div>
+
+      <h2 class="section-title">Números Recomendados</h2>
+      <p class="section-subtitle">Basado en análisis de frecuencia posicional, tendencias recientes y patrones históricos.</p>
+
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;flex-wrap:wrap;">
+        <div class="prize-tabs" id="prizeTabs" role="tablist" aria-label="Seleccionar premio" style="margin-bottom:0;">
+          <button class="prize-tab active" data-prize="primero" role="tab" aria-selected="true">1er Premio</button>
+          <button class="prize-tab" data-prize="segundo" role="tab" aria-selected="false">2do Premio</button>
+          <button class="prize-tab" data-prize="tercero" role="tab" aria-selected="false">3er Premio</button>
+        </div>
+        <button class="ml-toggle" onclick="toggleML()" aria-pressed="false" aria-label="Alternar entre modelo ML y Estadístico">📊 Estadístico</button>
+      </div>
+      <div class="cat-tabs" id="recoCatTabs" role="tablist" aria-label="Filtrar por categoría">
+        <button class="cat-tab active" data-cat="all" role="tab" aria-selected="true">Todos</button>
+      </div>
+      <div id="recoContainer" role="region" aria-label="Números recomendados" aria-live="polite"></div>
+
+      <div class="card reveal" style="margin-top:28px;">
+        <div class="card-header"><h3 class="card-title">¿Cómo funciona?</h3><span class="card-badge badge-gold">Metodología</span></div>
+        <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.7;">
+          Nuestro algoritmo analiza la <strong style="color:var(--gold-300)">frecuencia de dígitos por posición</strong> para cada premio (1ro, 2do, 3ro),
+          aplica <strong style="color:var(--gold-300)">pesos de recencia</strong> (los sorteos más recientes tienen mayor influencia),
+          y combina esto con <strong style="color:var(--gold-300)">patrones históricos de terminaciones</strong>.
+          Se generan 50,000 combinaciones candidatas y se puntúan contra el historial <strong style="color:var(--gold-300)">desde 1995 hasta la fecha</strong>.
+          <br><br><span style="color:var(--text-muted);font-size:0.8rem;">⚠ Nota: La lotería es un juego de azar. Estas recomendaciones son puramente estadísticas y no garantizan resultados.</span>
+        </p>
+      </div>
+    </section>
+
+    <!-- ==================== DECENAS ==================== -->
+    <section class="section" id="sec-decenas" role="tabpanel" aria-labelledby="tab-decenas">
+      <h2 class="section-title">Decena Recomendada</h2>
+      <p class="section-subtitle">Análisis de la decena (dígito de las decenas) basado en los últimos 3 sorteos por categoría. Busca patrones históricos de secuencias para predecir la próxima.</p>
+      <div id="decenaContainer" role="region" aria-label="Decenas recomendadas"></div>
+    </section>
+
+    <!-- ==================== TERMINACIONES ==================== -->
+    <section class="section" id="sec-terminaciones" role="tabpanel" aria-labelledby="tab-terminaciones">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:8px;">
+        <div>
+          <h2 class="section-title">Análisis de Últimos 2 Dígitos</h2>
+          <p class="section-subtitle">Frecuencia, predicción y tendencias de las terminaciones (00–99) de los 3 premios.</p>
+        </div>
+        <button class="ml-toggle" onclick="toggleML()" aria-pressed="false" aria-label="Alternar entre modelo ML y Estadístico">📊 Estadístico</button>
+      </div>
+
+      <div id="endingsRecoContainer" role="region" aria-label="Terminaciones recomendadas" aria-live="polite"></div>
+
+      <div class="grid-2">
+        <div class="card reveal">
+          <div class="card-header"><h3 class="card-title">Terminaciones Calientes</h3><span class="card-badge badge-hot">Hot</span></div>
+          <div class="bar-chart" id="endingsHotChart" role="img" aria-label="Gráfico de terminaciones calientes"></div>
+        </div>
+        <div class="card reveal">
+          <div class="card-header"><h3 class="card-title">Terminaciones Frías</h3><span class="card-badge badge-cold">Cold</span></div>
+          <div class="bar-chart" id="endingsColdChart" role="img" aria-label="Gráfico de terminaciones frías"></div>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="card reveal">
+          <div class="card-header"><h3 class="card-title">Top — 1er Premio</h3><span class="card-badge badge-gold">Primero</span></div>
+          <div class="bar-chart" id="endP1Chart" role="img" aria-label="Terminaciones frecuentes 1er premio"></div>
+        </div>
+        <div class="card reveal">
+          <div class="card-header"><h3 class="card-title">Top — 2do Premio</h3><span class="card-badge badge-green">Segundo</span></div>
+          <div class="bar-chart" id="endP2Chart" role="img" aria-label="Terminaciones frecuentes 2do premio"></div>
+        </div>
+        <div class="card reveal">
+          <div class="card-header"><h3 class="card-title">Top — 3er Premio</h3><span class="card-badge badge-purple">Tercero</span></div>
+          <div class="bar-chart" id="endP3Chart" role="img" aria-label="Terminaciones frecuentes 3er premio"></div>
+        </div>
+      </div>
+
+      <div class="card reveal">
+        <div class="card-header"><h3 class="card-title">Mapa de Calor — 100 Terminaciones</h3><span class="card-badge badge-gold">00–99</span></div>
+        <div id="endingsHeatmap" role="img" aria-label="Mapa de calor de 100 terminaciones"></div>
+      </div>
+
+      <div class="card reveal" style="margin-top:20px;">
+        <div class="card-header"><h3 class="card-title">Tendencia de Terminaciones por Mes</h3><span class="card-badge badge-green">Top 10</span></div>
+        <div class="chart-container"><canvas id="endingsTrendChart" aria-label="Gráfico de tendencia de terminaciones" role="img"></canvas></div>
+      </div>
+    </section>
+
+    <!-- ==================== RESULTADOS ==================== -->
+    <section class="section" id="sec-resultados" role="tabpanel" aria-labelledby="tab-resultados">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Resultados Recientes</h2>
+          <p class="section-subtitle">Historial completo de sorteos de la Lotería de Panamá.</p>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn" id="csvBtn" onclick="exportCSV()" aria-label="Exportar resultados a CSV">⬇ Exportar CSV</button>
+          <button class="btn btn-gold" id="updateBtn" onclick="runUpdate()" aria-label="Actualizar datos de sorteos">↻ Actualizar datos</button>
+        </div>
+      </div>
+
+      <div class="stat-cards" id="statCounters" role="region" aria-label="Contadores por categoría"></div>
+
+      <div class="filter-bar" role="search" aria-label="Filtros de búsqueda">
+        <input class="filter-input" id="searchInput" type="search" placeholder="Buscar número…" aria-label="Buscar número">
+        <select class="filter-select" id="catFilter" aria-label="Filtrar por categoría"><option value="all">Todas las categorías</option></select>
+        <input class="filter-date" id="dateFrom" type="date" aria-label="Fecha desde">
+        <input class="filter-date" id="dateTo" type="date" aria-label="Fecha hasta">
+      </div>
+
+      <div class="table-wrap" role="region" aria-label="Tabla de resultados" tabindex="0">
+        <table role="table" aria-label="Sorteos de la Lotería de Panamá"><thead><tr>
+          <th scope="col">Fecha</th><th scope="col">Categoría</th><th scope="col">1er Premio</th><th scope="col">2do Premio</th><th scope="col">3er Premio</th><th scope="col">Letras</th><th scope="col">Serie</th><th scope="col">Folio</th>
+        </tr></thead><tbody id="sorteosBody"></tbody></table>
+      </div>
+      <nav class="pagination" id="pagination" role="navigation" aria-label="Paginación de resultados"></nav>
+    </section>
+
+    <!-- ==================== ESTADÍSTICAS ==================== -->
+    <section class="section" id="sec-estadisticas" role="tabpanel" aria-labelledby="tab-estadisticas">
+      <h2 class="section-title">Estadísticas Generales</h2>
+      <p class="section-subtitle">Frecuencia de dígitos, números calientes y fríos.</p>
+
+      <div class="prize-tabs" id="statsPrizeTabs" role="tablist" aria-label="Seleccionar premio para estadísticas">
+        <button class="prize-tab active" data-prize="primero" role="tab" aria-selected="true">1er Premio</button>
+        <button class="prize-tab" data-prize="segundo" role="tab" aria-selected="false">2do Premio</button>
+        <button class="prize-tab" data-prize="tercero" role="tab" aria-selected="false">3er Premio</button>
+      </div>
+
+      <div class="grid-2">
+        <div class="card reveal"><div class="card-header"><h3 class="card-title">Frecuencia de Dígitos</h3><span class="card-badge badge-gold">0–9</span></div><div class="bar-chart" id="digitChart" role="img" aria-label="Frecuencia de dígitos 0-9"></div></div>
+        <div class="card reveal"><div class="card-header"><h3 class="card-title">Terminaciones Populares</h3><span class="card-badge badge-gold">Últimos 2 dígitos</span></div><div class="bar-chart" id="endingsChart" role="img" aria-label="Terminaciones más populares"></div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card reveal"><div class="card-header"><h3 class="card-title">Números Calientes</h3><span class="card-badge badge-hot">Hot</span></div><div class="bar-chart" id="hotChart" role="img" aria-label="Números más frecuentes"></div></div>
+        <div class="card reveal"><div class="card-header"><h3 class="card-title">Números Fríos</h3><span class="card-badge badge-cold">Cold</span></div><div class="bar-chart" id="coldChart" role="img" aria-label="Números menos frecuentes"></div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card reveal"><div class="card-header"><h3 class="card-title">Series Más Frecuentes</h3></div><div class="bar-chart" id="seriesChart" role="img" aria-label="Series más frecuentes"></div></div>
+        <div class="card reveal"><div class="card-header"><h3 class="card-title">Letras Más Frecuentes</h3></div><div class="bar-chart" id="letrasChart" role="img" aria-label="Letras más frecuentes"></div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card reveal">
+          <div class="card-header"><h3 class="card-title">Comparación por Categoría</h3><span class="card-badge badge-purple">Radar</span></div>
+          <div class="chart-container" style="height:380px;"><canvas id="radarChart" aria-label="Gráfico radar comparación por categoría" role="img"></canvas></div>
+        </div>
+        <div class="card reveal">
+          <div class="card-header"><h3 class="card-title">Correlación 1er vs 2do Premio</h3><span class="card-badge badge-green">Scatter</span></div>
+          <div class="chart-container" style="height:380px;"><canvas id="scatterChart" aria-label="Gráfico de dispersión correlación premios" role="img"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TENDENCIAS ==================== -->
+    <section class="section" id="sec-tendencias" role="tabpanel" aria-labelledby="tab-tendencias">
+      <h2 class="section-title">Tendencias Temporales</h2>
+      <p class="section-subtitle">Evolución de la frecuencia de dígitos a lo largo del tiempo.</p>
+      <div class="card reveal" style="margin-bottom:28px;">
+        <div class="card-header"><h3 class="card-title">Frecuencia de Dígitos por Mes</h3><span class="card-badge badge-green">Últimos 24 meses</span></div>
+        <div class="chart-container"><canvas id="trendChart" aria-label="Gráfico de tendencia de dígitos por mes" role="img"></canvas></div>
+      </div>
+      <div class="card reveal">
+        <div class="card-header"><h3 class="card-title">Sorteos por Mes</h3><span class="card-badge badge-purple">Volumen</span></div>
+        <div class="chart-container"><canvas id="volumeChart" aria-label="Gráfico de volumen de sorteos por mes" role="img"></canvas></div>
+      </div>
+    </section>
+
+    <!-- ==================== ANÁLISIS ==================== -->
+    <section class="section" id="sec-analisis" role="tabpanel" aria-labelledby="tab-analisis">
+      <h2 class="section-title">Análisis por Posición</h2>
+      <p class="section-subtitle">Probabilidad de cada dígito (0–9) en cada una de las 4 posiciones del número ganador.</p>
+      <div class="grid-4" id="positionGrids" role="region" aria-label="Grids de frecuencia por posición"></div>
+      <div class="card reveal">
+        <div class="card-header"><h3 class="card-title">Mapa de Calor — Posición vs Dígito</h3></div>
+        <div id="heatmap" style="overflow-x:auto;" role="img" aria-label="Mapa de calor posición vs dígito"></div>
+      </div>
+    </section>
+
+    <!-- ==================== COMPARADOR ==================== -->
+    <section class="section" id="sec-comparador" role="tabpanel" aria-labelledby="tab-comparador">
+      <h2 class="section-title">Comparador de Números</h2>
+      <p class="section-subtitle">Ingresa hasta 5 números y compara su historial, frecuencia, última aparición y meses favorables.</p>
+
+      <div class="card reveal">
+        <div class="card-header"><h3 class="card-title">Números a Comparar</h3><span class="card-badge badge-gold">Máx 5</span></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-top:12px;">
+          <div style="flex:1;min-width:140px;">
+            <input class="filter-input" id="compInput" type="text" maxlength="4" placeholder="Número…" aria-label="Agregar número a comparar" style="font-family:'JetBrains Mono';font-size:1.2rem;text-align:center;letter-spacing:4px;">
+          </div>
+          <button class="btn btn-gold" onclick="addCompNumber()" style="height:42px;">+ Agregar</button>
+          <button class="btn" onclick="clearCompNumbers()" style="height:42px;">Limpiar</button>
+        </div>
+        <div id="compTags" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;"></div>
+      </div>
+
+      <div id="compResults" role="region" aria-label="Resultados de comparación" aria-live="polite"></div>
+    </section>
+
+    <!-- ==================== GAPS ==================== -->
+    <section class="section" id="sec-gaps" role="tabpanel" aria-labelledby="tab-gaps">
+      <h2 class="section-title">Análisis de Gaps</h2>
+      <p class="section-subtitle">¿Cuántos sorteos llevan sin aparecer los números más populares? Los números con gap alto respecto a su promedio están "vencidos".</p>
+
+      <div id="gapsContent" role="region" aria-label="Análisis de gaps"></div>
+    </section>
+
+    <!-- ==================== SIMULADOR ==================== -->
+    <section class="section" id="sec-simulador" role="tabpanel" aria-labelledby="tab-simulador">
+      <h2 class="section-title">Simulador: ¿Cuánto habría ganado?</h2>
+      <p class="section-subtitle">Ingresa un número y descubre cuántas veces ha salido en toda la historia de la lotería.</p>
+
+      <div class="card reveal">
+        <div class="card-header"><h3 class="card-title">Buscar Número</h3><span class="card-badge badge-gold">Histórico</span></div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-top:12px;">
+          <div style="flex:1;min-width:140px;">
+            <label style="display:block;font-size:0.8rem;color:var(--text-muted);margin-bottom:4px;">Número (4 dígitos)</label>
+            <input class="filter-input" id="simNumero" type="text" maxlength="4" pattern="[0-9]{4}" placeholder="0042" aria-label="Número a simular" style="font-family:'JetBrains Mono';font-size:1.4rem;text-align:center;letter-spacing:6px;">
+          </div>
+          <div style="min-width:120px;">
+            <label style="display:block;font-size:0.8rem;color:var(--text-muted);margin-bottom:4px;">Categoría</label>
+            <select class="filter-select" id="simCat" aria-label="Categoría para simulación"><option value="">Todas</option></select>
+          </div>
+          <div style="min-width:120px;">
+            <label style="display:block;font-size:0.8rem;color:var(--text-muted);margin-bottom:4px;">Desde</label>
+            <input class="filter-date" id="simFrom" type="date" aria-label="Fecha desde">
+          </div>
+          <div style="min-width:120px;">
+            <label style="display:block;font-size:0.8rem;color:var(--text-muted);margin-bottom:4px;">Hasta</label>
+            <input class="filter-date" id="simTo" type="date" aria-label="Fecha hasta">
+          </div>
+          <button class="btn btn-gold" id="simBtn" onclick="runSimulation()" aria-label="Ejecutar simulación" style="height:42px;">🔍 Simular</button>
+        </div>
+      </div>
+
+      <div id="simResults" role="region" aria-label="Resultados de simulación" aria-live="polite"></div>
+    </section>
+
+    <!-- ==================== MIS NÚMEROS (WATCHLIST) ==================== -->
+    <section class="section" id="sec-favoritos" role="tabpanel" aria-labelledby="tab-favoritos">
+      <h2 class="section-title">Mis Números Favoritos</h2>
+      <p class="section-subtitle">Guarda tus números y recibe alertas cuando salgan en los resultados o sean recomendados por el modelo.</p>
+
+      <div class="card reveal">
+        <div class="card-header"><h3 class="card-title">Agregar Número</h3><span class="card-badge badge-gold">Watchlist</span></div>
+        <div style="display:flex;gap:12px;align-items:flex-end;margin-top:12px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:140px;">
+            <label style="display:block;font-size:0.8rem;color:var(--text-muted);margin-bottom:4px;">Número (4 dígitos)</label>
+            <input class="filter-input" id="favInput" type="text" maxlength="4" pattern="[0-9]{4}" placeholder="0042" aria-label="Número favorito" style="font-family:'JetBrains Mono';font-size:1.4rem;text-align:center;letter-spacing:6px;">
+          </div>
+          <button class="btn btn-gold" onclick="addFavorite()" aria-label="Agregar número favorito" style="height:42px;">+ Agregar</button>
+        </div>
+      </div>
+
+      <div id="favContainer" role="region" aria-label="Lista de números favoritos" aria-live="polite"></div>
+    </section>
+
+    <!-- ==================== RECOMENDACIÓN MENSUAL ==================== -->
+    <section class="section" id="sec-mensual" role="tabpanel" aria-labelledby="tab-mensual">
+      <h2 class="section-title">Recomendación Mensual</h2>
+      <p class="section-subtitle">Análisis histórico por mes del año: descubre qué números, dígitos y terminaciones son más frecuentes en cada mes.</p>
+
+      <div id="monthlyTarget" role="region" aria-label="Recomendación para el próximo mes"></div>
+
+      <div class="card reveal" style="margin-top:24px;">
+        <div class="card-header"><h3 class="card-title">Ventaja de Dígitos por Posición</h3><span class="card-badge badge-gold">vs Promedio</span></div>
+        <p class="section-subtitle" style="margin-bottom:12px;">Diferencia porcentual de cada dígito en el mes objetivo respecto al promedio general. <span style="color:#4ade80;">Verde</span> = más frecuente, <span style="color:#f87171;">Rojo</span> = menos frecuente.</p>
+        <div id="monthlyAdvantage" role="img" aria-label="Tabla de ventaja de dígitos por posición"></div>
+      </div>
+
+      <div class="card reveal" style="margin-top:24px;">
+        <div class="card-header"><h3 class="card-title">Perfil de los 12 Meses</h3><span class="card-badge badge-purple">Histórico</span></div>
+        <div class="chart-container"><canvas id="monthlyProfileChart" aria-label="Gráfico comparativo de perfil mensual" role="img"></canvas></div>
+      </div>
+
+      <div id="monthlyCards" class="grid-3" role="region" aria-label="Perfiles mensuales detallados" style="margin-top:24px;"></div>
+    </section>
+
+    <!-- ==================== PRECISIÓN ==================== -->
+    <section class="section" id="sec-precision" role="tabpanel" aria-labelledby="tab-precision">
+      <h2 class="section-title">Precisión Histórica</h2>
+      <p class="section-subtitle">Backtesting: comparamos las predicciones del modelo contra los resultados reales para medir su rendimiento.</p>
+
+      <div id="precisionLoader" class="loader-wrap" role="status" aria-label="Calculando backtesting"><div class="spinner" aria-hidden="true"></div><p>Calculando backtesting…</p></div>
+      <div id="precisionContent" style="display:none;">
+
+        <div class="stat-cards" id="precisionSummary" role="region" aria-label="Resumen de precisión"></div>
+
+        <h3 class="section-title" style="font-size:1.2rem;margin:28px 0 12px;">Precisión por Posición</h3>
+        <div class="grid-4" id="precisionPositions" role="region" aria-label="Precisión por posición de dígito"></div>
+
+        <h3 class="section-title" style="font-size:1.2rem;margin:28px 0 12px;">ML vs Estadístico</h3>
+        <div class="grid-2" id="precisionComparison" role="region" aria-label="Comparación ML vs Estadístico"></div>
+
+        <div class="card reveal" style="margin-top:28px;">
+          <div class="card-header"><h3 class="card-title">Precisión Mensual (Top-1 por Posición)</h3><span class="card-badge badge-green">Tendencia</span></div>
+          <div class="chart-container"><canvas id="precisionTrendChart" aria-label="Gráfico de precisión mensual" role="img"></canvas></div>
+        </div>
+
+        <div class="card reveal" style="margin-top:20px;">
+          <div class="card-header"><h3 class="card-title">¿Cómo interpretarlo?</h3><span class="card-badge badge-gold">Info</span></div>
+          <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.7;">
+            El <strong style="color:var(--gold-300)">baseline aleatorio</strong> para cada posición es 10% (1 de 10 dígitos).
+            Un modelo útil debe superar este umbral consistentemente.
+            <strong style="color:var(--gold-300)">Top-1</strong> = ¿el dígito más probable acertó?
+            <strong style="color:var(--gold-300)">Top-3</strong> = ¿el dígito real estaba entre los 3 más probables?
+            <br><br><span style="color:var(--text-muted);font-size:0.8rem;">⚠ Nota: Estas métricas son evaluaciones in-sample. La lotería es un juego de azar puro — ningún modelo puede predecir con certeza.</span>
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+  <footer class="footer" id="footerText" role="contentinfo">Lotería de Panamá — Análisis Estadístico © 2026</footer>
+</div>
+
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

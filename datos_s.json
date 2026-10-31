@@ -1,0 +1,15 @@
+{"data": [
+    {"id": "5282", "fecha": "2022-09-25", "primero": "4898", "segundo": "4525", "tercero": "2635", "letra": "CDAD", "serie": "14", "folio": "8", "cat": "dominical"}, 
+    {"id": "3110", "fecha": "2022-09-21", "primero": "3639", "segundo": "4680", "tercero": "0440", "letra": "CACC", "serie": "14", "folio": "9", "cat": "miercolito"},
+    {"id": "5281", "fecha": "2022-09-18", "primero": "3266", "segundo": "8321", "tercero": "6984", "letra": "DDAA", "serie": "16", "folio": "12", "cat": "dominical"}, 
+    {"id": "3109", "fecha": "2022-09-14", "primero": "6080", "segundo": "7861", "tercero": "3642", "letra": "CDAC", "serie": "4", "folio": "5", "cat": "miercolito"}, 
+    {"id": "5280", "fecha": "2022-09-11", "primero": "3278", "segundo": "4997", "tercero": "6666", "letra": "CBCB", "serie": "5", "folio": "2", "cat": "dominical"}, 
+    {"id": "3108", "fecha": "2022-09-07", "primero": "7606", "segundo": "1033", "tercero": "0637", "letra": "BDAC", "serie": "11", "folio": "8", "cat": "miercolito"},
+    {"id": "5279", "fecha": "2022-09-04", "primero": "3520", "segundo": "1616", "tercero": "7779", "letra": "AADD", "serie": "8", "folio": "4", "cat": "dominical"},
+    {"id": "365", "fecha": "2022-09-02", "primero": "4201", "segundo": "93", "tercero": "69", "letra": "CACC", "serie": "2", "folio": "21", "cat": "gordito"}, 
+    {"id": "3107", "fecha": "2022-08-31", "primero": "1342", "segundo": "6307", "tercero": "3186", "letra": "CBCC", "serie": "20", "folio": "5", "cat": "miercolito"},
+    {"id": "5278", "fecha": "2022-08-28", "primero": "3636", "segundo": "3320", "tercero": "8432", "letra": "BCDB", "serie": "22", "folio": "5", "cat": "dominical"}, 
+    {"id": "3106", "fecha": "2022-08-24", "primero": "8432", "segundo": "0458", "tercero": "2834", "letra": "CDDA", "serie": "13", "folio": "9", "cat": "miercolito"}, 
+    {"id": "5277", "fecha": "2022-08-21", "primero": "0080", "segundo": "5477", "tercero": "7079", "letra": "BBDD", "serie": "24", "folio": "7", "cat": "dominical"}
+    ]
+}

@@ -1,0 +1,252 @@
+{
+  "skills": {
+    "analyze": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\analyze"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\analyze"
+    },
+    "automation-strategy": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\automation-strategy"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\automation-strategy"
+    },
+    "clarify": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\clarify"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\clarify"
+    },
+    "connect-tool": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\connect-tool"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\connect-tool"
+    },
+    "constitution": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\constitution"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\constitution"
+    },
+    "debug": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\debug"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\debug"
+    },
+    "decision-challenge": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\decision-challenge"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\decision-challenge"
+    },
+    "deprecation": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\deprecation"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\deprecation"
+    },
+    "design": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\design"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\design"
+    },
+    "fable-operator": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\fable-operator"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\fable-operator"
+    },
+    "ftd": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\ftd"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\ftd"
+    },
+    "harness": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\harness"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\harness"
+    },
+    "idea-refinement": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\idea-refinement"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\idea-refinement"
+    },
+    "implement": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\implement"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\implement"
+    },
+    "init": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\init"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\init"
+    },
+    "orient": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\orient"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\orient"
+    },
+    "parallel": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\parallel"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\parallel"
+    },
+    "plan": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\plan"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\plan"
+    },
+    "python": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\python"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\python"
+    },
+    "review": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\review"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\review"
+    },
+    "sdd": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\sdd"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\sdd"
+    },
+    "sdd-init": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\sdd-init"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\sdd-init"
+    },
+    "ship": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\ship"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\ship"
+    },
+    "simplify-code": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\simplify-code"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\simplify-code"
+    },
+    "source-grounded-development": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\source-grounded-development"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\source-grounded-development"
+    },
+    "specify": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\specify"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\specify"
+    },
+    "suggest": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\suggest"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\suggest"
+    },
+    "tasks": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\tasks"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\tasks"
+    },
+    "unslop": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\unslop"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\unslop"
+    },
+    "ux": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\ux"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\ux"
+    },
+    "verify": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\verify"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\verify"
+    },
+    "worktrees": {
+      "files": [
+        "C:\\apps\\apps\\python\\sorteos\\.claude\\skills\\worktrees"
+      ],
+      "base": "C:\\apps\\apps\\python\\sorteos\\.rsc\\skills\\worktrees"
+    }
+  },
+  "agents": [
+    "developer",
+    "finding-verifier",
+    "python-reviewer",
+    "refuter-correctness",
+    "refuter-security",
+    "refuter-tests"
+  ],
+  "agentCollisions": [],
+  "agentsKept": [],
+  "explicitAgents": [],
+  "memory": {
+    "mode": "full",
+    "reason": "wired",
+    "paths": [
+      "C:\\apps\\apps\\python\\sorteos\\.rsc\\session-memory-core.mjs",
+      "C:\\apps\\apps\\python\\sorteos\\.rsc\\session-memory-adapter.mjs",
+      "C:\\apps\\apps\\python\\sorteos\\.rsc\\session-memory.mjs",
+      "C:\\apps\\apps\\python\\sorteos\\.claude\\settings.local.json"
+    ]
+  },
+  "update": {
+    "mode": "hook"
+  },
+  "knowledge": {
+    "mode": "wired",
+    "reason": null,
+    "paths": [
+      "C:\\apps\\apps\\python\\sorteos\\.rsc\\knowledge-sync.mjs",
+      "C:\\apps\\apps\\python\\sorteos\\.rsc\\trunk-policy.mjs",
+      "C:\\apps\\apps\\python\\sorteos\\.claude\\settings.local.json"
+    ]
+  },
+  "gitPermissions": {
+    "mode": "wired",
+    "path": "C:\\apps\\apps\\python\\sorteos\\.claude\\settings.json"
+  },
+  "policy": {
+    "baseAgents": true,
+    "alwaysOn": true,
+    "codeHooks": true,
+    "dangerGuard": true,
+    "laneGate": true,
+    "gitmojiGuard": true,
+    "memory": true,
+    "context7": false
+  },
+  "commands": [
+    "checkpoint",
+    "learn",
+    "python-review",
+    "resume-session",
+    "save-session"
+  ],
+  "commandCollisions": [],
+  "version": "3.6.0"
+}
