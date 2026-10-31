@@ -8,7 +8,7 @@ Uso:  python actualizar_db.py [--desde YYYY-MM]
 import requests
 from datetime import date
 from base import Session, engine, Base, api_credentials
-from loteria import Loteria
+from loteria import Loteria, normalizar_premio
 
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
@@ -69,6 +69,20 @@ def filtrar_nuevos(data, existentes, hasta):
     return nuevos
 
 
+def fila_a_loteria(fila):
+    """API row → Loteria, with prizes zero-padded to 4 digits (empty stays empty)."""
+    return Loteria(
+        fila.get("cat", ""),
+        fila.get("fecha", ""),
+        normalizar_premio(fila.get("primero")),
+        fila.get("letra", ""),
+        fila.get("folio", ""),
+        fila.get("serie", ""),
+        normalizar_premio(fila.get("segundo")),
+        normalizar_premio(fila.get("tercero")),
+    )
+
+
 def actualizar(desde=None):
     """Sync draws from the month of the last stored draw (or `desde`) up to today."""
     Base.metadata.create_all(engine)
@@ -106,20 +120,11 @@ def actualizar(desde=None):
     insertados = 0
     for fila in nuevos:
         try:
-            sorteo = Loteria(
-                fila.get("cat", ""),
-                fila.get("fecha", ""),
-                fila.get("primero", ""),
-                fila.get("letra", ""),
-                fila.get("folio", ""),
-                fila.get("serie", ""),
-                fila.get("segundo", ""),
-                fila.get("tercero", ""),
-            )
+            sorteo = fila_a_loteria(fila)
             session.add(sorteo)
             session.commit()
             insertados += 1
-            print(f"  + {fila['fecha']} | {fila.get('cat','')} | 1ro: {fila.get('primero','')} | 2do: {fila.get('segundo','')} | 3ro: {fila.get('tercero','')}")
+            print(f"  + {fila['fecha']} | {sorteo.tipo} | 1ro: {sorteo.primero} | 2do: {sorteo.segundo} | 3ro: {sorteo.tercero}")
         except Exception as e:
             session.rollback()
             print(f"  ERROR insertando {fila}: {e}")

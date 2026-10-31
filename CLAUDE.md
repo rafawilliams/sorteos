@@ -68,9 +68,9 @@ Ensemble of **4 HistGradientBoostingClassifier** models, one per digit position 
 
 ### Database (base.py + loteria.py)
 
-SQLAlchemy ORM on MariaDB. Single table `sorteos` with columns: `id`, `tipo` (category), `fecha` (date), `primero`/`segundo`/`tercero` (4-digit prizes), `letras`, `serie`, `folio`.
+SQLAlchemy ORM on MariaDB. Single table `sorteos` with columns: `id`, `tipo` (category), `fecha` (date), `primero`/`segundo`/`tercero` (prize strings), `letras`, `serie`, `folio`.
 
-Numbers are stored/handled as **zero-padded 4-digit strings** (e.g., `"0042"`).
+The DB keeps prizes **as published by the source — do not pad them in the DB**. Formats vary: gordito since 1996 has 2-digit `segundo`/`tercero`; miercolito 1962–1967 has 2-digit prizes; extraordinario has 5-digit prizes; 57 gordito 1991–1995 and 2 extraordinario 1940 have empty `segundo`/`tercero`. `get_sorteos()` (via `_row_to_dict` → `loteria.normalizar_premio`) pads to 4 digits on read and keeps empty as `""`. Two draws can share fecha+categoría (1973-02-07 miercolito, 2002-12-29 dominical are both real per the API).
 
 ### Frontend (static/app.js + static/style.css + templates/index.html)
 
@@ -90,7 +90,7 @@ Single-page app with vanilla JS. State variables:
 
 - **Categories**: `dominical`, `miercolito`, `gordito`, `extraordinario`, `extraordinaria`, `zodiaco`, `extraordonario` (note the typo in source data — `extraordonario` is intentional to match the API)
 - **Date format**: ISO 8601 (`YYYY-MM-DD`) throughout
-- **Prize numbers**: Always `.zfill(4)` before processing
+- **Prize numbers**: `.zfill(4)` before processing, but **skip empty prizes first** — `"".zfill(4)` is `"0000"` and would count as a fake hit
 - Each draw produces 3 rows in ML training data (one per prize tier)
 - Statistical recommendations use 50K Monte Carlo samples with recency-weighted digit frequencies
 - The `decena_recommendation()` function uses a 3-sorteo pattern matching approach with 2-sorteo and frequency fallbacks
