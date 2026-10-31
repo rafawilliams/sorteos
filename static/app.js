@@ -221,8 +221,13 @@ async function runUpdate(){
   const btn=document.getElementById('updateBtn');
   btn.disabled=true;btn.textContent='↻ Actualizando…';
   try{
-    const res=await fetch('/api/actualizar',{method:'POST'});
+    let token=sessionStorage.getItem('updateToken');
+    if(!token){token=prompt('Token de actualización (ACTUALIZAR_TOKEN):');}
+    if(!token){btn.disabled=false;btn.textContent='↻ Actualizar datos';return;}
+    const res=await fetch('/api/actualizar',{method:'POST',headers:{'X-Update-Token':token}});
     const data=await res.json();
+    if(res.status===401){sessionStorage.removeItem('updateToken');}
+    else if(res.ok){sessionStorage.setItem('updateToken',token);}
     if(data.ok){
       showToast('Datos actualizados correctamente',3000);
       await loadData();
