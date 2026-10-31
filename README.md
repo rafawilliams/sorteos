@@ -66,7 +66,8 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 
 ```bash
 python app.py            # servidor en http://127.0.0.1:5000
-python actualizar_db.py  # sincroniza sorteos nuevos desde la API externa
+python actualizar_db.py  # sincroniza desde el mes del último sorteo guardado hasta hoy
+python actualizar_db.py --desde 2026-01  # o desde un mes concreto (YYYY-MM)
 ```
 
 La primera llamada a `/api/stats` entrena el modelo ML si no está en caché (`models/predictor.joblib`), lo que tarda entre 50 y 100 segundos. Las siguientes tardan menos de 1 segundo.
