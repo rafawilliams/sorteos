@@ -5,7 +5,7 @@ Busca sorteos de feb y mar 2026 e inserta solo los que no existen.
 
 import requests
 from datetime import date
-from base import Session, engine, Base
+from base import Session, engine, Base, api_credentials
 from loteria import Loteria
 
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
@@ -18,8 +18,7 @@ def get_token():
         "Accept": "text/plain",
         "User-Agent": UA,
     }
-    params = {"username": "loteriaUser", "password": "loteriaGeneric"}
-    resp = requests.post(url, data=params, headers=headers, timeout=15)
+    resp = requests.post(url, data=api_credentials(), headers=headers, timeout=15)
     resp.raise_for_status()
     return resp.json()
 
