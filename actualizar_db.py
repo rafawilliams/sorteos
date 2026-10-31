@@ -51,12 +51,29 @@ def meses_a_consultar(desde, hasta):
     return meses
 
 
+# Same draw under another name: the API now returns the Dec-2023 "zodiaco" draws as "gordito"
+# (Gordito del Zodíaco). Only used to compare keys; stored categories are not changed.
+ALIAS_CATEGORIA = {"zodiaco": "gordito"}
+
+
+def clave_sorteo(fecha, cat, primero):
+    """Identity of a draw: fecha + categoría + 1er premio in its real format.
+
+    The 1st prize is part of the key because two real draws can share date and category
+    (e.g. 2002-12-29 dominical), and the DB has no API id to tell them apart.
+    """
+    fecha = fecha.isoformat() if hasattr(fecha, "isoformat") else (fecha or "")
+    cat = (cat or "").strip().lower()
+    cat = ALIAS_CATEGORIA.get(cat, cat)
+    return (fecha, cat, premio_en_formato(cat, fecha, "primero", primero))
+
+
 def _clave(fila):
-    return (fila.get("fecha") or "", (fila.get("cat") or "").strip().lower())
+    return clave_sorteo(fila.get("fecha"), fila.get("cat"), fila.get("primero"))
 
 
 def filtrar_nuevos(data, existentes, hasta):
-    """Rows not already stored (by fecha+categoría), with a date, not after `hasta`."""
+    """Rows not already stored (by fecha+categoría+1er premio), with a date, not after `hasta`."""
     limite = hasta.isoformat()
     vistos = set(existentes)
     nuevos = []
@@ -90,12 +107,11 @@ def actualizar(desde=None):
     session = Session()
     hoy = date.today()
 
-    # Obtener fechas+tipo existentes para detectar duplicados (la DB usa IDs propios)
+    # Claves de los sorteos guardados, para no duplicarlos (la DB usa IDs propios)
     existentes = set()
     ultima = None
-    for r in session.query(Loteria.fecha, Loteria.tipo).all():
-        fecha_str = r.fecha.isoformat() if r.fecha else ""
-        existentes.add((fecha_str, (r.tipo or "").strip().lower()))
+    for r in session.query(Loteria.fecha, Loteria.tipo, Loteria.primero).all():
+        existentes.add(clave_sorteo(r.fecha, r.tipo, r.primero))
         if r.fecha and (ultima is None or r.fecha > ultima):
             ultima = r.fecha
     print(f"Sorteos existentes en DB: {len(existentes)} (último: {ultima or 'ninguno'})")
