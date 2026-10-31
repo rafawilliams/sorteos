@@ -1,0 +1,59 @@
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    services:
+      mariadb:
+        image: mariadb:11
+        env:
+          MARIADB_ROOT_PASSWORD: ci
+          MARIADB_DATABASE: sorteos
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+
+    env:
+      DATABASE_URL: mariadb+mariadbconnector://root:ci@127.0.0.1:3306/sorteos
+      LOTERIA_API_USER: ci
+      LOTERIA_API_PASSWORD: ci
+      FLASK_DEBUG: "0"
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install MariaDB Connector/C
+        run: sudo apt-get update && sudo apt-get install -y libmariadb-dev
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Seed database with synthetic draws
+        run: python tests/seed_db.py
+
+      - name: Run tests
+        run: pytest -q
+
+      - name: Audit dependencies
+        # PYSEC-2026-217 (mariadb): no fixed release exists; only exploitable with manual
+        # escape_string() + big5 charset. The app uses SQLAlchemy parameterized queries.
+        run: pip-audit -r requirements.txt --ignore-vuln PYSEC-2026-217
