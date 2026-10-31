@@ -23,7 +23,7 @@ python actualizar_db.py
 
 **Preview server** is configured in `.claude/launch.json` — use preview_start with name `sorteos`.
 
-**Environment**: Copy `.env.example` to `.env` and set `DATABASE_URL`, `LOTERIA_API_USER`, `LOTERIA_API_PASSWORD`. All are required (no hardcoded defaults); `base.require_env()` raises a clear error if one is missing.
+**Environment**: Copy `.env.example` to `.env` and set `DATABASE_URL`, `LOTERIA_API_USER`, `LOTERIA_API_PASSWORD`. All are required (no hardcoded defaults); `base.require_env()` raises a clear error if one is missing. Optional `FLASK_DEBUG=1` enables Flask debug mode for local dev (off by default; parsed by `base.env_flag()`).
 
 ## Architecture
 

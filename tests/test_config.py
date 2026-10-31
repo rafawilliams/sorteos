@@ -24,6 +24,26 @@ class TestApiCredentials:
             base.api_credentials()
 
 
+class TestEnvFlag:
+    @pytest.mark.parametrize("value", ["1", "true", "True", "YES", "on"])
+    def test_truthy(self, monkeypatch, value):
+        monkeypatch.setenv("FLASK_DEBUG", value)
+        assert base.env_flag("FLASK_DEBUG") is True
+
+    @pytest.mark.parametrize("value", ["0", "false", "no", "off", "", "cualquiera"])
+    def test_falsy(self, monkeypatch, value):
+        monkeypatch.setenv("FLASK_DEBUG", value)
+        assert base.env_flag("FLASK_DEBUG") is False
+
+    def test_missing_defaults_false(self, monkeypatch):
+        monkeypatch.delenv("FLASK_DEBUG", raising=False)
+        assert base.env_flag("FLASK_DEBUG") is False
+
+    def test_app_has_no_hardcoded_debug(self):
+        src = open(os.path.join(os.path.dirname(base.__file__), "app.py"), encoding="utf-8").read()
+        assert "debug=True" not in src
+
+
 class TestDatabaseUrl:
     def test_missing_raises(self, monkeypatch):
         monkeypatch.delenv("DATABASE_URL", raising=False)
