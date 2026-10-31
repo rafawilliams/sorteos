@@ -1,6 +1,8 @@
 """
 Actualizar base de datos con sorteos desde la API.
-Busca sorteos de feb y mar 2026 e inserta solo los que no existen.
+Consulta los meses desde el último sorteo guardado hasta hoy e inserta solo los que no existen.
+
+Uso:  python actualizar_db.py [--desde YYYY-MM]
 """
 
 import requests
@@ -39,43 +41,66 @@ def buscar_por_mes(token, year, month):
     return resp.json().get("data", [])
 
 
-def actualizar():
+def meses_a_consultar(desde, hasta):
+    """(año, mes) from the month of `desde` to the month of `hasta`, both included."""
+    meses = []
+    y, m = desde.year, desde.month
+    while (y, m) <= (hasta.year, hasta.month):
+        meses.append((y, m))
+        y, m = (y + 1, 1) if m == 12 else (y, m + 1)
+    return meses
+
+
+def _clave(fila):
+    return (fila.get("fecha") or "", (fila.get("cat") or "").strip().lower())
+
+
+def filtrar_nuevos(data, existentes, hasta):
+    """Rows not already stored (by fecha+categoría), with a date, not after `hasta`."""
+    limite = hasta.isoformat()
+    vistos = set(existentes)
+    nuevos = []
+    for fila in data:
+        clave = _clave(fila)
+        if not clave[0] or clave[0] > limite or clave in vistos:
+            continue
+        vistos.add(clave)
+        nuevos.append(fila)
+    return nuevos
+
+
+def actualizar(desde=None):
+    """Sync draws from the month of the last stored draw (or `desde`) up to today."""
     Base.metadata.create_all(engine)
     session = Session()
-
-    # Fecha límite: solo insertar sorteos después del último registrado
-    fecha_desde = "2026-02-19"
-    fecha_hasta = "2026-03-22"
+    hoy = date.today()
 
     # Obtener fechas+tipo existentes para detectar duplicados (la DB usa IDs propios)
     existentes = set()
+    ultima = None
     for r in session.query(Loteria.fecha, Loteria.tipo).all():
         fecha_str = r.fecha.isoformat() if r.fecha else ""
         existentes.add((fecha_str, (r.tipo or "").strip().lower()))
-    print(f"Sorteos existentes en DB: {len(existentes)}")
+        if r.fecha and (ultima is None or r.fecha > ultima):
+            ultima = r.fecha
+    print(f"Sorteos existentes en DB: {len(existentes)} (último: {ultima or 'ninguno'})")
+
+    if desde is None:
+        desde = ultima or hoy
+    meses = meses_a_consultar(desde, hoy)
+    print(f"Meses a consultar: {', '.join(f'{y}-{m:02d}' for y, m in meses)}")
 
     token = get_token()
     print("Token obtenido correctamente.")
 
-    nuevos = []
-
-    # Buscar febrero y marzo 2026
-    for year, month in [(2026, 2), (2026, 3)]:
+    data = []
+    for year, month in meses:
         print(f"\nBuscando sorteos de {year}-{month:02d}...")
-        data = buscar_por_mes(token, year, month)
-        print(f"  Encontrados en API: {len(data)}")
+        filas = buscar_por_mes(token, year, month)
+        print(f"  Encontrados en API: {len(filas)}")
+        data.extend(filas)
 
-        for fila in data:
-            sorteo_fecha = fila.get("fecha", "")
-            sorteo_cat = fila.get("cat", "").strip().lower()
-
-            # Solo insertar si es posterior al último registrado y hasta la fecha límite
-            if sorteo_fecha > fecha_desde and sorteo_fecha <= fecha_hasta:
-                if (sorteo_fecha, sorteo_cat) not in existentes:
-                    nuevos.append(fila)
-                else:
-                    print(f"  (ya existe) {sorteo_fecha} | {sorteo_cat}")
-
+    nuevos = filtrar_nuevos(data, existentes, hoy)
     print(f"\nSorteos nuevos a insertar: {len(nuevos)}")
 
     insertados = 0
@@ -104,4 +129,10 @@ def actualizar():
 
 
 if __name__ == "__main__":
-    actualizar()
+    import argparse
+    from datetime import datetime
+
+    parser = argparse.ArgumentParser(description="Sincroniza sorteos nuevos desde api.loteriapanama.net")
+    parser.add_argument("--desde", help="Mes inicial YYYY-MM (por defecto: el del último sorteo guardado)")
+    args = parser.parse_args()
+    actualizar(datetime.strptime(args.desde, "%Y-%m").date() if args.desde else None)
