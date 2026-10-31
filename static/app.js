@@ -136,7 +136,7 @@ function renderQuick(){
 function renderFull(){
   // Full renders once stats are available
   renderLastUpdate();buildCategoryUI();renderStatCounters();
-  renderRecommendations('all');renderDecenas();renderStatsForPrize('primero');renderSeriesLetras();
+  renderRecommendations('all');renderDecenas();renderStatsForPrize('primero');renderSeriesLetras();renderFormatos();
   renderRadarChart();renderScatterChart();
   renderPositionGrids();renderHeatmap();renderTrendChart();renderVolumeChart();
   renderEndingsSection();renderMonthlySection();renderFavorites();initSimCats();renderDashboard();
@@ -182,7 +182,7 @@ function renderSorteos(){
   const data=getFilteredSorteos(),start=(currentPage-1)*PER_PAGE,page=data.slice(start,start+PER_PAGE);
   document.getElementById('sorteosBody').innerHTML=page.map(s=>`<tr>
     <td>${formatDate(s.fecha)}</td><td><span class="cat-pill cat-${s.cat}">${catLabel(s.cat)}</span></td>
-    <td class="num-cell">${(s.primero||'').padStart(4,'0')}</td><td class="num-cell">${(s.segundo||'').padStart(4,'0')}</td><td class="num-cell">${(s.tercero||'').padStart(4,'0')}</td>
+    <td class="num-cell">${(s.primero||'')}</td><td class="num-cell">${(s.segundo||'')}</td><td class="num-cell">${(s.tercero||'')}</td>
     <td>${s.letra||'—'}</td><td>${s.serie||'—'}</td><td>${s.folio||'—'}</td></tr>`).join('');
   renderPagination();
 }
@@ -210,7 +210,7 @@ function initFilters(){
 function exportCSV(){
   const data=getFilteredSorteos();
   let csv='Fecha,Categoria,1er Premio,2do Premio,3er Premio,Letras,Serie,Folio\n';
-  data.forEach(s=>{csv+=`${s.fecha},${s.cat},${(s.primero||'').padStart(4,'0')},${(s.segundo||'').padStart(4,'0')},${(s.tercero||'').padStart(4,'0')},${s.letra||''},${s.serie||''},${s.folio||''}\n`});
+  data.forEach(s=>{csv+=`${s.fecha},${s.cat},${(s.primero||'')},${(s.segundo||'')},${(s.tercero||'')},${s.letra||''},${s.serie||''},${s.folio||''}\n`});
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`sorteos_panama_${new Date().toISOString().slice(0,10)}.csv`;a.click();
   showToast(`CSV exportado: ${data.length} registros`);
@@ -400,6 +400,36 @@ function renderSeriesLetras(){
   document.getElementById('letrasChart').innerHTML=letras.map(l=>`<div class="bar-row"><span class="bar-label">${l.letra}</span><div class="bar-track"><div class="bar-fill green" style="width:${(l.count/lMax*100).toFixed(1)}%">${l.count}</div></div></div>`).join('');
 }
 
+// ==================== OTHER PRIZE FORMATS (2 and 5 digits) ====================
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function renderFormatos(){
+  const el=document.getElementById('formatosGrid');if(!el)return;
+  const f=stats.formatos||{};
+  const names={'2':'2 cifras','5':'5 cifras'},posNames={'2':['Decenas','Unidades'],'5':['Dec. millar','Millares','Centenas','Decenas','Unidades']};
+  const prizeNames={primero:'1ro',segundo:'2do',tercero:'3ro'};
+  el.innerHTML=['2','5'].map(w=>{
+    const d=f[w];
+    if(!d||!d.total)return`<div><h4 class="card-title">${names[w]}</h4><p class="section-subtitle">Sin premios de este formato.</p></div>`;
+    const cats=Object.entries(d.by_category||{}).map(([c,n])=>`${esc(c)} (${n})`).join(', ');
+    const prizes=Object.entries(d.by_prize||{}).map(([p,n])=>`${prizeNames[p]||esc(p)}: ${n}`).join(' · ');
+    const range=d.date_range?`${esc(d.date_range.from)} → ${esc(d.date_range.to)}`:'';
+    const grids=(d.position_frequency||[]).map((pos,idx)=>{
+      const max=Math.max(...Object.values(pos),1);
+      const cells=Object.entries(pos).map(([dg,c])=>{const i=c/max;return`<div class="pos-cell" style="background:rgba(212,175,55,${(i*0.6+0.05).toFixed(2)});color:${i>0.5?(isLight()?'#fff':'var(--bg-deep)'):'var(--text-primary)'}" title="${posNames[w][idx]}: dígito ${dg} — ${c} veces">${dg}<br><small style="font-size:0.6rem;opacity:0.7">${c}</small></div>`}).join('');
+      return`<div style="margin-top:0.75rem"><small class="section-subtitle">${posNames[w][idx]}</small><div class="pos-grid">${cells}</div></div>`;
+    }).join('');
+    const hot=(d.hot_cold&&d.hot_cold.hot)||[],hMax=Math.max(...hot.map(h=>h.count),1);
+    const hotBars=hot.map(h=>`<div class="bar-row"><span class="bar-label">${esc(h.number)}</span><div class="bar-track"><div class="bar-fill hot" style="width:${(h.count/hMax*100).toFixed(1)}%">${h.count}</div></div></div>`).join('');
+    return`<div aria-label="Estadísticas de premios de ${names[w]}">
+      <h4 class="card-title">${names[w]} — ${d.total} premios</h4>
+      <p class="section-subtitle">${cats}<br>${prizes}<br>${range}</p>
+      ${grids}
+      <h4 class="card-title" style="margin-top:1rem">Más frecuentes</h4>
+      <div class="bar-chart" role="img" aria-label="Números de ${names[w]} más frecuentes">${hotBars}</div>
+    </div>`;
+  }).join('');
+}
+
 // ==================== RADAR & SCATTER CHARTS ====================
 let radarChartInstance=null, scatterChartInstance=null;
 
@@ -437,7 +467,7 @@ function renderRadarChart(){
 
 function renderScatterChart(){
   if(!allSorteos.length)return;
-  const points=allSorteos.slice(0,500).filter(s=>s.primero&&s.segundo).map(s=>({x:parseInt(s.primero)||0,y:parseInt(s.segundo)||0}));
+  const points=allSorteos.slice(0,500).filter(s=>(s.primero||'').length===4&&(s.segundo||'').length===4).map(s=>({x:parseInt(s.primero)||0,y:parseInt(s.segundo)||0}));
   if(!points.length)return;
   const ctx=document.getElementById('scatterChart').getContext('2d');
   if(scatterChartInstance)scatterChartInstance.destroy();
@@ -594,7 +624,8 @@ function renderDashboard(){
     (allSorteos||[]).forEach(s=>{
       if(!s.fecha||!s.fecha.startsWith(year))return;
       ['primero','segundo','tercero'].forEach(p=>{
-        const n=(s[p]||'').padStart(4,'0');
+        const n=s[p]||'';
+        if(!n)return;
         const ending=n.slice(-2);
         counter[ending]=(counter[ending]||0)+1;
       });
@@ -610,9 +641,9 @@ function renderDashboard(){
       <div style="font-size:0.85rem;color:var(--gold-300);font-weight:600;text-transform:capitalize;">${last.cat||last.tipo}</div>
       <div style="font-size:0.8rem;color:var(--text-muted);">${last.fecha}</div>
       <div style="display:flex;gap:8px;margin-top:6px;font-family:'JetBrains Mono';font-size:0.9rem;">
-        <span style="color:var(--gold-400);" title="1er Premio">${(last.primero||'').padStart(4,'0')}</span>
-        <span style="color:#4ade80;" title="2do Premio">${(last.segundo||'').padStart(4,'0')}</span>
-        <span style="color:#c084fc;" title="3er Premio">${(last.tercero||'').padStart(4,'0')}</span>
+        <span style="color:var(--gold-400);" title="1er Premio">${(last.primero||'')}</span>
+        <span style="color:#4ade80;" title="2do Premio">${(last.segundo||'')}</span>
+        <span style="color:#c084fc;" title="3er Premio">${(last.tercero||'')}</span>
       </div>
     </div>
     <div class="stat-card">
@@ -1083,15 +1114,15 @@ function renderFavorites(){
     const appearances=[];
     recentResults.forEach(s=>{
       const prizes=[];
-      if(s.primero&&s.primero.padStart(4,'0')===num)prizes.push('1ro');
-      if(s.segundo&&s.segundo.padStart(4,'0')===num)prizes.push('2do');
-      if(s.tercero&&s.tercero.padStart(4,'0')===num)prizes.push('3ro');
+      if(s.primero&&s.primero===num)prizes.push('1ro');
+      if(s.segundo&&s.segundo===num)prizes.push('2do');
+      if(s.tercero&&s.tercero===num)prizes.push('3ro');
       // Check ending match
       const ending=num.slice(-2);
       if(!prizes.length){
-        if(s.primero&&s.primero.padStart(4,'0').slice(-2)===ending)prizes.push('Term 1ro');
-        if(s.segundo&&s.segundo.padStart(4,'0').slice(-2)===ending)prizes.push('Term 2do');
-        if(s.tercero&&s.tercero.padStart(4,'0').slice(-2)===ending)prizes.push('Term 3ro');
+        if(s.primero&&s.primero.slice(-2)===ending)prizes.push('Term 1ro');
+        if(s.segundo&&s.segundo.slice(-2)===ending)prizes.push('Term 2do');
+        if(s.tercero&&s.tercero.slice(-2)===ending)prizes.push('Term 3ro');
       }
       if(prizes.length)appearances.push({fecha:s.fecha,cat:s.cat||s.tipo,prizes});
     });
@@ -1147,9 +1178,9 @@ function updateFavBadge(){
   let alerts=0;
   favs.forEach(num=>{
     recent.forEach(s=>{
-      if(s.primero&&s.primero.padStart(4,'0')===num)alerts++;
-      if(s.segundo&&s.segundo.padStart(4,'0')===num)alerts++;
-      if(s.tercero&&s.tercero.padStart(4,'0')===num)alerts++;
+      if(s.primero&&s.primero===num)alerts++;
+      if(s.segundo&&s.segundo===num)alerts++;
+      if(s.tercero&&s.tercero===num)alerts++;
     });
   });
   tab.dataset.badge=alerts>0?alerts:'';
