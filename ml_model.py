@@ -330,24 +330,28 @@ class LotteryPredictor:
 
         # --- Per-category predictions ---
         cat_reco = {}
+        cat_endings = {}
         if categories:
             for cat_key in categories:
                 cat_sorteos = [s for s in sorteos if s.get("cat") == cat_key]
                 df_cat = self._build_df(cat_sorteos)
                 if len(df_cat) < 50:
                     cat_reco[cat_key] = []
+                    cat_endings[cat_key] = []
                     continue
                 feat_cat = self._compute_features(df_cat)
                 cat_probs = self._avg_pos_probs(feat_cat)
                 cat_reco[cat_key] = self.predict_from_probs(
                     cat_probs, cat_sorteos, "primero"
                 )
+                cat_endings[cat_key] = self.predict_endings_from_probs(cat_probs)
 
         return {
             "general_reco": general_reco,
             "prize_reco": prize_reco,
             "endings": endings,
             "cat_reco": cat_reco,
+            "cat_endings": cat_endings,
         }
 
     # ------------------------------------------------------------------

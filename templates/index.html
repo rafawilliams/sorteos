@@ -40,6 +40,7 @@
     <button class="nav-tab" data-tab="favoritos" role="tab" aria-selected="false" aria-controls="sec-favoritos" id="tab-favoritos">⭐ Mis Números</button>
     <button class="nav-tab" data-tab="mensual" role="tab" aria-selected="false" aria-controls="sec-mensual" id="tab-mensual">📅 Mensual</button>
     <button class="nav-tab" data-tab="precision" role="tab" aria-selected="false" aria-controls="sec-precision" id="tab-precision">Precisión</button>
+    <button class="nav-tab" data-tab="seguimiento" role="tab" aria-selected="false" aria-controls="sec-seguimiento" id="tab-seguimiento">🎯 Seguimiento</button>
   </nav>
 
   <div id="loader" class="loader-wrap" role="status" aria-label="Cargando"><div class="spinner" aria-hidden="true"></div><p>Cargando datos de sorteos…</p></div>
@@ -328,6 +329,34 @@
       </div>
 
       <div id="monthlyCards" class="grid-3" role="region" aria-label="Perfiles mensuales detallados" style="margin-top:24px;"></div>
+    </section>
+
+    <!-- ==================== SEGUIMIENTO ==================== -->
+    <section class="section" id="sec-seguimiento" role="tabpanel" aria-labelledby="tab-seguimiento">
+      <h2 class="section-title">Seguimiento de Recomendaciones</h2>
+      <p class="section-subtitle">Lo que la web recomendó <strong>antes</strong> de cada sorteo frente a lo que salió. La recomendación se congela la primera vez que se calcula tras el último sorteo de cada categoría. Los sorteos son independientes: lo esperable es rendir como el azar.</p>
+
+      <div id="segLoader" class="loader-wrap" role="status" aria-label="Cargando seguimiento"><div class="spinner" aria-hidden="true"></div><p>Cargando seguimiento…</p></div>
+      <div id="segContent" style="display:none;">
+        <div class="stat-cards" id="segSummary" role="region" aria-label="Resumen del seguimiento"></div>
+
+        <h3 class="section-title" style="font-size:1.2rem;margin:28px 0 12px;">Recomendaciones congeladas para el próximo sorteo</h3>
+        <div class="grid-2" id="segPendientes" role="region" aria-label="Recomendaciones pendientes por categoría"></div>
+
+        <h3 class="section-title" style="font-size:1.2rem;margin:28px 0 12px;">Marcador frente al azar</h3>
+        <div class="table-wrap" role="region" aria-label="Marcador por método" tabindex="0">
+          <table role="table" aria-label="Marcador acumulado por método"><thead><tr>
+            <th scope="col">Método</th><th scope="col">Sorteos</th><th scope="col">Números exactos</th><th scope="col">Terminación de números</th><th scope="col">Dígitos en posición (media)</th><th scope="col">Terminaciones acertadas (media)</th><th scope="col">Sorteos con ≥1 terminación</th>
+          </tr></thead><tbody id="segMarcador"></tbody></table>
+        </div>
+
+        <h3 class="section-title" style="font-size:1.2rem;margin:28px 0 12px;">Historial sorteo a sorteo</h3>
+        <div class="table-wrap" role="region" aria-label="Historial del seguimiento" tabindex="0">
+          <table role="table" aria-label="Recomendado frente a resultado por sorteo"><thead><tr>
+            <th scope="col">Sorteo</th><th scope="col">Salió</th><th scope="col">ML</th><th scope="col">Estadístico</th><th scope="col">Combinada</th>
+          </tr></thead><tbody id="segHistorial"></tbody></table>
+        </div>
+      </div>
     </section>
 
     <!-- ==================== PRECISIÓN ==================== -->

@@ -47,12 +47,17 @@ Single Flask file with all routes and statistics logic:
 - **`GET /api/sorteos`** — Paginated draw results with filters (category, search, date range)
 - **`GET /api/stats`** — Comprehensive statistics: digit frequencies, hot/cold numbers, ML predictions, endings analysis, decena recommendations, trends. Expensive (~seconds), cached 5 minutes.
 - **`GET /api/backtesting?last_n=500`** — ML vs Statistical accuracy comparison over historical draws
+- **`GET /api/seguimiento`** — Frozen recommendations vs real results (see *Seguimiento* below); 500 with a generic message on error
 - **`POST /api/actualizar`** — Syncs new draws, clears cache, retrains ML model. Requires header `X-Update-Token` = `ACTUALIZAR_TOKEN` (.env); 401 on mismatch, 503 if unset; 502 if the sync script fails, 500 on unexpected errors (details only in the server log, never in the response). Response includes `ml_retrained`. Frontend prompts for the token and keeps it in `sessionStorage`.
 
 Key patterns:
 - **Cache layer**: `_cache_get`/`_cache_set` with 5-minute TTL on `sorteos`, `stats`, `backtesting_{n}` keys
 - **`_filter_recent()`**: Filters data from `RECO_DATE_FROM = "1995-01-01"` onwards for recommendations (not all 9000+ draws back to 1919)
 - **`_json_safe()`**: Recursively converts numpy types for JSON serialization
+
+### Seguimiento (seguimiento.py)
+
+Spec: `02-DOCS/wiki/sdd/specs/seguimiento-recomendaciones.md`. Table `predicciones` (created on first use, `checkfirst`). On every `/api/stats` cache miss, `_registrar_seguro` freezes, per category with a draw in the last 365 days and **no pending record**, the top-5 numbers and 10 endings of `ml`, `estadistico` and `combinada` for that category's next draw (never raises; errors only logged). A record's target draw is the first of its category with `id > ultimo_id` and `fecha >= ultima_fecha`. `combinada` = rank-weighted merge with `peso_ml` proportional to each method's mean digits-in-position over the last 20 compared draws (50/50 below 10; 0 without ML). Metrics compare numbers only with 4-digit prizes; endings use every format. Pure functions + session-injected `registrar`/`resumen` → tests use in-memory SQLite (`tests/test_seguimiento*.py`); `app.SeguimientoSession` is the session factory to monkeypatch. Expect it to perform like chance — it is a scoreboard, not a way to win.
 
 ### ML Model (ml_model.py)
 
@@ -84,7 +89,7 @@ Single-page app with vanilla JS. State variables:
 
 **Accessibility**: ARIA roles on all interactive elements, keyboard navigation (Arrow keys in tablists), skip-link, `focus-visible` styles.
 
-**Sections** are tab-navigated: Predicciones, Decenas, Terminaciones, Resultados, Estadísticas, Tendencias, Análisis, Precisión.
+**Sections** are tab-navigated: Predicciones, Decenas, Terminaciones, Resultados, Estadísticas, Tendencias, Análisis, Comparador, Gaps, Simulador, Mis Números, Mensual, Precisión, Seguimiento.
 
 ## Key Conventions
 

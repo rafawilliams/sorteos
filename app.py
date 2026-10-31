@@ -18,8 +18,11 @@ from flask_limiter.util import get_remote_address
 from sqlalchemy import desc, func
 
 from base import Session, engine, Base, env_flag
+
+SeguimientoSession = Session  # replaced in tests
 from loteria import Loteria, premio_en_formato
 from ml_model import predictor
+import seguimiento
 
 app = Flask(__name__)
 
@@ -718,6 +721,7 @@ def api_stats():
     ml_general = ml_batch.get("general_reco", [])
     ml_endings = ml_batch.get("endings", [])
     ml_cat_reco = ml_batch.get("cat_reco", {})
+    ml_cat_endings = ml_batch.get("cat_endings", {})
 
     # Decena recommendations per category
     decena_reco = {}
@@ -767,9 +771,60 @@ def api_stats():
         "monthly_reco": monthly_recommendation(recent),
     }
 
+    # Freeze recommendations for each category's next draw (never breaks stats)
+    _registrar_seguro(sorteos, _recos_por_categoria(recent, stats_by_cat, ml_cat_reco, ml_cat_endings))
+
     _cache_set("stats", result)
     log.info("Stats computed and cached (%d sorteos, %d recent)", len(sorteos), len(recent))
     return jsonify(result)
+
+
+def _recos_por_categoria(recent: list[dict], stats_by_cat: dict, ml_cat_reco: dict,
+                         ml_cat_endings: dict) -> dict:
+    """Top-5 numbers and 10 endings per category and method, as frozen by `seguimiento`."""
+    recos = {}
+    for cat, st in stats_by_cat.items():
+        est_nums = [r["number"] for r in st.get("recommendations", [])][:seguimiento.N_NUMEROS]
+        if not est_nums:
+            continue
+        est_ends = [e["ending"] for e in endings_recommendation(
+            _extract_endings(recent, cat), top=seguimiento.N_TERMINACIONES)]
+        ml_nums = [r["number"] for r in ml_cat_reco.get(cat, [])][:seguimiento.N_NUMEROS]
+        ml_ends = [e["ending"] for e in ml_cat_endings.get(cat, [])][:seguimiento.N_TERMINACIONES]
+        recos[cat] = {
+            "estadistico": {"numeros": est_nums, "terminaciones": est_ends},
+            "ml": {"numeros": ml_nums, "terminaciones": ml_ends} if ml_nums else None,
+        }
+    return recos
+
+
+def _registrar_seguro(sorteos: list[dict], recos: dict) -> list[str]:
+    """Freeze recommendations; any failure is logged and ignored (stats must still answer)."""
+    session = SeguimientoSession()
+    try:
+        hechos = seguimiento.registrar(session, sorteos, recos)
+        if hechos:
+            log.info("Seguimiento: registradas recomendaciones para %s", ", ".join(hechos))
+        return hechos
+    except Exception:
+        session.rollback()
+        log.exception("Seguimiento: no se pudieron registrar las recomendaciones")
+        return []
+    finally:
+        session.close()
+
+
+@app.route("/api/seguimiento")
+def api_seguimiento():
+    """Frozen recommendations vs real results, scoreboard against chance, current ML weight."""
+    session = SeguimientoSession()
+    try:
+        return jsonify(_json_safe(seguimiento.resumen(session, get_sorteos())))
+    except Exception:
+        log.exception("Seguimiento: error al construir el resumen")
+        return jsonify({"error": "No se pudo cargar el seguimiento"}), 500
+    finally:
+        session.close()
 
 
 @app.route("/api/gaps")
