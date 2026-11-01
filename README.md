@@ -13,6 +13,7 @@ Aplicación web para analizar los resultados históricos de la Lotería Nacional
 - **Decenas** y **Terminaciones** (últimos 2 dígitos, 00–99): mapas de calor, tendencias y recomendaciones.
 - **Estadísticas, Tendencias y Análisis**: frecuencias de dígitos, números calientes y fríos, gaps, comparación entre números y simulador histórico.
 - **Precisión**: backtesting de ML frente a Estadístico (Top-1 y Top-3 por posición).
+- **Seguimiento**: registro congelado de recomendaciones antes de cada sorteo, comparación frente al resultado real, método «Combinada» y marcador frente al azar.
 - Tema claro y oscuro, diseño responsive, navegación por teclado y roles ARIA.
 
 ## Stack
@@ -20,7 +21,7 @@ Aplicación web para analizar los resultados históricos de la Lotería Nacional
 | Capa | Tecnología |
 |---|---|
 | Backend | Python 3.13, Flask, Flask-Limiter |
-| Datos | MariaDB, SQLAlchemy 1.4 |
+| Datos | MariaDB, SQLAlchemy 2.0 |
 | ML | scikit-learn, pandas, numpy, joblib |
 | Frontend | HTML, CSS y JavaScript vanilla, Chart.js |
 
@@ -84,6 +85,7 @@ El botón **↻ Actualizar datos** de la web pide el `ACTUALIZAR_TOKEN` la prime
 | GET | `/api/comparar?numeros=0042,1234` | Comparación de varios números |
 | GET | `/api/simulador?numero=0042` | Cuántas veces habría ganado un número. Parámetros: `from`, `to`, `cat` |
 | GET | `/api/backtesting?last_n=500` | Precisión de ML frente a Estadístico |
+| GET | `/api/seguimiento` | Recomendaciones congeladas frente a resultados reales y marcador frente al azar |
 | POST | `/api/actualizar` | Sincroniza sorteos y reentrena el modelo. Requiere la cabecera `X-Update-Token` |
 
 Todas las rutas tienen límite de peticiones por IP: 120/min por defecto, `/api/stats` 10/min, `/api/backtesting` 5/min y `/api/actualizar` 2/min.
@@ -102,6 +104,7 @@ GitHub Actions ejecuta ambos en cada Pull Request, contra un MariaDB con sorteos
 ```
 app.py            Rutas Flask, estadísticas y caché
 ml_model.py       Modelo ML: features, entrenamiento, predicción y backtesting
+seguimiento.py    Registro congelado de recomendaciones y comparación con resultados reales
 base.py           Configuración (.env) y conexión SQLAlchemy
 loteria.py        Modelo ORM de la tabla sorteos
 actualizar_db.py  Sincronización desde api.loteriapanama.net
@@ -113,3 +116,7 @@ tests/            Tests con pytest
 ## Contribuir
 
 Cada mejora va en su propia rama (`feat/...`, `fix/...`, `docs/...`, `chore/...`) y entra en `main` mediante un Pull Request.
+
+## Licencia
+
+Distribuido bajo la licencia [MIT](LICENSE).
