@@ -40,7 +40,8 @@ class TestEnvFlag:
         assert base.env_flag("FLASK_DEBUG") is False
 
     def test_app_has_no_hardcoded_debug(self):
-        src = open(os.path.join(os.path.dirname(base.__file__), "app.py"), encoding="utf-8").read()
+        with open(os.path.join(os.path.dirname(base.__file__), "app.py"), encoding="utf-8") as f:
+            src = f.read()
         assert "debug=True" not in src
 
 
@@ -51,5 +52,6 @@ class TestDatabaseUrl:
             base.require_env("DATABASE_URL")
 
     def test_no_hardcoded_default(self):
-        src = open(base.__file__, encoding="utf-8").read()
+        with open(base.__file__, encoding="utf-8") as f:
+            src = f.read()
         assert "root:root" not in src
