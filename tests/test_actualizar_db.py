@@ -46,7 +46,8 @@ class TestFiltrarNuevos:
 
     def test_no_hardcoded_months(self):
         import actualizar_db
-        src = open(actualizar_db.__file__, encoding="utf-8").read()
+        with open(actualizar_db.__file__, encoding="utf-8") as f:
+            src = f.read()
         assert "(2026," not in src and '"2026-' not in src
 
     def test_same_date_and_category_different_first_prize_both_kept(self):

@@ -26,7 +26,8 @@ def fake_db(monkeypatch):
     factory = sessionmaker(bind=engine)
     monkeypatch.setattr(app_module, "SeguimientoSession", factory)
     monkeypatch.setattr(app_module, "get_sorteos", lambda: SORTEOS)
-    return factory
+    yield factory
+    engine.dispose()
 
 
 @pytest.fixture
@@ -58,7 +59,8 @@ def test_recos_without_ml():
 def test_registrar_seguro_records(fake_db):
     recos = {"gordito": {"ml": None, "estadistico": {"numeros": ["1234"] * 5, "terminaciones": ["12"] * 10}}}
     assert app_module._registrar_seguro(SORTEOS, recos) == ["gordito"]
-    assert fake_db().query(Prediccion).count() == 2
+    with fake_db() as s:
+        assert s.query(Prediccion).count() == 2
 
 
 def test_registrar_seguro_never_raises(fake_db, monkeypatch, caplog):

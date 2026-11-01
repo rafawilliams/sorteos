@@ -37,6 +37,7 @@ def session():
     s = sessionmaker(bind=engine)()
     yield s
     s.close()
+    engine.dispose()
 
 
 HOY = date(2026, 10, 31)
