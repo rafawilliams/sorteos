@@ -99,3 +99,13 @@ Single-page app with vanilla JS. State variables:
 - Each draw produces up to 3 rows in ML training data (one per 4-digit prize)
 - Statistical recommendations use 50K Monte Carlo samples with recency-weighted digit frequencies
 - The `decena_recommendation()` function uses a 3-sorteo pattern matching approach with 2-sorteo and frequency fallbacks
+
+
+## Knowledge map
+
+| Read first | Path |
+| --- | --- |
+| User profile | `02-DOCS/wiki/harness/user-profile.md` |
+| Project constitution (SDD non-negotiables) | `02-DOCS/wiki/sdd/constitution.md` |
+
+Full index → `02-DOCS/wiki/index.md`
