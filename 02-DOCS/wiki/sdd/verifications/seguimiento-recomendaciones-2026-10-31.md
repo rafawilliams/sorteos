@@ -38,10 +38,10 @@ source_state: b25ce6c + cambios de UI/docs sin commit (dirty)
 - [x] Fallo al guardar → stats igual y sin detalles — `test_registrar_seguro_never_raises`; `test_api_seguimiento_error_is_generic`.
 
 ## Capas no ejecutadas
-- **SUSTITUIDA** — comparación con un resultado real: el primer sorteo registrado es el dominical del 2026-11-01, que aún no existe. La sustituyen los tests con datos sintéticos y un render de ejemplo en el cliente. No puede detectar un desajuste entre el formato real de la API y la clave del objetivo; se revisará tras sincronizar el 1-nov.
+- **VERIFICADA EN REAL (2026-11-02)** — comparación con un resultado real: tras entrar el sorteo `dominical` del `2026-11-01` (`id=9380`, premios `0682` / `4272` / `5360`), `seguimiento.resumen` emparejó automáticamente el registro congelado del `2026-10-31T08:28` (`comparados=1`: media de dígitos ML `0,533` vs azar `0,400`, estadístico `0,200`, combinada `0,333`) y `/api/stats` congeló el nuevo registro pendiente para el próximo dominical (`ultimo_id=9380`).
 - **HERRAMIENTA-AUSENTE** — linter (ruff/pyflakes) y tipos (mypy): no instalados; no se ejecutó nada en su lugar.
 
 ## Hallazgos descartados
 - «El caché de 5 min impide registrar» — descartado: el registro ocurre en cada fallo de caché de `/api/stats`, y `/api/actualizar` limpia el caché (verificado con `_cache_clear()` en la BD real).
 
-## Verdict: PASS — con la comparación real pendiente del primer sorteo (2026-11-01).
+## Verdict: PASS — verificado también con el primer sorteo real comparado (`2026-11-01`, `id=9380`).
