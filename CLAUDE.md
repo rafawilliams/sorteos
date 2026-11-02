@@ -41,9 +41,9 @@ External API (loteriapanama.net) → actualizar_db.py → MariaDB
                                               ml_model.py (predictions)
 ```
 
-### Backend (app.py ~1200 lines)
+### Backend (app.py ~420 lines + estadisticas.py ~840 lines)
 
-Single Flask file with all routes and statistics logic:
+`app.py` holds Flask routes, rate-limiting, caching and DB access; `estadisticas.py` holds all pure statistical calculations (4-digit frequencies, Monte Carlo recommendations, decenas, endings, 2/5-digit formats, monthly profiles, trends, gaps, comparador, simulador, and statistical backtest) with no Flask or SQLAlchemy dependencies (`app.py` re-exports them for compatibility):
 - **`GET /api/sorteos`** — Paginated draw results with filters (category, search, date range)
 - **`GET /api/stats`** — Comprehensive statistics: digit frequencies, hot/cold numbers, ML predictions, endings analysis, decena recommendations, trends. Expensive (~seconds), cached 5 minutes.
 - **`GET /api/backtesting?last_n=500`** — ML vs Statistical accuracy comparison over historical draws

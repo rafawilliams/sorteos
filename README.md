@@ -102,7 +102,8 @@ GitHub Actions ejecuta ambos en cada Pull Request, contra un MariaDB con sorteos
 ## Estructura
 
 ```
-app.py            Rutas Flask, estadísticas y caché
+app.py            Rutas Flask, caché y acceso a BD
+estadisticas.py   Cálculos estadísticos puros, decenas, terminaciones, gaps, comparador y simulador
 ml_model.py       Modelo ML: features, entrenamiento, predicción y backtesting
 seguimiento.py    Registro congelado de recomendaciones y comparación con resultados reales
 base.py           Configuración (.env) y conexión SQLAlchemy
