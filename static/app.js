@@ -27,6 +27,12 @@ let trendChartInstance=null, volumeChartInstance=null, endingsTrendChartInstance
 const CAT_LABELS={dominical:'Dominical',miercolito:'Miercolito',gordito:'Gordito del Zodiaco',extraordinario:'Extraordinario',extraordinaria:'Extraordinaria',zodiaco:'Zodiaco',extraordonario:'Extraordonario'};
 function catLabel(k){return CAT_LABELS[k]||k.charAt(0).toUpperCase()+k.slice(1)}
 function formatDate(d){if(!d)return'—';return new Date(d+'T00:00:00').toLocaleDateString('es-PA',{year:'numeric',month:'short',day:'numeric'})}
+function renderBalls(val,variant='gold',size='lg'){
+  const s=String(val??'').trim();
+  if(!s)return'<span class="num-empty">—</span>';
+  const balls=Array.from(s).map(ch=>`<span class="lotto-ball ball-${variant}" aria-hidden="true">${esc(ch)}</span>`).join('');
+  return`<span class="lotto-balls lotto-balls-${size}" aria-label="${esc(s)}">${balls}</span>`;
+}
 
 // TOAST
 function showToast(msg,ms=2500){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),ms)}
@@ -181,10 +187,12 @@ function getFilteredSorteos(){
 }
 function renderSorteos(){
   const data=getFilteredSorteos(),start=(currentPage-1)*PER_PAGE,page=data.slice(start,start+PER_PAGE);
+  const prizeCell=(val,cls)=>val?`<span class="prize-chip ${cls}">${esc(val)}</span>`:'<span class="num-empty">—</span>';
+  const metaCell=val=>val?`<span class="meta-chip">${esc(val)}</span>`:'<span class="num-empty">—</span>';
   document.getElementById('sorteosBody').innerHTML=page.map(s=>`<tr>
     <td>${formatDate(s.fecha)}</td><td><span class="cat-pill cat-${s.cat}">${catLabel(s.cat)}</span></td>
-    <td class="num-cell">${(s.primero||'')}</td><td class="num-cell">${(s.segundo||'')}</td><td class="num-cell">${(s.tercero||'')}</td>
-    <td>${s.letra||'—'}</td><td>${s.serie||'—'}</td><td>${s.folio||'—'}</td></tr>`).join('');
+    <td class="num-cell">${prizeCell(s.primero,'prize-1')}</td><td class="num-cell">${prizeCell(s.segundo,'prize-2')}</td><td class="num-cell">${prizeCell(s.tercero,'prize-3')}</td>
+    <td>${metaCell(s.letra)}</td><td>${metaCell(s.serie)}</td><td>${metaCell(s.folio)}</td></tr>`).join('');
   renderPagination();
 }
 function renderPagination(){
@@ -312,10 +320,10 @@ function renderRecommendations(cat){
   const method=useML?'🤖 Machine Learning':'📊 Estadístico';
   const ranks=['1ro','2do','3ro','4to','5to'];
   container.innerHTML=`<div style="margin-bottom:12px;font-size:0.8rem;color:var(--text-muted);">Recomendaciones para <strong style="color:var(--gold-300)">${pl}</strong> — <span style="color:${useML?'var(--accent-green)':'var(--gold-400)'};">${method}</span></div>
-    <div class="reco-grid">${recos.map((r,i)=>`<div class="reco-card"${useML?' style="border-color:rgba(52,211,153,0.3);"':''}>
+    <div class="reco-grid">${recos.map((r,i)=>`<div class="reco-card${useML?' reco-ml':''}">
       <button class="copy-btn" data-num="${r.number}" onclick="copyNumber('${r.number}')">Copiar</button>
       <div class="reco-rank">${ranks[i]||(i+1)+'to'} Recomendado</div>
-      <div class="reco-number">${r.number}</div>
+      <div class="reco-number">${renderBalls(r.number,useML?'green':'gold','lg')}</div>
       <div class="reco-confidence"><div class="conf-bar"><div class="conf-bar-fill" style="width:${Math.min(r.confidence,100)}%;${useML?'background:linear-gradient(90deg,var(--accent-green),#6ee7b7);':''}"></div></div>${r.confidence}%</div>
     </div>`).join('')}</div>`;
   requestAnimationFrame(()=>{container.querySelectorAll('.conf-bar-fill').forEach(b=>{const w=b.style.width;b.style.width='0%';requestAnimationFrame(()=>{b.style.width=w})})});
@@ -502,10 +510,10 @@ function renderEndingsSection(){
   const method=useML?'🤖 Machine Learning':'📊 Estadístico';
   document.getElementById('endingsRecoContainer').innerHTML=`
     <div style="margin-bottom:12px;font-size:0.8rem;color:var(--text-muted);">Terminaciones recomendadas — <span style="color:${useML?'var(--accent-green)':'var(--gold-400)'};">${method}</span></div>
-    <div class="reco-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));">${recos.map((r,i)=>`<div class="reco-card" style="padding:20px 16px;${useML?'border-color:rgba(52,211,153,0.3);':''}">
+    <div class="reco-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));">${recos.map((r,i)=>`<div class="reco-card${useML?' reco-ml':''}" style="padding:20px 16px;">
       <button class="copy-btn" data-num="${r.ending}" onclick="copyNumber('${r.ending}')">Copiar</button>
       <div class="reco-rank">${ranks[i]||(i+1)+'to'} Terminación</div>
-      <div class="reco-number" style="font-size:2.2rem;">${r.ending}</div>
+      <div class="reco-number">${renderBalls(r.ending,useML?'green':'gold','md')}</div>
       <div class="reco-confidence"><div class="conf-bar"><div class="conf-bar-fill" style="width:${Math.min(r.confidence,100)}%;${useML?'background:linear-gradient(90deg,var(--accent-green),#6ee7b7);':''}"></div></div>${r.confidence}%</div>
     </div>`).join('')}</div>`;
   requestAnimationFrame(()=>{document.getElementById('endingsRecoContainer').querySelectorAll('.conf-bar-fill').forEach(b=>{const w=b.style.width;b.style.width='0%';requestAnimationFrame(()=>{b.style.width=w})})});
@@ -536,7 +544,8 @@ function renderPrizeEndings(id,data,cls){
 
 function renderEndingsHeatmap(freq){
   const vals=Object.values(freq);const max=Math.max(...vals,1);
-  let h='<div style="display:flex;gap:4px;margin-bottom:6px;padding-left:28px;">';
+  let h=`<div class="heatmap-legend" aria-hidden="true"><span>Menor frec.</span><span class="heatmap-scale"><span class="heatmap-swatch" style="background:rgba(212,175,55,0.08)"></span><span class="heatmap-swatch" style="background:rgba(212,175,55,0.28)"></span><span class="heatmap-swatch" style="background:rgba(212,175,55,0.5)"></span><span class="heatmap-swatch" style="background:rgba(212,175,55,0.75)"></span></span><span>Mayor frec. (máx: ${max})</span></div>`;
+  h+='<div style="display:flex;gap:4px;margin-bottom:6px;padding-left:28px;">';
   for(let c=0;c<10;c++)h+=`<div style="flex:1;text-align:center;font-family:var(--font-mono);font-size:0.7rem;color:var(--text-muted);">x${c}</div>`;
   h+='</div>';
   for(let r=0;r<10;r++){
@@ -544,9 +553,10 @@ function renderEndingsHeatmap(freq){
     h+=`<div style="width:24px;text-align:right;font-family:var(--font-mono);font-size:0.7rem;color:var(--text-muted);">${r}x</div>`;
     for(let c=0;c<10;c++){
       const key=String(r)+String(c);const v=freq[key]||0;const i=v/max;
+      const peak=i>=0.85?' cell-peak':'';
       const bg=`rgba(212,175,55,${(i*0.65+0.04).toFixed(2)})`;
       const col=i>0.4?(isLight()?'#fff':'#0a0a0f'):(isLight()?'#1a1612':'#f0ece2');
-      h+=`<div class="ending-cell" style="flex:1;background:${bg};color:${col}" title="${key}: ${v} veces">${key}<br><small style="font-size:0.55rem;opacity:0.7">${v}</small></div>`;
+      h+=`<div class="ending-cell${peak}" style="flex:1;background:${bg};color:${col}" title="${key}: ${v} veces">${key}<small style="font-size:0.55rem;opacity:0.75">${v}</small></div>`;
     }
     h+='</div>';
   }
@@ -582,11 +592,12 @@ function renderHeatmap(){
   const pf=stats.position_frequency||[];if(!pf.length)return;
   const posLabels=['Millares','Centenas','Decenas','Unidades'];let allMax=0;
   pf.forEach(p=>{Object.values(p).forEach(v=>{if(v>allMax)allMax=v})});
-  let h='<table style="width:100%;border-collapse:collapse;"><thead><tr><th style="padding:10px;color:var(--text-muted);font-size:0.72rem;"></th>';
+  let h=`<div class="heatmap-legend" aria-hidden="true"><span>Menor frec.</span><span class="heatmap-scale"><span class="heatmap-swatch" style="background:rgba(212,175,55,0.08)"></span><span class="heatmap-swatch" style="background:rgba(212,175,55,0.3)"></span><span class="heatmap-swatch" style="background:rgba(212,175,55,0.6)"></span></span><span>Mayor frec. (máx: ${allMax})</span></div>`;
+  h+='<table class="heatmap-table"><thead><tr><th style="padding:10px;color:var(--text-muted);font-size:0.72rem;">Posición</th>';
   for(let d=0;d<10;d++)h+=`<th style="padding:10px;text-align:center;color:var(--text-muted);font-family:var(--font-mono);font-size:0.82rem;">${d}</th>`;
   h+='</tr></thead><tbody>';
   pf.forEach((pos,idx)=>{h+=`<tr><td style="padding:10px;color:var(--text-secondary);font-size:0.82rem;font-weight:600;">${posLabels[idx]}</td>`;
-    for(let d=0;d<10;d++){const v=pos[String(d)]||0;const i=v/(allMax||1);h+=`<td style="padding:10px;text-align:center;font-family:var(--font-mono);font-size:0.85rem;font-weight:600;background:rgba(${Math.round(212*i)},${Math.round(175*i)},${Math.round(55*i)},${(i*0.5+0.03).toFixed(2)});border-radius:8px;color:${i>0.4?(isLight()?'#fff':'#0a0a0f'):(isLight()?'#1a1612':'#f0ece2')};cursor:default;" title="${posLabels[idx]} dígito ${d}: ${v}">${v}</td>`}h+='</tr>'});
+    for(let d=0;d<10;d++){const v=pos[String(d)]||0;const i=v/(allMax||1);const peak=i>=0.9?' cell-peak':'';h+=`<td class="${peak.trim()}" style="padding:10px;text-align:center;font-family:var(--font-mono);font-size:0.85rem;font-weight:600;background:rgba(${Math.round(212*i)},${Math.round(175*i)},${Math.round(55*i)},${(i*0.5+0.03).toFixed(2)});border-radius:8px;color:${i>0.4?(isLight()?'#fff':'#0a0a0f'):(isLight()?'#1a1612':'#f0ece2')};cursor:default;" title="${posLabels[idx]} dígito ${d}: ${v}">${v}</td>`}h+='</tr>'});
   h+='</tbody></table>';document.getElementById('heatmap').innerHTML=h;
 }
 
@@ -636,36 +647,57 @@ function renderDashboard(){
     return {ending:best,count:bestC};
   })();
 
-  let h=`<div class="stat-cards">
-    <div class="stat-card">
-      <div class="stat-label">Último Sorteo</div>
-      <div style="font-size:0.85rem;color:var(--gold-300);font-weight:600;text-transform:capitalize;">${last.cat||last.tipo}</div>
-      <div style="font-size:0.8rem;color:var(--text-muted);">${last.fecha}</div>
-      <div style="display:flex;gap:8px;margin-top:6px;font-family:'JetBrains Mono';font-size:0.9rem;">
-        <span style="color:var(--gold-400);" title="1er Premio">${(last.primero||'')}</span>
-        <span style="color:#4ade80;" title="2do Premio">${(last.segundo||'')}</span>
-        <span style="color:#c084fc;" title="3er Premio">${(last.tercero||'')}</span>
+  const catKey=esc(last.cat||last.tipo||'');
+  const h=`<div class="dashboard-hero-grid">
+    <div class="last-draw-card">
+      <div class="last-draw-header">
+        <div class="last-draw-title">
+          <span class="cat-pill cat-${catKey}">${esc(catLabel(last.cat||last.tipo||''))}</span>
+          <span>Último Sorteo Oficial</span>
+        </div>
+        <span class="last-draw-date">${formatDate(last.fecha)}</span>
+      </div>
+      <div class="last-draw-prizes">
+        <div class="last-draw-prize-box prize-box-1" title="1er Premio">
+          <span class="last-draw-prize-label">1er Premio</span>
+          ${renderBalls(last.primero,'gold','md')}
+        </div>
+        <div class="last-draw-prize-box prize-box-2" title="2do Premio">
+          <span class="last-draw-prize-label">2do Premio</span>
+          ${renderBalls(last.segundo,'green','md')}
+        </div>
+        <div class="last-draw-prize-box prize-box-3" title="3er Premio">
+          <span class="last-draw-prize-label">3er Premio</span>
+          ${renderBalls(last.tercero,'purple','md')}
+        </div>
+      </div>
+      <div class="last-draw-meta">
+        <span>Letras: <strong>${esc(last.letra||'—')}</strong></span>
+        <span>Serie: <strong>${esc(last.serie||'—')}</strong></span>
+        <span>Folio: <strong>${esc(last.folio||'—')}</strong></span>
       </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">Top Recomendación</div>
-      <div style="font-family:'JetBrains Mono';font-size:1.6rem;font-weight:700;color:var(--gold-400);">${topRec?topRec.number:'—'}</div>
-      <div style="font-size:0.75rem;color:var(--text-muted);">📊 Estadístico · ${topRec?topRec.confidence+'%':'—'}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Top ML</div>
-      <div style="font-family:'JetBrains Mono';font-size:1.6rem;font-weight:700;color:#4ade80;">${topML?topML.number:'—'}</div>
-      <div style="font-size:0.75rem;color:var(--text-muted);">🤖 Machine Learning · ${topML?topML.confidence+'%':'—'}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Terminación Más Caliente</div>
-      <div style="font-family:'JetBrains Mono';font-size:2rem;font-weight:700;color:#ff4d4d;">${hotDecena.ending}</div>
-      <div style="font-size:0.75rem;color:var(--text-muted);">${hotDecena.count} veces en ${new Date().getFullYear()}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Total Sorteos</div>
-      <div style="font-size:1.6rem;font-weight:700;color:var(--text-primary);">${stats.total_sorteos?.toLocaleString()||'—'}</div>
-      <div style="font-size:0.75rem;color:var(--text-muted);">Desde 1919</div>
+    <div class="dashboard-kpis">
+      <div class="kpi-card">
+        <div class="kpi-label">Top Recomendación</div>
+        <div>${topRec?renderBalls(topRec.number,'gold','sm'):'<span class="num-empty">—</span>'}</div>
+        <div class="kpi-sub">📊 Estadístico · ${topRec?topRec.confidence+'%':'—'}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Top ML</div>
+        <div>${topML?renderBalls(topML.number,'green','sm'):'<span class="num-empty">—</span>'}</div>
+        <div class="kpi-sub">🤖 Machine Learning · ${topML?topML.confidence+'%':'—'}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Terminación Caliente</div>
+        <div>${renderBalls(hotDecena.ending,'hot','sm')}</div>
+        <div class="kpi-sub">🔥 ${hotDecena.count} veces en ${new Date().getFullYear()}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Total Sorteos</div>
+        <div class="stat-value" style="font-size:1.75rem;line-height:1.1;">${stats.total_sorteos?.toLocaleString()||'—'}</div>
+        <div class="kpi-sub">Historial desde 1919</div>
+      </div>
     </div>
   </div>`;
   document.getElementById('dashboardSummary').innerHTML=h;
@@ -874,10 +906,10 @@ function renderMonthlySection(){
     recs.forEach((r,i)=>{
       const rank=i===0?'1RO':i===1?'2DO':i===2?'3RO':`${i+1}TO`;
       h+=`<div class="reco-card">
+        <button class="copy-btn" data-num="${r.number}" onclick="copyNumber('${r.number}')">Copiar</button>
         <div class="reco-rank">${rank} RECOMENDADO</div>
-        <div class="reco-number">${r.number}</div>
-        <div class="reco-bar-wrap"><div class="reco-bar" style="width:${r.confidence}%"></div></div>
-        <div class="reco-confidence">${r.confidence}%</div>
+        <div class="reco-number">${renderBalls(r.number,'gold','lg')}</div>
+        <div class="reco-confidence"><div class="conf-bar"><div class="conf-bar-fill" style="width:${Math.min(r.confidence,100)}%"></div></div>${r.confidence}%</div>
       </div>`;
     });
     h+='</div>';
