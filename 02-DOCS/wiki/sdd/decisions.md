@@ -24,3 +24,4 @@
 - Áreas elegidas por el dueño: B (Estética y tarjetas), C (Dashboard principal) y D (Gráficos, mapas de calor y tablas), descartando cambiar la barra de 14 pestañas (A).
 - Opciones estéticas consideradas: (1) Gala & Billete Editorial (casillas cuadradas); (2) Esferas de Sorteo / Bolillero 3D (`.lotto-ball`); (3) Terminal Analítica Quant; (4) No construirlo.
 - Decisión del dueño: Opción 2 (Esferas de Sorteo / Bolillero 3D) y ejecución en autopilot en la rama `feat/mejoras-ui-esferas`.
+- 2026-11-02 — ship: elegida la Opción 2 (Pull Request) por el dueño; rama `feat/mejoras-ui-esferas` subida y PR #21 abierto (`https://github.com/rafawilliams/sorteos/pull/21`).
