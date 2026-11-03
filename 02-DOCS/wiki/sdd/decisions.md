@@ -18,3 +18,9 @@
 - Objeción planteada: para el usuario final no cambia ningún comportamiento visible y mover código entre archivos puede romper importaciones de tests si no se reexporta.
 - Opciones consideradas: (1) modularizar solo el backend (`app.py` → `estadisticas.py` + `app.py`); (2) modularizar backend y frontend (`static/app.js`); (3) no hacerlo ahora.
 - Decisión del dueño: opción 1 (solo backend) y ejecución de la cadena SDD en autopilot en la rama `chore/modularizar-backend`.
+
+## 2026-11-02 — mejoras-ui-esferas: alcance, dirección estética y modo
+- Objeción planteada: un rediseño visual no altera el poder predictivo ni añade datos nuevos y puede afectar selectores DOM, accesibilidad o el tema claro si no se acota.
+- Áreas elegidas por el dueño: B (Estética y tarjetas), C (Dashboard principal) y D (Gráficos, mapas de calor y tablas), descartando cambiar la barra de 14 pestañas (A).
+- Opciones estéticas consideradas: (1) Gala & Billete Editorial (casillas cuadradas); (2) Esferas de Sorteo / Bolillero 3D (`.lotto-ball`); (3) Terminal Analítica Quant; (4) No construirlo.
+- Decisión del dueño: Opción 2 (Esferas de Sorteo / Bolillero 3D) y ejecución en autopilot en la rama `feat/mejoras-ui-esferas`.
