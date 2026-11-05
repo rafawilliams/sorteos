@@ -181,7 +181,7 @@ def _evaluar(grupos, sorteos):
     """Split record groups into compared (with metrics) and pending; most recent compared first."""
     cats = _por_categoria(sorteos)
     comparados, pendientes = [], []
-    for (cat, _, _), metodos in grupos.items():
+    for (cat, ultima_fecha, _), metodos in grupos.items():
         uno = next(iter(metodos.values()))
         obj = objetivo(uno, cats.get(cat, []))
         base = {
@@ -192,6 +192,11 @@ def _evaluar(grupos, sorteos):
         if obj is None:
             base["metodos"] = {m: {"numeros": r.lista_numeros(), "terminaciones": r.lista_terminaciones()}
                                for m, r in metodos.items()}
+            # Which draw it waits for (the first after this one) and whether its numbers can ever
+            # hit (decided by the category, so old records with 4-digit numbers for extraordinario
+            # are shown as not applicable).
+            base["ultima_fecha"] = ultima_fecha.isoformat()
+            base["numeros_aplican"] = _tiene_cuatro_cifras(cats.get(cat, []))
             pendientes.append(base)
             continue
         base["sorteo"] = obj
