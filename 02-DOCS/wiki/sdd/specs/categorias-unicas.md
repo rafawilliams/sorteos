@@ -7,12 +7,12 @@ timestamp: 2026-11-05T21:30:00Z
 topic: sdd
 slug: categorias-unicas
 branch: fix/categorias-unicas
-status: draft
+status: clarified
 ---
 
 # Spec — Una sola categoría por sorteo
 
-> Slug: `categorias-unicas` · Status: draft · Created: 2026-11-05
+> Slug: `categorias-unicas` · Status: clarified — aprobada por el dueño el 2026-11-05 · Created: 2026-11-05
 > Inherits: [constitution](../constitution.md)
 
 ## Problem & why
@@ -43,6 +43,15 @@ Un `UPDATE` de las 2 filas `zodiaco` en la base. No basta: no protege de variant
 - Los sorteos dudosos (9379, 9368/9378, 9381 y los históricos).
 - Reentrenar el modelo a mano: se reentrena en la próxima sincronización.
 
+## Users & context
+Quien mira las estadísticas, las predicciones o Seguimiento de gordito y extraordinario. Y el asistente, que lee `CLAUDE.md` al trabajar en el repo.
+
+## What the user can do
+Ver gordito y extraordinario como una sola categoría cada uno, en todas las pestañas, con todos sus sorteos.
+
+## What result they get
+El gordito con 401 sorteos (incluye los 2 de diciembre de 2023). No aparece ninguna categoría «Zodiaco», «Extraordinaria» ni «Extraordonario».
+
 ## What it must respect
 - Los premios siguen en su formato real: `zodiaco` y `gordito` ya comparten la regla de 2 cifras en 2º y 3º.
 - La protección de duplicados de `actualizar_db` sigue funcionando: `ALIAS_CATEGORIA` pasa a usar la función única.
@@ -57,6 +66,11 @@ Un `UPDATE` de las 2 filas `zodiaco` en la base. No basta: no protege de variant
 - Datos reales: `get_sorteos()` no devuelve ninguna categoría fuera de {dominical, miercolito, gordito, extraordinario}, y gordito pasa de 399 a 401.
 - Navegador: no aparece la pestaña ni la etiqueta «Zodiaco».
 - Panel de 3 revisores (correctness, security, tests).
+
+## Behaviour
+- Main path: cada sorteo leído o guardado lleva su categoría canónica.
+- Edge cases: mayúsculas y espacios (`" Extraordonario "`); una categoría desconocida se devuelve tal cual, en minúsculas y sin espacios; `None` o vacía → `""`.
+- Error paths: ninguno nuevo; la función no lanza excepciones.
 
 ## Acceptance criteria
 - Given una fila `zodiaco` en la base, When se lee con `get_sorteos`, Then su `cat` es `gordito`.
