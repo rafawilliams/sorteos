@@ -283,7 +283,9 @@ class LotteryPredictor:
             {
                 "ending": f"{i // 10}{i % 10}",
                 "score": round(float(probs[i]) * 10000, 1),
-                "confidence": min(round(float(probs[i]) * 1000, 1), 15.0),
+                # Times more likely than chance (1 % per ending), same scale as numbers.
+                "lift": round(float(probs[i]) * 100, 2),
+                "confidence": min(round(float(probs[i]) * 100, 2), 15.0),
             }
             for i in indices
         ]

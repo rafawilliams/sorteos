@@ -74,8 +74,8 @@
         <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.7;">
           Nuestro algoritmo analiza la <strong style="color:var(--gold-300)">frecuencia de dígitos por posición</strong> para cada premio (1ro, 2do, 3ro),
           aplica <strong style="color:var(--gold-300)">pesos de recencia</strong> (los sorteos más recientes tienen mayor influencia),
-          y combina esto con <strong style="color:var(--gold-300)">patrones históricos de terminaciones</strong>.
-          Se generan 50,000 combinaciones candidatas y se puntúan contra el historial <strong style="color:var(--gold-300)">desde 1995 hasta la fecha</strong>.
+          y ordena los 10.000 números por la <strong style="color:var(--gold-300)">probabilidad exacta</strong> de sus dígitos, con el historial <strong style="color:var(--gold-300)">desde 1995 hasta la fecha</strong>.
+          La confianza indica cuántas veces más probable es un número que uno al azar (×1.00 = azar).
           <br><br><span style="color:var(--text-muted);font-size:0.8rem;">⚠ Nota: La lotería es un juego de azar. Estas recomendaciones son puramente estadísticas y no garantizan resultados.</span>
         </p>
       </div>
@@ -98,7 +98,11 @@
         <button class="ml-toggle" onclick="toggleML()" aria-pressed="false" aria-label="Alternar entre modelo ML y Estadístico">📊 Estadístico</button>
       </div>
 
+      <div class="cat-tabs" id="endCatTabs" role="tablist" aria-label="Categoría de las terminaciones recomendadas">
+        <button class="cat-tab active" data-cat="all" role="tab" aria-selected="true">Todos</button>
+      </div>
       <div id="endingsRecoContainer" role="region" aria-label="Terminaciones recomendadas" aria-live="polite"></div>
+      <p id="endingsBacktestNote" class="section-subtitle" style="margin-top:10px;font-size:0.82rem;" aria-live="polite"></p>
 
       <div class="grid-2">
         <div class="card reveal">
