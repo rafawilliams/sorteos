@@ -26,7 +26,8 @@ Dato del dueño (2026-11-05): el extraordinario solo se juega en abril, agosto y
 - [x] Fallo 2: test de registro duplicado (segunda inserción rechazada, sin excepción, el primero intacto) e índice añadido a una tabla vieja — prueba: pytest (`TestRegistroDuplicado`).
 - [x] Fallo 3: tests de registro tras `/api/actualizar` y del flag del script — prueba: pytest (`TestActualizarSeguimiento`, `TestMainSeguimiento`, `test_calcular_stats_registers_and_caches`).
 - [x] Frontend muestra «no aplica» en vez de «0 exactos» — prueba: `node --check` OK; navegador con datos simulados de extraordinario y con los datos reales.
-- [x] Suite completa — prueba: `pytest -q -W error::SyntaxWarning` → `177 passed`.
+- [x] Suite completa — prueba: `pytest -q -W error::SyntaxWarning` → `179 passed`.
+- [x] Revisor de correctness (tier 1): sin bloqueantes. Arreglados sus 2 should-fix: índice único protegido ante filas duplicadas (test `test_existing_duplicates_do_not_break_the_tab`) y registro tras actualizar saltado si el modelo no está entrenado (test `test_skips_registration_when_model_is_not_trained`). Aceptados como nits: un choque descarta todo el lote (se reintenta en el siguiente cálculo); el script usa el modelo guardado en disco.
 - [ ] `pip-audit` — falla por `mariadb 1.1.14 PYSEC-2026-217`, sin versión corregida publicada. Ya estaba en `main`: este cambio no toca `requirements.txt`.
 - [x] Índice único creado sobre la tabla real sin errores — prueba: `seguimiento.resumen()` contra MariaDB → `indices unicos ['uq_predicciones_registro']`.
 
@@ -39,4 +40,4 @@ Dato del dueño (2026-11-05): el extraordinario solo se juega en abril, agosto y
 - El registro de extraordinario del 31-10 conserva sus 5 números (no se editan filas); al compararse en diciembre saldrán como «no aplica».
 
 ## Next
-Revisor de correctness (tier 1); después commit, push y PR.
+PR a main.
