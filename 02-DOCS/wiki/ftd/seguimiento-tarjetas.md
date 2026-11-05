@@ -28,7 +28,7 @@ Decisión del dueño: aplicar los 4 puntos.
 - [x] `ultima_fecha` y `numeros_aplican` en cada pendiente — prueba: pytest `test_pending_says_which_draw_and_if_numbers_apply` (rojo antes; incluye un registro viejo de extraordinario con números).
 - [x] Tarjeta con sorteo objetivo, «sin números», combinada sin ML y nota — prueba: `node --check` OK; navegador con los datos reales (ver Evidence).
 - [x] Suite completa en verde — prueba: `225 passed` (con `-W error::SyntaxWarning`).
-- [ ] `rsc risk` → tier 1; revisor de correctness en curso.
+- [x] `rsc risk` → tier 1; revisor de correctness: sin bloqueantes ni should-fix (225 passed, `node --check` OK). Comprobó tipos de `ultima_fecha`, categoría sin sorteos, XSS (todo por `esc`), respuestas viejas sin los campos nuevos y zona horaria de `formatDate`. Nit aceptado: el aviso de meses solo sale para `extraordinario` (no `extraordinaria`/`extraordonario`, que no tienen sorteos en los últimos 365 días y por eso nunca tienen registro). Los meses (abril, agosto y diciembre) los confirmó el dueño el 2026-11-05.
 
 ## Evidence
 - Navegador, pestaña Seguimiento con los datos reales:
@@ -38,4 +38,4 @@ Decisión del dueño: aplicar los 4 puntos.
   - Gordito y miercolito: «después del 30 oct 2026» y «después del 5 nov 2026».
 
 ## Next
-Revisión; después, push y PR.
+Push y PR a main.
