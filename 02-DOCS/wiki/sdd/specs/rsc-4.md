@@ -58,7 +58,7 @@ Salidas de comandos, registradas en la ficha FTD [rsc-4](../../ftd/rsc-4.md): `r
 
 ## Behaviour
 - Main path: tras el cambio, el asistente carga las skills de la 4.0.5 y git ignora el estado del harness.
-- Edge cases: en un clon sin harness, la app y los tests funcionan igual; el asistente avisa que falta y propone `rsc sync`.
+- Edge cases: en un clon sin harness, la app y los tests funcionan igual (con `.env` y una MariaDB real, como en el CI); el asistente avisa que falta y propone `rsc sync`.
 - Error paths: si `rsc sync` falla en un clon, solo se pierde la ayuda del asistente; la app no se ve afectada.
 
 ## Acceptance criteria

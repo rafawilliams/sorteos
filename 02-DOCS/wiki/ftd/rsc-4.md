@@ -19,7 +19,8 @@ Subir el harness `rsc` a la versión mayor 4.0.5. Trae el método `asdd`, que re
 - [x] Suite en verde — prueba: `pytest -q` → `164 passed`.
 
 ## Evidence
-- Commit: 490 archivos fuera del índice y 4 modificados.
+- Diff contra main: 490 archivos fuera del índice, 4 modificados y 2 añadidos (esta ficha y la spec) = 496.
+- Revisión de cierre: panel de 3 refutadores (correctness, security, tests), sin hallazgos (2026-11-05).
 - Para un clon nuevo: ejecutar `npx @ericrisco/rsc sync` para reconstruir `.rsc/` y las skills.
 
 ## Next
