@@ -7,12 +7,12 @@ timestamp: 2026-11-05T15:10:00Z
 topic: sdd
 slug: claude-md-decenas
 branch: docs/claude-md-decenas
-status: draft
+status: clarified
 ---
 
 # Spec — Poner al día CLAUDE.md tras los PR #25–#27
 
-> Slug: `claude-md-decenas` · Status: draft · Created: 2026-11-05
+> Slug: `claude-md-decenas` · Status: clarified — aprobada por el dueño el 2026-11-05 · Created: 2026-11-05
 > Inherits: [constitution](../constitution.md)
 
 ## Problem & why
@@ -71,4 +71,4 @@ Un diff de `CLAUDE.md` que solo cambia esas cuatro frases. Referencia: el códig
 - Given el diff contra `main`, When se listan los archivos, Then solo aparecen `CLAUDE.md` y esta spec.
 
 ## Points to clarify
-- **suposición tomada** — Corregir los tamaños de archivo aunque no se pidió explícitamente. *Base:* está en la misma pasada y es igual de falso. *Riesgo:* ninguno.
+- **suposición tomada** (validada por el dueño, 2026-11-05) — Corregir los tamaños de archivo aunque no se pidió explícitamente. *Base:* está en la misma pasada y es igual de falso. *Riesgo:* ninguno.
