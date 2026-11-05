@@ -26,6 +26,8 @@ let trendChartInstance=null, volumeChartInstance=null, endingsTrendChartInstance
 
 const CAT_LABELS={dominical:'Dominical',miercolito:'Miercolito',gordito:'Gordito del Zodiaco',extraordinario:'Extraordinario'};
 function catLabel(k){return CAT_LABELS[k]||k.charAt(0).toUpperCase()+k.slice(1)}
+// Category as a CSS class suffix: only [a-z0-9_-], so a raw API value cannot break out of class="…".
+function catClase(k){return String(k??'').toLowerCase().replace(/[^a-z0-9_-]/g,'')}
 function formatDate(d){if(!d)return'—';return new Date(d+'T00:00:00').toLocaleDateString('es-PA',{year:'numeric',month:'short',day:'numeric'})}
 function renderBalls(val,variant='gold',size='lg'){
   const s=String(val??'').trim();
@@ -174,7 +176,7 @@ function buildCategoryUI(){
 function renderStatCounters(){
   const cats={};allSorteos.forEach(s=>{cats[s.cat]=(cats[s.cat]||0)+1});
   let h=`<div class="stat-card"><div class="stat-value">${allSorteos.length.toLocaleString()}</div><div class="stat-label">Total Sorteos</div></div>`;
-  for(const[cat,count]of Object.entries(cats))h+=`<div class="stat-card"><div class="stat-value">${count.toLocaleString()}</div><div class="stat-label">${catLabel(cat)}</div></div>`;
+  for(const[cat,count]of Object.entries(cats))h+=`<div class="stat-card"><div class="stat-value">${count.toLocaleString()}</div><div class="stat-label">${esc(catLabel(cat))}</div></div>`;
   document.getElementById('statCounters').innerHTML=h;
 }
 
@@ -192,7 +194,7 @@ function renderSorteos(){
   const prizeCell=(val,cls)=>val?`<span class="prize-chip ${cls}">${esc(val)}</span>`:'<span class="num-empty">—</span>';
   const metaCell=val=>val?`<span class="meta-chip">${esc(val)}</span>`:'<span class="num-empty">—</span>';
   document.getElementById('sorteosBody').innerHTML=page.map(s=>`<tr>
-    <td>${formatDate(s.fecha)}</td><td><span class="cat-pill cat-${s.cat}">${catLabel(s.cat)}</span></td>
+    <td>${formatDate(s.fecha)}</td><td><span class="cat-pill cat-${catClase(s.cat)}">${esc(catLabel(s.cat))}</span></td>
     <td class="num-cell">${prizeCell(s.primero,'prize-1')}</td><td class="num-cell">${prizeCell(s.segundo,'prize-2')}</td><td class="num-cell">${prizeCell(s.tercero,'prize-3')}</td>
     <td>${metaCell(s.letra)}</td><td>${metaCell(s.serie)}</td><td>${metaCell(s.folio)}</td></tr>`).join('');
   renderPagination();
@@ -356,7 +358,7 @@ function renderDecenas(){
     const dist=d.follower_distribution||{};
     const maxDist=Math.max(...Object.values(dist),1);
     h+=`<div class="card reveal decena-card">
-      <div class="card-header"><div class="card-title">${catLabel(cat)}</div><span class="card-badge badge-gold">${methodLabel[d.method]||d.method}</span></div>
+      <div class="card-header"><div class="card-title">${esc(catLabel(cat))}</div><span class="card-badge badge-gold">${esc(methodLabel[d.method]||d.method)}</span></div>
       <div class="decena-body">
         <div class="triangle-wrap">
           <svg viewBox="0 0 200 190" class="triangle-svg">
@@ -1118,7 +1120,7 @@ function renderSimResults(d){
     h+='<div class="card reveal" style="margin-top:20px;"><div class="card-header"><h3 class="card-title">Historial de Aciertos</h3><span class="card-badge badge-gold">Últimos '+matches.length+'</span></div>';
     h+='<div class="table-wrap"><table role="table"><thead><tr><th>Fecha</th><th>Categoría</th></tr></thead><tbody>';
     matches.forEach(m=>{
-      h+=`<tr><td>${m.fecha}</td><td><span class="cat-badge">${m.cat}</span></td></tr>`;
+      h+=`<tr><td>${esc(m.fecha)}</td><td><span class="cat-badge">${esc(m.cat)}</span></td></tr>`;
     });
     h+='</tbody></table></div></div>';
   }
@@ -1211,8 +1213,8 @@ function renderFavorites(){
       h+='<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">';
       appearances.slice(0,5).forEach(a=>{
         h+=`<div style="display:flex;justify-content:space-between;font-size:0.85rem;padding:3px 0;">
-          <span style="color:var(--text-secondary);">${a.fecha} · <span class="cat-badge" style="font-size:0.7rem;">${a.cat}</span></span>
-          <span style="color:#4ade80;font-weight:600;">${a.prizes.join(', ')}</span>
+          <span style="color:var(--text-secondary);">${esc(a.fecha)} · <span class="cat-badge" style="font-size:0.7rem;">${esc(a.cat)}</span></span>
+          <span style="color:#4ade80;font-weight:600;">${a.prizes.map(esc).join(', ')}</span>
         </div>`;
       });
       h+='</div>';
