@@ -20,7 +20,7 @@ Las recomendaciones por categoría (estadística y bono «ya salió» del ML) so
 - [x] Bono ML por categoría cuenta los 3 premios — prueba: pytest `test_predict_from_probs_all_prizes_counts_third_prize` y `test_predict_from_probs_primero_ignores_other_prizes`.
 - [x] Frontend rotula y muestra las recomendaciones por categoría — prueba: `node --check` OK; navegador con datos reales.
 - [x] Suite completa en verde — prueba: `pytest -q -W error::SyntaxWarning` → `184 passed`.
-- [ ] Revisor de correctness (tier 1) — en curso.
+- [x] Revisor de correctness (tier 1): sin hallazgos; 184 passed. Nit aceptado: un número repetido en dos premios del mismo sorteo suma dos veces al bono «ya salió».
 
 ## Evidence
 - Rojo: 4 fallos antes del cambio; verde: `184 passed in 10.44s`.
@@ -29,4 +29,4 @@ Las recomendaciones por categoría (estadística y bono «ya salió» del ML) so
 - `rsc risk --base origin/main` → tier 1, 1 revisor.
 
 ## Next
-Esperar al revisor; después commit, push y PR.
+Push y PR a main.
