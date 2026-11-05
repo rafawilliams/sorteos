@@ -99,7 +99,11 @@ def _huella(fila):
     premios = tuple(premio_en_formato(cat, fecha, p, fila.get(p)) for p in ("primero", "segundo", "tercero"))
     if not fecha or not all(premios):
         return None
-    return date.fromisoformat(fecha), cat, premios
+    try:
+        dia = date.fromisoformat(fecha)
+    except ValueError:              # odd API date: not compared; the per-row insert handles it
+        return None
+    return dia, cat, premios
 
 
 def descartar_sospechosos(nuevos, guardados, ventana=VENTANA_SOSPECHOSOS):

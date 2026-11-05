@@ -94,6 +94,14 @@ class TestSinFalsosPositivos:
         sin = F("", "dominical", "1", "2", "3")
         assert descartar_sospechosos([sin], [])[0] == [sin]
 
+    def test_malformed_dates_do_not_abort_the_batch(self):
+        # One odd API date must not stop the rest of the sync (it used to fail only its own row).
+        raras = [F(f, "miercolito", "8674", "6643", "3271")
+                 for f in ("2026-10-01T00:00:00", "2026-10", "2026-13-45")]
+        normal = F("2026-10-28", "miercolito", "7533", "2673", "2458")
+        validos, descartados = descartar_sospechosos(raras + [normal], [MIER_0930])
+        assert validos == raras + [normal] and descartados == []
+
 
 class FakeSession:
     def __init__(self, rows):
