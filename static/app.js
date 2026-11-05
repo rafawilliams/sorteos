@@ -297,6 +297,10 @@ function toggleML(){
   if(useML&&info.trained)showToast(`ML: ${info.train_samples} muestras · Entrenado: ${info.train_date}`,3000);
 }
 
+// Number confidence (statistical and ML) is "times more likely than chance": 1.0 = pure chance, capped at 15.
+function fmtLift(x){return x==null?'—':`×${Number(x).toFixed(2)} azar`}
+function liftBar(x){return Math.min((x||0)/2*100,100)}  // 2× chance fills the bar
+
 // RECOMMENDATIONS
 function renderRecommendations(cat){
   const container=document.getElementById('recoContainer');
@@ -325,7 +329,7 @@ function renderRecommendations(cat){
       <button class="copy-btn" data-num="${r.number}" onclick="copyNumber('${r.number}')">Copiar</button>
       <div class="reco-rank">${ranks[i]||(i+1)+'to'} Recomendado</div>
       <div class="reco-number">${renderBalls(r.number,useML?'green':'gold','lg')}</div>
-      <div class="reco-confidence"><div class="conf-bar"><div class="conf-bar-fill" style="width:${Math.min(r.confidence,100)}%;${useML?'background:linear-gradient(90deg,var(--accent-green),#6ee7b7);':''}"></div></div>${r.confidence}%</div>
+      <div class="reco-confidence" title="Veces más probable que un número al azar (×1.00 = azar)"><div class="conf-bar"><div class="conf-bar-fill" style="width:${liftBar(r.confidence)}%;${useML?'background:linear-gradient(90deg,var(--accent-green),#6ee7b7);':''}"></div></div>${fmtLift(r.confidence)}</div>
     </div>`).join('')}</div>`;
   requestAnimationFrame(()=>{container.querySelectorAll('.conf-bar-fill').forEach(b=>{const w=b.style.width;b.style.width='0%';requestAnimationFrame(()=>{b.style.width=w})})});
 }
@@ -682,12 +686,12 @@ function renderDashboard(){
       <div class="kpi-card">
         <div class="kpi-label">Top Recomendación</div>
         <div>${topRec?renderBalls(topRec.number,'gold','sm'):'<span class="num-empty">—</span>'}</div>
-        <div class="kpi-sub">📊 Estadístico · ${topRec?topRec.confidence+'%':'—'}</div>
+        <div class="kpi-sub">📊 Estadístico · ${topRec?fmtLift(topRec.confidence):'—'}</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Top ML</div>
         <div>${topML?renderBalls(topML.number,'green','sm'):'<span class="num-empty">—</span>'}</div>
-        <div class="kpi-sub">🤖 Machine Learning · ${topML?topML.confidence+'%':'—'}</div>
+        <div class="kpi-sub">🤖 Machine Learning · ${topML?fmtLift(topML.confidence):'—'}</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Terminación Caliente</div>
@@ -910,7 +914,7 @@ function renderMonthlySection(){
         <button class="copy-btn" data-num="${r.number}" onclick="copyNumber('${r.number}')">Copiar</button>
         <div class="reco-rank">${rank} RECOMENDADO</div>
         <div class="reco-number">${renderBalls(r.number,'gold','lg')}</div>
-        <div class="reco-confidence"><div class="conf-bar"><div class="conf-bar-fill" style="width:${Math.min(r.confidence,100)}%"></div></div>${r.confidence}%</div>
+        <div class="reco-confidence" title="Veces más probable que un número al azar (×1.00 = azar)"><div class="conf-bar"><div class="conf-bar-fill" style="width:${liftBar(r.confidence)}%"></div></div>${fmtLift(r.confidence)}</div>
       </div>`;
     });
     h+='</div>';

@@ -7,7 +7,6 @@ listas de sorteos (`list[dict]`) ya normalizados y devuelven estructuras nativas
 """
 
 import datetime as _dt
-import random
 from collections import Counter, defaultdict
 
 RECO_DATE_FROM = "1995-01-01"  # Recommendations use data from this date onwards
@@ -109,12 +108,17 @@ def hot_cold(numbers: list[str], top: int = 10) -> dict:
 
 
 def number_recommendation(numbers: list[str], top: int = 5) -> list[dict]:
+    """Top numbers by the exact probability of their 4 digits (recency-weighted frequency per position).
+
+    Deterministic: no sampling. Ties go to numbers already drawn more often, then by number.
+    `confidence` / `lift` = times more likely than pure chance (1.0 = chance), capped at 15 like the ML.
+    """
     if not numbers:
         return []
 
     pos_scores: list[Counter] = [Counter() for _ in range(4)]
     total = len(numbers)
-    for idx, n in enumerate(numbers):
+    for idx, n in enumerate(numbers):            # newest first: weight 2 → 1
         weight = 1 + (total - idx) / total
         for pos in range(min(4, len(n))):
             pos_scores[pos][n[pos]] += weight
@@ -124,25 +128,25 @@ def number_recommendation(numbers: list[str], top: int = 5) -> list[dict]:
         s = sum(ps.values()) or 1
         pos_probs.append({d: ps[d] / s for d in ps})
 
-    candidates: Counter = Counter()
-    for _ in range(50_000):
-        num = ""
-        for pos in range(4):
-            digits = list(pos_probs[pos].keys())
-            weights = [pos_probs[pos][d] for d in digits]
-            num += random.choices(digits, weights=weights, k=1)[0]
-        candidates[num] += 1
-
     hist = Counter(numbers)
-    scored = []
-    for num, gen_count in candidates.most_common(200):
-        hist_score = hist.get(num, 0)
-        score = gen_count * 0.6 + hist_score * 1000 * 0.4
-        confidence = min(round(score / 500 * 100, 1), 99.9)
-        scored.append({"number": num, "score": round(score, 1), "confidence": confidence})
+    candidatos = []
+    for d0, p0 in pos_probs[0].items():
+        for d1, p1 in pos_probs[1].items():
+            for d2, p2 in pos_probs[2].items():
+                for d3, p3 in pos_probs[3].items():
+                    num = d0 + d1 + d2 + d3
+                    # rounded so float noise does not hide a real tie
+                    lift = round(p0 * p1 * p2 * p3 * 10_000, 9)
+                    candidatos.append((-lift, -hist[num], num))
 
-    scored.sort(key=lambda x: x["score"], reverse=True)
-    return scored[:top]
+    candidatos.sort()
+    return [{
+        "number": num,
+        "score": round(-neg_lift, 4),
+        "lift": round(-neg_lift, 2),
+        "confidence": min(round(-neg_lift, 2), 15.0),
+        "veces": -neg_veces,
+    } for neg_lift, neg_veces, num in candidatos[:top]]
 
 
 # ---------------------------------------------------------------------------
