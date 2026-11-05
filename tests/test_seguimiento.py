@@ -187,6 +187,18 @@ class TestResumen:
         assert m["exactos_azar"] == pytest.approx(15 / 10000)
         assert m["digitos_media_azar"] == 0.4
 
+    def test_pending_says_which_draw_and_if_numbers_apply(self, session):
+        sg.registrar(session, BASE + EXTRA, {"gordito": reco(), "extraordinario": reco(ml_nums=False)},
+                     hoy=HOY, ahora=AHORA)
+        # An old extraordinario record with 4-digit numbers (frozen before fix/seguimiento-registro).
+        viejo = session.query(Prediccion).filter_by(categoria="extraordinario", metodo="estadistico").one()
+        viejo.numeros = '["2276", "2256"]'
+        session.commit()
+        p = {x["categoria"]: x for x in sg.resumen(session, BASE + EXTRA)["pendientes"]}
+        assert p["gordito"]["ultima_fecha"] == "2026-10-30" and p["gordito"]["numeros_aplican"] is True
+        assert p["extraordinario"]["ultima_fecha"] == "2026-08-16"
+        assert p["extraordinario"]["numeros_aplican"] is False     # by category, not by the list
+
     def test_draw_without_record(self, session):
         sg.registrar(session, BASE, {"dominical": reco()}, hoy=HOY, ahora=AHORA)
         nuevos = BASE + [S(13, "2026-11-01", "dominical", "1111"), S(14, "2026-11-08", "dominical", "2222")]

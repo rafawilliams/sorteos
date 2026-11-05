@@ -1271,12 +1271,18 @@ function renderSeguimiento(d){
     <div class="stat-card"><div class="stat-value">${pend.length}</div><div class="stat-label">Esperando resultado</div></div>
     <div class="stat-card"><div class="stat-value">${sinReg.length}</div><div class="stat-label">Sorteos sin registro</div></div>`;
 
-  document.getElementById('segPendientes').innerHTML=pend.length?pend.map(p=>`
-    <div class="card reveal" aria-label="Recomendación congelada para ${esc(catLabel(p.categoria))}">
-      <div class="card-header"><h3 class="card-title">${esc(catLabel(p.categoria))}</h3><span class="card-badge badge-gold">Registrada ${esc(p.registrado_en.replace('T',' '))}</span></div>
-      ${SEG_METODOS.filter(([m])=>p.metodos[m]).map(([m,lbl])=>`<p class="section-subtitle"><strong>${lbl}</strong>: <span class="num-cell">${p.metodos[m].numeros.length?p.metodos[m].numeros.map(esc).join(' · '):'<em>sin números (premios de 5 cifras)</em>'}</span><br><small>Terminaciones: ${p.metodos[m].terminaciones.map(esc).join(' ')}</small></p>`).join('')}
-      ${p.peso_ml!=null?`<small class="section-subtitle">Peso ML de la combinada: ${segPct(p.peso_ml)}</small>`:''}
-    </div>`).join(''):'<p class="section-subtitle">Aún no hay recomendaciones congeladas. Se registran al calcular las estadísticas.</p>';
+  document.getElementById('segPendientes').innerHTML=pend.length?pend.map(p=>{
+    const cat=esc(catLabel(p.categoria)), conML=!!p.metodos.ml, aplican=p.numeros_aplican!==false;
+    // Without ML the combinada is the statistical one: show it once.
+    const metodos=SEG_METODOS.filter(([m])=>p.metodos[m]&&(conML||m!=='combinada'));
+    const objetivo=p.ultima_fecha?`Para el próximo sorteo de ${cat} después del ${esc(formatDate(p.ultima_fecha))}${p.categoria==='extraordinario'?' (se juega en abril, agosto y diciembre)':''}.`:'';
+    return`
+    <div class="card reveal" aria-label="Recomendación congelada para ${cat}">
+      <div class="card-header"><h3 class="card-title">${cat}</h3><span class="card-badge badge-gold">Registrada ${esc(p.registrado_en.replace('T',' '))}</span></div>
+      ${objetivo?`<p class="section-subtitle"><small>${objetivo}</small></p>`:''}
+      ${metodos.map(([m,lbl])=>`<p class="section-subtitle"><strong>${lbl}</strong>: <span class="num-cell">${aplican&&p.metodos[m].numeros.length?p.metodos[m].numeros.map(esc).join(' · '):'<em>sin números (premios de 5 cifras)</em>'}</span><br><small>Terminaciones: ${p.metodos[m].terminaciones.map(esc).join(' ')}</small></p>`).join('')}
+      ${conML?(p.peso_ml!=null?`<small class="section-subtitle">Peso ML de la combinada: ${segPct(p.peso_ml)}</small>`:''):(p.metodos.combinada?'<small class="section-subtitle">Sin ML para esta categoría: la combinada es igual al estadístico.</small>':'')}
+    </div>`}).join(''):'<p class="section-subtitle">Aún no hay recomendaciones congeladas. Se registran al calcular las estadísticas.</p>';
 
   const m=d.marcador||{};
   document.getElementById('segMarcador').innerHTML=SEG_METODOS.map(([k,lbl])=>{const x=m[k]||{};if(!x.sorteos)return`<tr><td>${lbl}</td><td>0</td><td colspan="5"><em>Sin sorteos comparados todavía</em></td></tr>`;return`<tr>
