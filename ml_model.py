@@ -18,11 +18,11 @@ from sklearn.preprocessing import LabelEncoder
 MODEL_DIR = Path(__file__).parent / "models"
 MODEL_PATH = MODEL_DIR / "predictor.joblib"
 
-# Category encoding
+# Category encoding. Variants of a draw share its code (rows already arrive canonical from
+# get_sorteos; this keeps any raw spelling consistent too).
 CAT_MAP = {
-    "dominical": 0, "miercolito": 1, "gordito": 2,
-    "extraordinario": 3, "extraordinaria": 4,
-    "zodiaco": 5, "extraordonario": 6,
+    "dominical": 0, "miercolito": 1, "gordito": 2, "extraordinario": 3,
+    "zodiaco": 2, "extraordinaria": 3, "extraordonario": 3,
 }
 
 

@@ -26,7 +26,7 @@ from estadisticas import (
     number_recommendation, position_frequency, series_folio_stats, simular_numero,
     statistical_backtest, trend_data,
 )
-from loteria import Loteria, premio_en_formato
+from loteria import Loteria, categoria_canonica, premio_en_formato
 from ml_model import predictor
 import seguimiento
 
@@ -113,7 +113,7 @@ def _cache_clear():
 def _row_to_dict(r) -> dict:
     """DB row → API dict. Prizes keep their real format: "98" (2 digits), "0074" (4), "05309" (5),
     or "" when the draw has no such prize. Use len(premio) to tell formats apart."""
-    cat = (r.tipo or "").strip().lower()
+    cat = categoria_canonica(r.tipo)
     return {
         "id": str(r.id),
         "fecha": r.fecha.isoformat() if r.fecha else "",

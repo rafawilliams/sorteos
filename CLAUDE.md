@@ -93,7 +93,7 @@ Single-page app with vanilla JS. State variables:
 
 ## Key Conventions
 
-- **Categories**: `dominical`, `miercolito`, `gordito`, `extraordinario`, `extraordinaria`, `zodiaco`, `extraordonario` (note the typo in source data — `extraordonario` is intentional to match the API)
+- **Categories**: `dominical`, `miercolito`, `gordito`, `extraordinario`. The API has used other spellings for the same draw — `extraordinaria` and `extraordonario` are `extraordinario`, `zodiaco` is `gordito` (Gordito del Zodíaco; the 2 Dec-2023 draws are stored as `zodiaco`). `loteria.categoria_canonica` folds them (lowercase, trimmed) when reading (`_row_to_dict`) and when storing/comparing in `actualizar_db.py`; never compare raw `tipo` values.
 - **Date format**: ISO 8601 (`YYYY-MM-DD`) throughout
 - **Prize numbers**: never `.zfill(4)` a prize from `get_sorteos()` — it is already in its real format. 4-digit stats (positions, hot/cold, recommendations, trends, gaps, ML training) use only `len == 4` prizes (`_es_4_cifras`); endings (`p[-2:]`) and decenas (`p[-2]`) use every format. Non-4-digit prizes get their own stats in `/api/stats` → `formatos` ("Premios de Otros Formatos" panel in Estadísticas). The frontend shows prizes as received (no `padStart`).
 - Each draw produces up to 3 rows in ML training data (one per 4-digit prize)

@@ -17,10 +17,7 @@ CAT_LABELS = {
     "miercolito": "Miercolito",
     "gordito": "Gordito del Zodiaco",
     "extraordinario": "Extraordinario",
-    "extraordinaria": "Extraordinaria",
-    "zodiaco": "Zodiaco",
-    "extraordonario": "Extraordonario",
-}
+}   # one name per draw: variants are folded by loteria.categoria_canonica
 
 MONTH_NAMES_FULL = {
     1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril",

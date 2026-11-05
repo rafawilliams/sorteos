@@ -30,6 +30,21 @@ def normalizar_premio(valor):
     return v.zfill(4) if v.isdigit() else v
 
 
+# Same draw under another name (owner, 2026-11-05): the API has used these spellings.
+# "zodiaco" is the Gordito del Zodíaco (Dec-2023 draws stored as "zodiaco").
+ALIAS_CATEGORIA = {
+    "extraordinaria": "extraordinario",
+    "extraordonario": "extraordinario",
+    "zodiaco": "gordito",
+}
+
+
+def categoria_canonica(cat):
+    """One name per draw: lowercase, trimmed, aliases folded ("Extraordonario " → "extraordinario")."""
+    c = (cat or "").strip().lower()
+    return ALIAS_CATEGORIA.get(c, c)
+
+
 # Categories whose 2nd/3rd prizes are 2-digit numbers (Gordito del Zodíaco).
 CATS_2_CIFRAS_SEGUNDO_TERCERO = {"gordito", "zodiaco"}
 # Miercolito drew 2-digit prizes in 1962–1966 (no 4-digit miercolito in that range).
