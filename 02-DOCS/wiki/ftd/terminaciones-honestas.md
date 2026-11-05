@@ -36,7 +36,7 @@ Decisión del dueño: aplicar las 3 propuestas.
 - [x] `endings_by_category` en `construir_stats` — prueba: pytest `TestPorCategoria`.
 - [x] Frontend: selector, «×N azar» y aviso — prueba: `node --check` OK; navegador (ver Evidence).
 - [x] Suite completa en verde y tiempo medido — prueba: `197 passed`; `construir_stats` 0,8 s (antes 0,5 s).
-- [ ] Revisor de correctness (tier 1) — en curso.
+- [x] Revisor de correctness (tier 1): sin bloqueantes; 197 passed. Arreglados 2 nits de texto: con el ML activado, el aviso aclara que la prueba es del estadístico; el aviso de «Todos» dice de dónde sale la afirmación. Aceptados: empates del mismo día en el orden de los sorteos; premios de 1 carácter (no existen en los datos reales).
 
 ## Evidence
 - Rojo: 8 fallos antes del cambio. Dos fallos posteriores eran de mis tests, no del código: tolerancia de redondeo, y un fixture con 60 sorteos cuando el backtest exige ≥ 230.
@@ -58,4 +58,4 @@ Decisión del dueño: aplicar las 3 propuestas.
 - `rsc risk --base origin/main` → tier 1, 1 revisor.
 
 ## Next
-Esperar al revisor; después commit, push y PR.
+Push y PR a main.
