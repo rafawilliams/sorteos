@@ -6,6 +6,7 @@ Uso:  python actualizar_db.py [--desde YYYY-MM]
 """
 
 import requests
+from collections import defaultdict
 from datetime import date
 from base import Session, engine, Base, api_credentials
 from loteria import Loteria, premio_en_formato
@@ -86,6 +87,51 @@ def filtrar_nuevos(data, existentes, hasta):
     return nuevos
 
 
+VENTANA_SOSPECHOSOS = 7      # days: a re-dated draw or a cross-category copy shows up within a week
+
+
+def _huella(fila):
+    """(fecha, categoría, (1º, 2º, 3º)) in real format; None without a date or with an empty prize."""
+    fecha = fila.get("fecha")
+    fecha = fecha.isoformat() if hasattr(fecha, "isoformat") else (fecha or "")
+    cat = (fila.get("cat") or "").strip().lower()
+    cat = ALIAS_CATEGORIA.get(cat, cat)
+    premios = tuple(premio_en_formato(cat, fecha, p, fila.get(p)) for p in ("primero", "segundo", "tercero"))
+    if not fecha or not all(premios):
+        return None
+    return date.fromisoformat(fecha), cat, premios
+
+
+def descartar_sospechosos(nuevos, guardados, ventana=VENTANA_SOSPECHOSOS):
+    """Drop new rows whose three prizes repeat a draw (stored or accepted) within `ventana` days.
+
+    Same category → "fecha corregida" (the API re-dated a draw already stored).
+    Other category → "copia de otra categoría" (the API copied another draw's prizes).
+    New rows go oldest first, so the original stays. Rows without a date or with an empty prize
+    are never compared. Returns (valid rows, [(row, reason, matched row)]).
+    """
+    vistos = defaultdict(list)                  # prizes → [(huella, row)]: O(1) lookup per new row
+    for f in guardados:
+        if h := _huella(f):
+            vistos[h[2]].append((h, f))
+    huellas = [(_huella(f), f) for f in nuevos]
+    orden = sorted(range(len(nuevos)), key=lambda i: huellas[i][0][0] if huellas[i][0] else date.max)
+    aceptados, descartados = set(), []
+    for i in orden:
+        h, fila = huellas[i]
+        if h is None:
+            aceptados.add(i)
+            continue
+        igual = next(((hv, fv) for hv, fv in vistos[h[2]] if abs((hv[0] - h[0]).days) <= ventana), None)
+        if igual:
+            motivo = "fecha corregida" if igual[0][1] == h[1] else "copia de otra categoría"
+            descartados.append((fila, motivo, igual[1]))
+            continue
+        aceptados.add(i)
+        vistos[h[2]].append((h, fila))
+    return [f for i, f in enumerate(nuevos) if i in aceptados], descartados
+
+
 def fila_a_loteria(fila):
     """API row → Loteria, prizes padded to their real format (2, 4 or 5 digits; empty stays empty)."""
     cat, fecha = fila.get("cat", ""), fila.get("fecha", "")
@@ -109,9 +155,13 @@ def actualizar(desde=None):
 
     # Claves de los sorteos guardados, para no duplicarlos (la DB usa IDs propios)
     existentes = set()
+    guardados = []
     ultima = None
-    for r in session.query(Loteria.fecha, Loteria.tipo, Loteria.primero).all():
+    for r in session.query(Loteria.fecha, Loteria.tipo, Loteria.primero, Loteria.segundo,
+                           Loteria.tercero).all():
         existentes.add(clave_sorteo(r.fecha, r.tipo, r.primero))
+        guardados.append({"fecha": r.fecha, "cat": r.tipo, "primero": r.primero,
+                          "segundo": r.segundo, "tercero": r.tercero})
         if r.fecha and (ultima is None or r.fecha > ultima):
             ultima = r.fecha
     print(f"Sorteos existentes en DB: {len(existentes)} (último: {ultima or 'ninguno'})")
@@ -131,7 +181,11 @@ def actualizar(desde=None):
         print(f"  Encontrados en API: {len(filas)}")
         data.extend(filas)
 
-    nuevos = filtrar_nuevos(data, existentes, hoy)
+    nuevos, descartados = descartar_sospechosos(filtrar_nuevos(data, existentes, hoy), guardados)
+    for fila, motivo, igual in descartados:
+        print(f"  AVISO: descartado {fila.get('fecha')} | {fila.get('cat')} | "
+              f"{fila.get('primero')} {fila.get('segundo')} {fila.get('tercero')} — {motivo} "
+              f"(igual que {igual.get('fecha')} | {igual.get('cat')})")
     print(f"\nSorteos nuevos a insertar: {len(nuevos)}")
 
     insertados = 0
