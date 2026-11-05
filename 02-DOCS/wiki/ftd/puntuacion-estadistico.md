@@ -27,7 +27,7 @@ Decisión del dueño: aplicar las tres propuestas. El bono «ya salió» queda c
 - [x] Confianza = lift, con tope 15 (1,0 con dígitos uniformes) — prueba: pytest `test_confidence_is_lift_vs_chance`.
 - [x] Frontend muestra «×N azar» — prueba: `node --check` OK; navegador: panel «📊 Estadístico · ×1.36 azar || 🤖 Machine Learning · ×1.20 azar»; dominical estadístico «8357 ×1.25 azar | 8557 ×1.25 | 8757 ×1.25 | 8359 ×1.25 | 8559 ×1.24».
 - [x] Suite completa en verde y datos reales estables — prueba: `188 passed`; 5 ejecuciones por categoría con el mismo top-5.
-- [ ] Revisor de correctness (tier 1) — en curso.
+- [x] Revisor de correctness (tier 1): sin hallazgos; 188 passed. Nits aceptados: la barra se llena a partir de ×2 azar; con números de menos de 4 cifras devuelve `[]` (inalcanzable: todos los llamadores pasan solo premios de 4 cifras).
 
 ## Evidence
 - Rojo: 4 fallos antes del cambio (una corrección de mi propio test: la lista «uniforme» necesitaba orden simétrico para compensar el peso por antigüedad).
@@ -40,4 +40,4 @@ Decisión del dueño: aplicar las tres propuestas. El bono «ya salió» queda c
 - `rsc risk --base origin/main` → tier 1, 1 revisor.
 
 ## Next
-Esperar al revisor; después commit, push y PR.
+Push y PR a main.
