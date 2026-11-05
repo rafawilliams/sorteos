@@ -76,3 +76,44 @@ class TestML:
 def test_labels_have_no_variants():
     import estadisticas as E
     assert set(E.CAT_LABELS) == {"dominical", "miercolito", "gordito", "extraordinario"}
+
+
+# --- closing review: endpoints, dedup with a stored zodiaco row, JS labels -------------------
+
+GORDITO = {"id": "9026", "fecha": "2023-12-01", "cat": "gordito", "primero": "4231",
+           "segundo": "01", "tercero": "25", "letra": "", "serie": "", "folio": ""}
+
+
+@pytest.fixture
+def client(monkeypatch):
+    import app as app_module
+    monkeypatch.setattr(app_module, "get_sorteos", lambda: [GORDITO])
+    app_module.app.config["TESTING"] = True
+    with app_module.app.test_client() as c:
+        yield c
+
+
+@pytest.mark.parametrize("cat", ["zodiaco", "Gordito", " ZODIACO "])
+def test_sorteos_filter_accepts_variants(client, cat):
+    data = client.get(f"/api/sorteos?cat={cat}").get_json()
+    assert [s["id"] for s in data["data"]] == ["9026"]
+
+
+def test_simulador_filter_accepts_variants(client):
+    data = client.get("/api/simulador?numero=4231&cat=zodiaco").get_json()
+    assert data["total_sorteos"] == 1
+
+
+def test_dedup_against_a_stored_zodiaco_row():
+    from actualizar_db import descartar_sospechosos
+    guardado = {"fecha": date(2023, 12, 1), "cat": "zodiaco", "primero": "4231", "segundo": "1", "tercero": "25"}
+    nuevo = {"fecha": "2023-12-02", "cat": "gordito", "primero": "4231", "segundo": "01", "tercero": "25"}
+    validos, descartados = descartar_sospechosos([nuevo], [guardado])
+    assert validos == [] and descartados[0][1] == "fecha corregida"     # same draw, not a copy
+
+
+def test_js_labels_have_no_variants():
+    import re
+    js = open(os.path.join(os.path.dirname(__file__), "..", "static", "app.js"), encoding="utf-8").read()
+    etiquetas = re.search(r"const CAT_LABELS=\{([^}]*)\}", js).group(1)
+    assert set(re.findall(r"(\w+):'", etiquetas)) == {"dominical", "miercolito", "gordito", "extraordinario"}
