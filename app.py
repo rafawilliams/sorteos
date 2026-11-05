@@ -207,7 +207,14 @@ def api_stats():
     if cached is not None:
         return jsonify(cached)
     log.info("Computing stats (cache miss)...")
+    result, _ = _calcular_stats()
+    return jsonify(result)
 
+
+def _calcular_stats() -> tuple[dict, list[str]]:
+    """Compute and cache /api/stats, freezing Seguimiento records on the way.
+
+    Returns the stats and the categories whose recommendations were frozen now."""
     sorteos = get_sorteos()
     recent = _filter_recent(sorteos)
 
@@ -223,7 +230,7 @@ def api_stats():
     result = construir_stats(sorteos, recent, ml_batch, predictor.get_info(), get_last_update())
 
     # Freeze recommendations for each category's next draw (never breaks stats)
-    _registrar_seguro(
+    hechos = _registrar_seguro(
         sorteos,
         _recos_por_categoria(
             recent,
@@ -235,7 +242,7 @@ def api_stats():
 
     _cache_set("stats", result)
     log.info("Stats computed and cached (%d sorteos, %d recent)", len(sorteos), len(recent))
-    return jsonify(result)
+    return result, hechos
 
 
 def _recos_por_categoria(recent: list[dict], stats_by_cat: dict, ml_cat_reco: dict,
@@ -347,7 +354,8 @@ def api_actualizar():
     # tracebacks and server paths that must not reach the browser.
     try:
         result = subprocess.run(
-            [sys.executable, "actualizar_db.py"],
+            # The script must not freeze Seguimiento itself: done here once, after retraining.
+            [sys.executable, "actualizar_db.py", "--sin-seguimiento"],
             capture_output=True, text=True, timeout=60,
         )
     except subprocess.TimeoutExpired:
@@ -372,10 +380,22 @@ def api_actualizar():
         ml_retrained = False
         log.exception("ML retrain after data update failed")
 
+    # Freeze recommendations for the next draws now, not on the next visit (also warms the cache).
+    # Not with an untrained model: training would run here again, inside the request (50-100 s).
+    seguimiento_registrado = []
+    if not predictor.trained:
+        log.warning("Seguimiento: ML model not trained after update; registration left for the next visit")
+    else:
+        try:
+            _, seguimiento_registrado = _calcular_stats()
+        except Exception:
+            log.exception("Seguimiento: stats after data update failed; nothing frozen")
+
     return jsonify({
         "ok": True,
         "output": result.stdout,
         "ml_retrained": ml_retrained,
+        "seguimiento_registrado": seguimiento_registrado,
         "last_update": get_last_update(),
     })
 

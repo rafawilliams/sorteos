@@ -1250,15 +1250,15 @@ function renderSeguimiento(d){
   document.getElementById('segPendientes').innerHTML=pend.length?pend.map(p=>`
     <div class="card reveal" aria-label="Recomendación congelada para ${esc(catLabel(p.categoria))}">
       <div class="card-header"><h3 class="card-title">${esc(catLabel(p.categoria))}</h3><span class="card-badge badge-gold">Registrada ${esc(p.registrado_en.replace('T',' '))}</span></div>
-      ${SEG_METODOS.filter(([m])=>p.metodos[m]).map(([m,lbl])=>`<p class="section-subtitle"><strong>${lbl}</strong>: <span class="num-cell">${p.metodos[m].numeros.map(esc).join(' · ')}</span><br><small>Terminaciones: ${p.metodos[m].terminaciones.map(esc).join(' ')}</small></p>`).join('')}
+      ${SEG_METODOS.filter(([m])=>p.metodos[m]).map(([m,lbl])=>`<p class="section-subtitle"><strong>${lbl}</strong>: <span class="num-cell">${p.metodos[m].numeros.length?p.metodos[m].numeros.map(esc).join(' · '):'<em>sin números (premios de 5 cifras)</em>'}</span><br><small>Terminaciones: ${p.metodos[m].terminaciones.map(esc).join(' ')}</small></p>`).join('')}
       ${p.peso_ml!=null?`<small class="section-subtitle">Peso ML de la combinada: ${segPct(p.peso_ml)}</small>`:''}
     </div>`).join(''):'<p class="section-subtitle">Aún no hay recomendaciones congeladas. Se registran al calcular las estadísticas.</p>';
 
   const m=d.marcador||{};
   document.getElementById('segMarcador').innerHTML=SEG_METODOS.map(([k,lbl])=>{const x=m[k]||{};if(!x.sorteos)return`<tr><td>${lbl}</td><td>0</td><td colspan="5"><em>Sin sorteos comparados todavía</em></td></tr>`;return`<tr>
     <td>${lbl}</td><td>${x.sorteos||0}</td>
-    <td>${x.exactos??0} <small>(azar ${segNum(x.exactos_azar,3)})</small></td>
-    <td>${x.terminacion_numeros??0} <small>(azar ${segNum(x.terminacion_numeros_azar,1)})</small></td>
+    <td>${x.sorteos_numeros===0?'—':`${x.exactos??0} <small>(azar ${segNum(x.exactos_azar,3)})</small>`}</td>
+    <td>${x.sorteos_numeros===0?'—':`${x.terminacion_numeros??0} <small>(azar ${segNum(x.terminacion_numeros_azar,1)})</small>`}</td>
     <td>${segNum(x.digitos_media,3)} <small>(azar 0.400)</small></td>
     <td>${segNum(x.terminaciones_media)} <small>(azar ${segNum(x.terminaciones_media_azar)})</small></td>
     <td>${x.alguna_terminacion_pct==null?'—':x.alguna_terminacion_pct.toFixed(0)+'%'} <small>(azar ${x.alguna_terminacion_pct_azar==null?'—':x.alguna_terminacion_pct_azar.toFixed(0)+'%'})</small></td></tr>`}).join('');
@@ -1269,7 +1269,8 @@ function renderSeguimiento(d){
     const celda=k=>{const r=c.metodos[k];if(!r)return'<td>—</td>';
       const nums=r.numeros.map(n=>r.numeros_acertados.includes(n)?`<mark style="background:#4ade80;color:#0b0b0f;border-radius:4px;padding:0 4px" title="Acierto exacto">${esc(n)}</mark>`:esc(n)).join(' · ');
       const ta=r.terminaciones_acertadas.length?' ('+r.terminaciones_acertadas.map(esc).join(' ')+')':'';
-      return`<td><span class="num-cell">${nums}</span><br><small>${r.exactos} exactos · dígitos ${segNum(r.digitos_media)} · term. ${r.terminaciones_aciertos}/10${ta}</small></td>`};
+      const numInfo=r.exactos==null?'números: no aplica':`${r.exactos} exactos · dígitos ${segNum(r.digitos_media)}`;
+      return`<td><span class="num-cell">${nums||'—'}</span><br><small>${numInfo} · term. ${r.terminaciones_aciertos}/10${ta}</small></td>`};
     return`<tr><td>${formatDate(s.fecha)}<br><small>${esc(catLabel(s.cat))}</small></td><td class="num-cell">${premiosDe(s)}</td>${celda('ml')}${celda('estadistico')}${celda('combinada')}</tr>`;
   };
   const sinFila=s=>`<tr style="opacity:0.55"><td>${formatDate(s.fecha)}<br><small>${esc(catLabel(s.cat))}</small></td><td class="num-cell">${premiosDe(s)}</td><td colspan="3"><em>Sin registro: nadie abrió la web entre sorteos</em></td></tr>`;

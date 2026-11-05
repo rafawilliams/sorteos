@@ -148,13 +148,34 @@ def actualizar(desde=None):
 
     session.close()
     print(f"\nActualización completada: {insertados} sorteos insertados.")
+    return insertados
 
 
-if __name__ == "__main__":
+def registrar_seguimiento():
+    """Compute stats so Seguimiento freezes the recommendations for each category's next draw."""
+    import app  # heavy (loads the ML model): only when there is something to freeze
+    _, hechos = app._calcular_stats()
+    return hechos
+
+
+def main(argv=None):
     import argparse
     from datetime import datetime
 
     parser = argparse.ArgumentParser(description="Sincroniza sorteos nuevos desde api.loteriapanama.net")
     parser.add_argument("--desde", help="Mes inicial YYYY-MM (por defecto: el del último sorteo guardado)")
-    args = parser.parse_args()
-    actualizar(datetime.strptime(args.desde, "%Y-%m").date() if args.desde else None)
+    parser.add_argument("--sin-seguimiento", action="store_true",
+                        help="No congelar las recomendaciones de Seguimiento tras sincronizar")
+    args = parser.parse_args(argv)
+    insertados = actualizar(datetime.strptime(args.desde, "%Y-%m").date() if args.desde else None)
+    if insertados and not args.sin_seguimiento:
+        print("\nSeguimiento: congelando las recomendaciones para los próximos sorteos...")
+        try:
+            hechos = registrar_seguimiento()
+            print(f"Seguimiento: registradas para {', '.join(hechos) if hechos else 'ninguna categoría nueva'}.")
+        except Exception as e:  # the sync itself already succeeded
+            print(f"Seguimiento: no se pudieron registrar las recomendaciones ({type(e).__name__}).")
+
+
+if __name__ == "__main__":
+    main()
