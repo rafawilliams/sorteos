@@ -22,11 +22,16 @@ En el PR #27 (decenas honestas), el revisor de tests señaló huecos. Este cambi
 - [x] Empates en el triple y en el par → el dígito más pequeño — prueba: `TestEmpates`; mutante «desempate por el mayor»: 2 fallos.
 - [x] Otras categorías no cuentan — prueba: `test_other_categories_do_not_count`; mutante «sin filtro de categoría»: 1 fallo.
 - [x] Seguidoras de 2 cifras (gordito) y de 5 cifras (extraordinario; «05309» → 0, no 3) — prueba: `test_two_digit_*`, `test_five_digit_*`; mutante «seguidoras solo del 1er premio»: 2 fallos.
-- [x] Suite completa en verde — prueba: `258 passed` (con `-W error::SyntaxWarning`).
+- [x] Suite completa en verde — prueba: `261 passed` (con `-W error::SyntaxWarning`).
+- [x] Revisor de tests (tier 1): sin bloqueantes. Sobrevivían 3 mutantes y un nit, ya cubiertos con 3 tests nuevos y comprobados contra la suite completa:
+  - patrón de 1 dígito en vez de par → `test_pattern_length_is_two_not_one`;
+  - saltarse la última ventana (patrones que se solapan, p. ej. 5-5-5) → `test_overlapping_windows_count_up_to_the_last_draw`;
+  - mínimo fijo a 20, ignorando el parámetro → `test_custom_minimum_is_honoured`.
+  - Quitar el filtro desde 1995 no sobrevive a la suite completa: lo detecta el `test_only_draws_since_1995` que ya existía (el revisor solo pasó este archivo).
 
 ## Evidence
-- 8 tests nuevos; verdes con el código actual (no destapan ningún fallo).
-- 4 mutantes temporales en `estadisticas.py`, todos detectados (restaurado con `git checkout` tras cada uno).
+- 11 tests nuevos; verdes con el código actual (no destapan ningún fallo).
+- 7 mutantes temporales en `estadisticas.py` (4 propios y 3 del revisor), todos detectados (restaurado con `git checkout` tras cada uno).
 - `rsc risk --base origin/main` → tier 1 (los tests cuentan como código): 1 revisor.
 
 ## Next
