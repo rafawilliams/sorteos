@@ -45,7 +45,7 @@ Desde esta máquina, con el repo abierto, el dueño trabaja con el asistente usa
 ## What result they get
 - `npx @ericrisco/rsc --version` muestra `4.0.5` para la herramienta y para el proyecto.
 - `npx @ericrisco/rsc doctor` muestra `"healthy": true`.
-- El PR muestra salidas del repo bajo `.rsc/` y `.claude/skills/<skill gestionada>`, más cambios en `.gitignore`, `.rsc.json`, `.claude/settings.json` y `.claude/rsc-bootstrap.mjs`. Ningún archivo de la app cambia.
+- El PR muestra salidas del repo bajo `.rsc/`, `.claude/skills/<skill gestionada>`, `.claude/agents/` y `.claude/commands/` (generados por rsc), más cambios en `.gitignore`, `.rsc.json`, `.claude/settings.json` y `.claude/rsc-bootstrap.mjs`. Ningún archivo de la app cambia.
 
 ## What it must respect
 - `main` está cerrada: el cambio entra por rama y PR (memoria `branch-per-improvement`).
