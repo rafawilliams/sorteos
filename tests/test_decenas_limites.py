@@ -36,6 +36,24 @@ class TestMinimoEnSuLimite:
         assert r["match_count"] == 79                  # every draw
 
 
+    def test_pattern_length_is_two_not_one(self):
+        # 2-3 is followed by 6 (22 times); a lone 3 after a 4 is followed by 9 (30 times).
+        # With a 1-digit pattern the 9 would win; with the real pair, the 6 does.
+        r = desde([1, 2, 3, 6] * 22 + [4, 3, 9] * 30 + [0, 2, 3])
+        assert r["method"] == "pair" and r["match_count"] == 22
+        assert r["recommended"] == "6"
+
+    def test_overlapping_windows_count_up_to_the_last_draw(self):
+        # 5-5-5 overlaps itself: in 24 fives the triple matches 21 times (every window but the target).
+        r = desde([5] * 24)
+        assert r["method"] == "triple" and r["match_count"] == 21
+        assert r["recommended"] == "5" and r["lift"] == 10.0
+
+    def test_custom_minimum_is_honoured(self):
+        seq = [1, 2, 3, 4] * 5 + [1, 2, 3]               # triple 5 times, pair 5 times
+        assert desde(seq, minimo=5)["method"] == "triple"
+        assert desde(seq)["method"] == "frecuencia"       # default minimum (20)
+
 class TestEmpates:
     def test_triple_tie_goes_to_the_smallest_digit(self):
         # 1-2-3 is followed 10 times by a 7 and 10 times by a 3.
