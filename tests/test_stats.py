@@ -160,6 +160,33 @@ class TestNumberRecommendation:
         recs = number_recommendation(sample_numbers)
         assert len(recs) == 5
 
+    # fix/puntuacion-estadistico ------------------------------------------------
+
+    def test_deterministic(self, sample_numbers):
+        assert number_recommendation(sample_numbers) == number_recommendation(sample_numbers)
+
+    def test_ranked_by_exact_digit_probability(self):
+        recs = number_recommendation(["1234", "1234", "1234", "5678"], top=2)
+        assert recs[0]["number"] == "1234"
+        # weights 2, 1.75, 1.5 (1234) vs 1.25 (5678): P(1)=5.25/6.5 per position
+        p = (5.25 / 6.5) ** 4
+        assert recs[0]["lift"] == pytest.approx(p * 10_000, abs=0.01)
+
+    def test_already_drawn_only_breaks_ties(self):
+        # Symmetric weights: all 16 numbers made of 1s and 2s are equally likely.
+        recs = number_recommendation(["1212", "2121", "2121", "1212"], top=3)
+        assert [r["number"] for r in recs[:2]] == ["1212", "2121"]   # drawn before → first
+        assert recs[0]["veces"] == 2 and recs[2]["veces"] == 0
+        assert recs[0]["lift"] == recs[2]["lift"]
+
+    def test_confidence_is_lift_vs_chance(self):
+        mitad = [f"{d}{d}{d}{d}" for d in "0123456789"]
+        uniforme = mitad + mitad[::-1]          # mirrored: every digit gets the same total weight
+        r = number_recommendation(uniforme, top=1)[0]
+        assert r["confidence"] == pytest.approx(1.0)                 # exactly chance, never 99.9
+        concentrado = number_recommendation(["7777"] * 20, top=1)[0]
+        assert concentrado["number"] == "7777" and concentrado["confidence"] == 15.0
+
 
 # ---------------------------------------------------------------------------
 # _extract_decena
