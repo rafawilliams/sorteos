@@ -97,6 +97,7 @@ Single-page app with vanilla JS. State variables:
 - **Date format**: ISO 8601 (`YYYY-MM-DD`) throughout
 - **Prize numbers**: never `.zfill(4)` a prize from `get_sorteos()` — it is already in its real format. 4-digit stats (positions, hot/cold, recommendations, trends, gaps, ML training) use only `len == 4` prizes (`_es_4_cifras`); endings (`p[-2:]`) and decenas (`p[-2]`) use every format. Non-4-digit prizes get their own stats in `/api/stats` → `formatos` ("Premios de Otros Formatos" panel in Estadísticas). The frontend shows prizes as received (no `padStart`).
 - Each draw produces up to 3 rows in ML training data (one per 4-digit prize)
+- Per-category recommendations (statistical `by_category[cat].recommendations` and ML `cat_reco`) use the 1st, 2nd and 3rd 4-digit prizes (`_extract_numbers(..., prize=None)`, `predict_from_probs(..., prize=None)`), matching how Seguimiento scores them; general recommendations stay per prize. Other per-category stats (frequency, hot/cold, radar) still use the 1st prize.
 - Statistical recommendations use 50K Monte Carlo samples with recency-weighted digit frequencies
 - The `decena_recommendation()` function uses a 3-sorteo pattern matching approach with 2-sorteo and frequency fallbacks
 

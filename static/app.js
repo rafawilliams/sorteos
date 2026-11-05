@@ -313,10 +313,11 @@ function renderRecommendations(cat){
     // Statistical recommendations
     const pd=stats.prizes&&stats.prizes[currentPrize];
     if(cat==='all')recos=(pd&&pd.recommendations)||stats.recommendations||[];
-    else recos=(currentPrize==='primero'&&stats.by_category&&stats.by_category[cat])?stats.by_category[cat].recommendations||[]:[];
+    else recos=(stats.by_category&&stats.by_category[cat]&&stats.by_category[cat].recommendations)||[];
   }
   if(!recos.length){container.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:40px;">No hay suficientes datos para esta combinación.</p>';return}
-  const pl={primero:'1er Premio',segundo:'2do Premio',tercero:'3er Premio'}[currentPrize];
+  // Per-category recommendations cover every 4-digit prize (1st, 2nd and 3rd), whatever prize is selected.
+  const pl=cat==='all'?{primero:'1er Premio',segundo:'2do Premio',tercero:'3er Premio'}[currentPrize]:'cualquier premio de 4 cifras';
   const method=useML?'🤖 Machine Learning':'📊 Estadístico';
   const ranks=['1ro','2do','3ro','4to','5to'];
   container.innerHTML=`<div style="margin-bottom:12px;font-size:0.8rem;color:var(--text-muted);">Recomendaciones para <strong style="color:var(--gold-300)">${pl}</strong> — <span style="color:${useML?'var(--accent-green)':'var(--gold-400)'};">${method}</span></div>
