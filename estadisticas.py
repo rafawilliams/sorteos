@@ -7,6 +7,7 @@ listas de sorteos (`list[dict]`) ya normalizados y devuelven estructuras nativas
 """
 
 import datetime as _dt
+from math import comb
 from collections import Counter, defaultdict
 
 RECO_DATE_FROM = "1995-01-01"  # Recommendations use data from this date onwards
@@ -268,24 +269,60 @@ def endings_hot_cold(endings: list[dict], top: int = 15) -> dict:
     }
 
 
-def endings_recommendation(endings: list[dict], top: int = 10) -> list[dict]:
-    """Recommend endings using recency-weighted frequency."""
-    if not endings:
+def _rank_endings(ends: list[str], top: int = 10) -> list[dict]:
+    """Recency-weighted ranking of ending strings (newest first: weight 2 → 1)."""
+    if not ends:
         return []
-
     counter: Counter = Counter()
-    total = len(endings)
-    for idx, e in enumerate(endings):
-        weight = 1 + (total - idx) / total
-        counter[e["ending"]] += weight
-
-    # Normalize and score
-    max_score = max(counter.values()) if counter else 1
+    total = len(ends)
+    for idx, e in enumerate(ends):
+        counter[e] += 1 + (total - idx) / total
+    peso_total = sum(counter.values())
     scored = []
     for ending, score in counter.most_common(top):
-        confidence = min(round(score / max_score * 100, 1), 99.9)
-        scored.append({"ending": ending, "score": round(score, 1), "confidence": confidence})
+        # Times more likely than chance (an ending has a 1 % chance): share of the weight × 100.
+        lift = score / peso_total * 100
+        scored.append({"ending": ending, "score": round(score, 1), "lift": round(lift, 2),
+                       "confidence": min(round(lift, 2), 15.0)})
     return scored
+
+
+def endings_recommendation(endings: list[dict], top: int = 10) -> list[dict]:
+    """Recommend endings using recency-weighted frequency. `confidence` = lift vs chance (1.0 = chance)."""
+    return _rank_endings([e["ending"] for e in endings], top)
+
+
+def endings_backtest(sorteos: list[dict], category: str, last_n: int = 200, top: int = 10) -> dict | None:
+    """Walk-forward check of the statistical endings for one category (draws newest first).
+
+    For each of the last `last_n` draws, recommend with the older draws only and count how many of its
+    prize endings fall in the top. Returns hits and draws with at least one hit, each next to chance.
+    None when the category has too few draws (fewer than `last_n` + 30)."""
+    draws = [s for s in sorteos if s.get("cat") == category]
+    if len(draws) < last_n + 30:
+        return None
+    por_sorteo = [[s[p][-2:] for p in ("primero", "segundo", "tercero") if s.get(p)] for s in draws]
+    plano, inicio = [], []
+    for e in por_sorteo:
+        inicio.append(len(plano))
+        plano.extend(e)
+    aciertos = alguna = 0
+    aciertos_azar = alguna_azar = 0.0
+    for k in range(last_n):
+        recomendadas = {r["ending"] for r in _rank_endings(plano[inicio[k + 1]:], top)}
+        reales = {e for e in por_sorteo[k] if len(e) == 2}
+        h = len(recomendadas & reales)
+        aciertos += h
+        alguna += h > 0
+        aciertos_azar += top * len(reales) / 100
+        alguna_azar += 1 - comb(100 - len(reales), top) / comb(100, top)
+    return {
+        "sorteos": last_n,
+        "aciertos": aciertos,
+        "aciertos_azar": round(aciertos_azar, 1),
+        "alguna_pct": round(100 * alguna / last_n, 1),
+        "alguna_pct_azar": round(100 * alguna_azar / last_n, 1),
+    }
 
 
 def endings_trend(sorteos: list[dict], months: int = 12) -> list[dict]:
@@ -796,6 +833,19 @@ def construir_stats(sorteos: list[dict], recent: list[dict], ml_batch: dict,
     ml_general = ml_batch.get("general_reco", [])
     ml_endings = ml_batch.get("endings", [])
     ml_cat_reco = ml_batch.get("cat_reco", {})
+    ml_cat_endings = ml_batch.get("cat_endings", {})
+
+    # Per-category endings: the ones Seguimiento freezes, with their walk-forward check vs chance.
+    endings_by_cat = {}
+    for cat_key in all_cats:
+        cat_endings = _extract_endings(recent, cat_key)
+        if cat_endings:
+            endings_by_cat[cat_key] = {
+                "total_endings": len(cat_endings),
+                "recommendations": endings_recommendation(cat_endings),
+                "ml_recommendations": ml_cat_endings.get(cat_key, []),
+                "backtest": endings_backtest(recent, cat_key),
+            }
 
     decena_reco = {}
     for cat_key in all_cats:
@@ -837,6 +887,7 @@ def construir_stats(sorteos: list[dict], recent: list[dict], ml_batch: dict,
         "ml_endings": ml_endings,
         "ml_info": ml_info,
         "by_category": stats_by_cat,
+        "endings_by_category": endings_by_cat,
         "series_folio": series_folio_stats(sorteos),
         "letras": letra_stats(sorteos),
         "prizes": prizes,

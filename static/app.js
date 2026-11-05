@@ -147,7 +147,7 @@ function renderFull(){
   renderRadarChart();renderScatterChart();
   renderPositionGrids();renderHeatmap();renderTrendChart();renderVolumeChart();
   renderEndingsSection();renderMonthlySection();renderFavorites();initSimCats();renderDashboard();
-  initRecoCatTabs();initPrizeTabs();initStatsPrizeTabs();
+  initRecoCatTabs();initEndCatTabs();initPrizeTabs();initStatsPrizeTabs();
 }
 
 // LAST UPDATE
@@ -164,6 +164,8 @@ function buildCategoryUI(){
   const cats=[...new Set(allSorteos.map(s=>s.cat).filter(Boolean))];
   const tc=document.getElementById('recoCatTabs');
   cats.forEach(c=>{const b=document.createElement('button');b.className='cat-tab';b.dataset.cat=c;b.textContent=catLabel(c);tc.appendChild(b)});
+  const te=document.getElementById('endCatTabs');
+  if(te)cats.forEach(c=>{const b=document.createElement('button');b.className='cat-tab';b.dataset.cat=c;b.setAttribute('role','tab');b.setAttribute('aria-selected','false');b.textContent=catLabel(c);te.appendChild(b)});
   const sel=document.getElementById('catFilter');
   cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=catLabel(c);sel.appendChild(o)});
 }
@@ -272,6 +274,14 @@ function initStatsPrizeTabs(){
       _setAriaTab(wrap,tab);renderStatsForPrize(tab.dataset.prize);triggerReveals();
     });
   });
+}
+function initEndCatTabs(){
+  const wrap=document.getElementById('endCatTabs');
+  if(!wrap)return;
+  wrap.querySelectorAll('.cat-tab').forEach(tab=>{
+    tab.addEventListener('click',()=>{_setAriaTab(wrap,tab);renderEndingsSection();});
+  });
+  initTablistKeyboard(wrap);
 }
 function initRecoCatTabs(){
   const wrap=document.getElementById('recoCatTabs');
@@ -508,8 +518,16 @@ function renderScatterChart(){
 // ==================== ENDINGS SECTION ====================
 function renderEndingsSection(){
   const ed=stats.endings||{};
-  // Recommendations — ML or Statistical
-  const recos=useML?(stats.ml_endings||[]):(ed.recommendations||[]);
+  // Recommendations — ML or Statistical, for "Todos" or one category (the ones Seguimiento freezes)
+  const endTab=document.querySelector('#endCatTabs .cat-tab.active');
+  const endCat=endTab?endTab.dataset.cat:'all';
+  const ec=endCat!=='all'?((stats.endings_by_category||{})[endCat]||{}):null;
+  const recos=ec?((useML?ec.ml_recommendations:ec.recommendations)||[]):(useML?(stats.ml_endings||[]):(ed.recommendations||[]));
+  const bt=ec&&ec.backtest;
+  document.getElementById('endingsBacktestNote').innerHTML=endCat==='all'
+    ?'ℹ En las pruebas por categoría con sorteos reales, las terminaciones aciertan como el azar. Elige una categoría para ver la suya.'
+    :bt?`ℹ Prueba del método estadístico con los últimos ${bt.sorteos} sorteos de ${esc(catLabel(endCat))}, recomendando solo con los sorteos anteriores: ${bt.aciertos} aciertos frente a ${bt.aciertos_azar} del azar; al menos 1 acierto en el ${bt.alguna_pct}% de los sorteos frente al ${bt.alguna_pct_azar}% del azar.${useML?' El ML no tiene prueba propia aquí (ver Seguimiento).':''}`
+    :`ℹ ${esc(catLabel(endCat))} tiene muy pocos sorteos para comprobarlo (${ec.total_endings||0} terminaciones): una cifra alta aquí es ruido de muestra pequeña.`;
   const isEnding=!useML; // statistical uses 'ending' key, ML uses 'ending' key too
   const ranks=['1ro','2do','3ro','4to','5to','6to','7mo','8vo','9no','10mo'];
   const method=useML?'🤖 Machine Learning':'📊 Estadístico';
@@ -519,7 +537,7 @@ function renderEndingsSection(){
       <button class="copy-btn" data-num="${r.ending}" onclick="copyNumber('${r.ending}')">Copiar</button>
       <div class="reco-rank">${ranks[i]||(i+1)+'to'} Terminación</div>
       <div class="reco-number">${renderBalls(r.ending,useML?'green':'gold','md')}</div>
-      <div class="reco-confidence"><div class="conf-bar"><div class="conf-bar-fill" style="width:${Math.min(r.confidence,100)}%;${useML?'background:linear-gradient(90deg,var(--accent-green),#6ee7b7);':''}"></div></div>${r.confidence}%</div>
+      <div class="reco-confidence" title="Veces más probable que una terminación al azar (×1.00 = azar)"><div class="conf-bar"><div class="conf-bar-fill" style="width:${liftBar(r.confidence)}%;${useML?'background:linear-gradient(90deg,var(--accent-green),#6ee7b7);':''}"></div></div>${fmtLift(r.confidence)}</div>
     </div>`).join('')}</div>`;
   requestAnimationFrame(()=>{document.getElementById('endingsRecoContainer').querySelectorAll('.conf-bar-fill').forEach(b=>{const w=b.style.width;b.style.width='0%';requestAnimationFrame(()=>{b.style.width=w})})});
 

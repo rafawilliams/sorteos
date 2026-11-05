@@ -99,6 +99,7 @@ Single-page app with vanilla JS. State variables:
 - Each draw produces up to 3 rows in ML training data (one per 4-digit prize)
 - Per-category recommendations (statistical `by_category[cat].recommendations` and ML `cat_reco`) use the 1st, 2nd and 3rd 4-digit prizes (`_extract_numbers(..., prize=None)`, `predict_from_probs(..., prize=None)`), matching how Seguimiento scores them; general recommendations stay per prize. Other per-category stats (frequency, hot/cold, radar) still use the 1st prize.
 - Statistical recommendations (`number_recommendation`) rank all 10,000 numbers by the exact product of recency-weighted digit frequencies per position — deterministic, no sampling; ties by times already drawn. Number `confidence` (statistical and ML) = times more likely than chance (1.0 = chance, cap 15); the frontend shows it as "×N azar" (`fmtLift`).
+- Endings `confidence` uses the same scale: share of the recency weight × 100 (statistical) or `prob × 100` (ML), cap 15. `/api/stats` → `endings_by_category[cat]` holds the per-category endings (the ones Seguimiento freezes) and `backtest` = `endings_backtest()` walk-forward over the last 200 draws (None with < 230); the Terminaciones tab shows them with a category selector.
 - The `decena_recommendation()` function uses a 3-sorteo pattern matching approach with 2-sorteo and frequency fallbacks
 
 
