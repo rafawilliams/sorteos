@@ -41,11 +41,11 @@ External API (loteriapanama.net) → actualizar_db.py → MariaDB
                                               ml_model.py (predictions)
 ```
 
-### Backend (app.py ~420 lines + estadisticas.py ~840 lines)
+### Backend (app.py ~440 lines + estadisticas.py ~930 lines)
 
-`app.py` holds Flask routes, rate-limiting, caching and DB access; `estadisticas.py` holds all pure statistical calculations (4-digit frequencies, Monte Carlo recommendations, decenas, endings, 2/5-digit formats, monthly profiles, trends, gaps, comparador, simulador, and statistical backtest) with no Flask or SQLAlchemy dependencies (`app.py` re-exports them for compatibility):
+`app.py` holds Flask routes, rate-limiting, caching and DB access; `estadisticas.py` holds all pure statistical calculations (4-digit frequencies, exact-probability recommendations, decenas, endings, 2/5-digit formats, monthly profiles, trends, gaps, comparador, simulador, and statistical backtest) with no Flask or SQLAlchemy dependencies (`app.py` re-exports them for compatibility):
 - **`GET /api/sorteos`** — Paginated draw results with filters (category, search, date range)
-- **`GET /api/stats`** — Comprehensive statistics: digit frequencies, hot/cold numbers, ML predictions, endings analysis, decena recommendations, trends. Expensive (~seconds), cached 5 minutes.
+- **`GET /api/stats`** — Comprehensive statistics: digit frequencies, hot/cold numbers, ML predictions, endings analysis (general, plus per category in `endings_by_category` with a walk-forward `backtest`), decena recommendations (with `backtest`; both backtests are `None` with fewer than 230 draws since 1995), trends. Expensive (~seconds), cached 5 minutes.
 - **`GET /api/backtesting?last_n=500`** — ML vs Statistical accuracy comparison over historical draws
 - **`GET /api/seguimiento`** — Frozen recommendations vs real results (see *Seguimiento* below); 500 with a generic message on error
 - **`POST /api/actualizar`** — Syncs new draws, clears cache, retrains ML model. Requires header `X-Update-Token` = `ACTUALIZAR_TOKEN` (.env); 401 on mismatch, 503 if unset; 502 if the sync script fails, 500 on unexpected errors (details only in the server log, never in the response). Response includes `ml_retrained` and `seguimiento_registrado` (categories frozen right after the sync; skipped if the model is untrained). Frontend prompts for the token and keeps it in `sessionStorage`.
@@ -100,7 +100,7 @@ Single-page app with vanilla JS. State variables:
 - Per-category recommendations (statistical `by_category[cat].recommendations` and ML `cat_reco`) use the 1st, 2nd and 3rd 4-digit prizes (`_extract_numbers(..., prize=None)`, `predict_from_probs(..., prize=None)`), matching how Seguimiento scores them; general recommendations stay per prize. Other per-category stats (frequency, hot/cold, radar) still use the 1st prize.
 - Statistical recommendations (`number_recommendation`) rank all 10,000 numbers by the exact product of recency-weighted digit frequencies per position — deterministic, no sampling; ties by times already drawn. Number `confidence` (statistical and ML) = times more likely than chance (1.0 = chance, cap 15); the frontend shows it as "×N azar" (`fmtLift`).
 - Endings `confidence` uses the same scale: share of the recency weight × 100 (statistical) or `prob × 100` (ML), cap 15. `/api/stats` → `endings_by_category[cat]` holds the per-category endings (the ones Seguimiento freezes) and `backtest` = `endings_backtest()` walk-forward over the last 200 draws (None with < 230); the Terminaciones tab shows them with a category selector.
-- The `decena_recommendation()` function uses a 3-sorteo pattern matching approach with 2-sorteo and frequency fallbacks
+- `decena_recommendation()` (draws since 1995): pattern = 1st-prize tens digit of the last 3 draws; followers = tens digits of the 3 prizes of the next draw (any format). Below 20 matching draws it drops to the last 2 draws, then to overall frequency (`method`: triple/pair/frecuencia; ties → smallest digit). `confidence` = lift vs chance (share ÷ 10 %, so at most ×10). `decena_backtest()` = 200-draw walk-forward check; hit = decena in any prize of the draw, chance = distinct decenas ÷ 10.
 
 
 ## Knowledge map
