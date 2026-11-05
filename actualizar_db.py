@@ -9,7 +9,7 @@ import requests
 from collections import defaultdict
 from datetime import date
 from base import Session, engine, Base, api_credentials
-from loteria import Loteria, premio_en_formato
+from loteria import Loteria, categoria_canonica, premio_en_formato
 
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
@@ -52,11 +52,6 @@ def meses_a_consultar(desde, hasta):
     return meses
 
 
-# Same draw under another name: the API now returns the Dec-2023 "zodiaco" draws as "gordito"
-# (Gordito del Zodíaco). Only used to compare keys; stored categories are not changed.
-ALIAS_CATEGORIA = {"zodiaco": "gordito"}
-
-
 def clave_sorteo(fecha, cat, primero):
     """Identity of a draw: fecha + categoría + 1er premio in its real format.
 
@@ -64,8 +59,7 @@ def clave_sorteo(fecha, cat, primero):
     (e.g. 2002-12-29 dominical), and the DB has no API id to tell them apart.
     """
     fecha = fecha.isoformat() if hasattr(fecha, "isoformat") else (fecha or "")
-    cat = (cat or "").strip().lower()
-    cat = ALIAS_CATEGORIA.get(cat, cat)
+    cat = categoria_canonica(cat)
     return (fecha, cat, premio_en_formato(cat, fecha, "primero", primero))
 
 
@@ -94,8 +88,7 @@ def _huella(fila):
     """(fecha, categoría, (1º, 2º, 3º)) in real format; None without a date or with an empty prize."""
     fecha = fila.get("fecha")
     fecha = fecha.isoformat() if hasattr(fecha, "isoformat") else (fecha or "")
-    cat = (fila.get("cat") or "").strip().lower()
-    cat = ALIAS_CATEGORIA.get(cat, cat)
+    cat = categoria_canonica(fila.get("cat"))
     premios = tuple(premio_en_formato(cat, fecha, p, fila.get(p)) for p in ("primero", "segundo", "tercero"))
     if not fecha or not all(premios):
         return None
@@ -137,10 +130,11 @@ def descartar_sospechosos(nuevos, guardados, ventana=VENTANA_SOSPECHOSOS):
 
 
 def fila_a_loteria(fila):
-    """API row → Loteria, prizes padded to their real format (2, 4 or 5 digits; empty stays empty)."""
-    cat, fecha = fila.get("cat", ""), fila.get("fecha", "")
+    """API row → Loteria with its canonical category and prizes padded to their real format
+    (2, 4 or 5 digits; empty stays empty)."""
+    cat, fecha = categoria_canonica(fila.get("cat")), fila.get("fecha", "")
     return Loteria(
-        fila.get("cat", ""),
+        cat,
         fila.get("fecha", ""),
         premio_en_formato(cat, fecha, "primero", fila.get("primero")),
         fila.get("letra", ""),

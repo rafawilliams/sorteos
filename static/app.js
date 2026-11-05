@@ -24,7 +24,7 @@ let currentPrize='primero', currentStatsPrize='primero';
 let useML=false;
 let trendChartInstance=null, volumeChartInstance=null, endingsTrendChartInstance=null;
 
-const CAT_LABELS={dominical:'Dominical',miercolito:'Miercolito',gordito:'Gordito del Zodiaco',extraordinario:'Extraordinario',extraordinaria:'Extraordinaria',zodiaco:'Zodiaco',extraordonario:'Extraordonario'};
+const CAT_LABELS={dominical:'Dominical',miercolito:'Miercolito',gordito:'Gordito del Zodiaco',extraordinario:'Extraordinario'};
 function catLabel(k){return CAT_LABELS[k]||k.charAt(0).toUpperCase()+k.slice(1)}
 function formatDate(d){if(!d)return'—';return new Date(d+'T00:00:00').toLocaleDateString('es-PA',{year:'numeric',month:'short',day:'numeric'})}
 function renderBalls(val,variant='gold',size='lg'){
