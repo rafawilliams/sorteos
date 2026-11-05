@@ -25,6 +25,8 @@ def client(monkeypatch):
 
     monkeypatch.setattr(app_module.subprocess, "run", fake_run)
     monkeypatch.setattr(app_module.predictor, "update", lambda *a, **k: None)
+    monkeypatch.setattr(app_module, "_calcular_stats", lambda: ({}, ["dominical"]))
+    monkeypatch.setattr(app_module.predictor, "trained", True)   # CI has no cached model
     monkeypatch.setenv("ACTUALIZAR_TOKEN", TOKEN)
     with app.test_client() as c:
         c.script_calls = calls
@@ -103,3 +105,33 @@ class TestActualizarErrors:
         r = client.post("/api/actualizar", headers=HEADERS)
         assert r.status_code == 200
         assert r.get_json()["ml_retrained"] is True
+
+
+class TestActualizarSeguimiento:
+    """After a sync, recommendations for the next draws are frozen without waiting for a visit."""
+
+    def test_registers_after_sync(self, client):
+        r = client.post("/api/actualizar", headers=HEADERS)
+        assert r.get_json()["seguimiento_registrado"] == ["dominical"]
+        # The script must not register on its own: the endpoint does it once, after retraining.
+        assert "--sin-seguimiento" in client.script_calls[0][0]
+
+    def test_registration_failure_does_not_break_the_update(self, client, monkeypatch, caplog):
+        def boom():
+            raise RuntimeError(r"stats exploded at C:\secret")
+        monkeypatch.setattr(app_module, "_calcular_stats", boom)
+        with caplog.at_level("ERROR", logger="sorteos"):
+            r = client.post("/api/actualizar", headers=HEADERS)
+        assert r.status_code == 200
+        data = r.get_json()
+        assert data["ok"] is True and data["seguimiento_registrado"] == []
+        assert "secret" not in r.get_data(as_text=True)
+        assert any("seguimiento" in rec.getMessage().lower() for rec in caplog.records)
+
+    def test_skips_registration_when_model_is_not_trained(self, client, monkeypatch):
+        llamadas = []
+        monkeypatch.setattr(app_module, "_calcular_stats", lambda: llamadas.append(1) or ({}, ["x"]))
+        monkeypatch.setattr(app_module.predictor, "trained", False)
+        r = client.post("/api/actualizar", headers=HEADERS)
+        assert r.status_code == 200 and r.get_json()["seguimiento_registrado"] == []
+        assert llamadas == []          # no 50-100 s training inside the request

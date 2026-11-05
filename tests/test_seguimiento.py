@@ -199,3 +199,99 @@ class TestResumen:
         r = sg.resumen(session, BASE)
         assert r["comparados"] == [] and r["pendientes"] == [] and r["sin_registro"] == []
         assert r["peso_ml"] == 0.5
+
+
+# ---------------------------------------------------------------------------
+# fix/seguimiento-registro
+# ---------------------------------------------------------------------------
+
+EXTRA = [S(7, "2026-04-19", "extraordinario", "75212", "47253", "85747"),
+         S(8, "2026-08-16", "extraordinario", "03997", "14353", "87686")]
+
+
+class TestSinCuatroCifras:
+    """Categories whose prizes are not 4-digit (extraordinario) freeze endings only."""
+
+    def test_registrar_freezes_endings_only(self, session):
+        hechos = sg.registrar(session, BASE + EXTRA, {"extraordinario": reco(ml_nums=False)},
+                              hoy=HOY, ahora=AHORA)
+        assert hechos == ["extraordinario"]
+        rows = session.query(Prediccion).filter_by(categoria="extraordinario").all()
+        assert {r.metodo for r in rows} == {"estadistico", "combinada"}
+        for r in rows:
+            assert r.lista_numeros() == []
+            assert len(r.lista_terminaciones()) == 10
+
+    def test_four_digit_categories_keep_numbers(self, session):
+        sg.registrar(session, BASE + EXTRA, {"gordito": reco()}, hoy=HOY, ahora=AHORA)
+        est = session.query(Prediccion).filter_by(categoria="gordito", metodo="estadistico").one()
+        assert len(est.lista_numeros()) == 5
+
+    def test_comparar_numbers_not_applicable(self):
+        c = sg.comparar(["7686", "1111"], ["86", "53", "00"], EXTRA[1])
+        assert c["exactos"] is None and c["terminacion_numeros"] is None
+        assert c["digitos_media"] is None and c["numeros_acertados"] == []
+        assert c["terminaciones_aciertos"] == 2          # 86, 53
+
+    def test_old_record_with_numbers_does_not_count_in_scoreboard(self, session):
+        # Record frozen before the fix: 4-digit numbers for extraordinario.
+        sg.registrar(session, BASE, {"dominical": reco()}, hoy=HOY, ahora=AHORA)
+        for r in session.query(Prediccion).all():
+            r.categoria = "extraordinario"
+        session.commit()
+        llegados = BASE + [S(13, "2026-11-01", "dominical", "1111", "2222", "3333"),
+                           S(14, "2026-12-13", "extraordinario", "11111", "22219", "33300")]
+        r = sg.resumen(session, llegados)
+        m = r["marcador"]["estadistico"]
+        assert m["sorteos"] == 1 and m["sorteos_numeros"] == 0
+        assert m["exactos"] == 0 and m["exactos_azar"] == 0
+        assert m["terminacion_numeros"] == 0 and m["terminacion_numeros_azar"] == 0
+        assert m["terminaciones_media"] == 1              # endings 00..09 vs 11, 19, 00 → only 00
+
+
+class TestRegistroDuplicado:
+    """Two concurrent registrations for the same draw: the first stays frozen, the second is dropped."""
+
+    def test_second_concurrent_insert_is_rejected_quietly(self, session, monkeypatch):
+        assert sg.registrar(session, BASE, {"dominical": reco()}, hoy=HOY, ahora=AHORA) == ["dominical"]
+        # The second caller read the table before the first one committed: it sees no pending record.
+        monkeypatch.setattr(sg, "_grupos", lambda s: {})
+        otra = reco(est_nums=["9999"] * 5)
+        assert sg.registrar(session, BASE, {"dominical": otra}, hoy=HOY, ahora=AHORA) == []
+        est = session.query(Prediccion).filter_by(metodo="estadistico").all()
+        assert len(est) == 1 and est[0].lista_numeros()[0] == "1111"
+
+    def test_unique_index_is_added_to_an_existing_table(self):
+        from sqlalchemy import create_engine, inspect
+        engine = create_engine("sqlite://")
+        # Table as created before the fix: same columns, no unique index.
+        from sqlalchemy import Column, MetaData, Table
+        viejo = Table("predicciones", MetaData(), *(Column(c.name, c.type, primary_key=c.primary_key)
+                                                    for c in Prediccion.__table__.columns))
+        viejo.create(engine)
+        from sqlalchemy.orm import sessionmaker
+        s = sessionmaker(bind=engine)()
+        sg.resumen(s, BASE)
+        nombres = {i["name"] for i in inspect(engine).get_indexes("predicciones") if i["unique"]}
+        assert sg.INDICE_UNICO.name in nombres
+        s.close()
+        engine.dispose()
+
+    def test_existing_duplicates_do_not_break_the_tab(self, caplog):
+        from sqlalchemy import Column, MetaData, Table, create_engine
+        from sqlalchemy.orm import sessionmaker
+        engine = create_engine("sqlite://")
+        viejo = Table("predicciones", MetaData(), *(Column(c.name, c.type, primary_key=c.primary_key)
+                                                    for c in Prediccion.__table__.columns))
+        viejo.create(engine)
+        fila = dict(categoria="dominical", ultima_fecha=date(2026, 10, 25), ultimo_id=12, metodo="ml",
+                    numeros="[]", terminaciones="[]", creado_en=AHORA)
+        with engine.begin() as con:
+            con.execute(viejo.insert(), [fila, fila])          # left by the old race
+        s = sessionmaker(bind=engine)()
+        with caplog.at_level("WARNING"):
+            r = sg.resumen(s, BASE)                            # no exception
+        assert [p["categoria"] for p in r["pendientes"]] == ["dominical"]
+        assert "duplicad" in caplog.text.lower() or "índice" in caplog.text.lower()
+        s.close()
+        engine.dispose()

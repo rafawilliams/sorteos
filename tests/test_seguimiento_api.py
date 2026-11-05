@@ -89,3 +89,19 @@ def test_api_seguimiento_error_is_generic(fake_db, client, monkeypatch):
     r = client.get("/api/seguimiento")
     assert r.status_code == 500
     assert "secret" not in r.get_data(as_text=True)
+
+
+def test_calcular_stats_registers_and_caches(fake_db, monkeypatch):
+    monkeypatch.setattr(app_module, "_cache_set", lambda k, v: calls.append(k))
+    calls = []
+    monkeypatch.setattr(app_module.predictor, "trained", True)
+    monkeypatch.setattr(app_module.predictor, "batch_predict", lambda *a, **k: {})
+    monkeypatch.setattr(app_module.predictor, "get_info", lambda: {})
+    monkeypatch.setattr(app_module, "get_last_update", lambda: "2026-10-30")
+    monkeypatch.setattr(app_module, "construir_stats", lambda *a: {"by_category": {}})
+    monkeypatch.setattr(app_module, "_recos_por_categoria", lambda *a: {"gordito": {
+        "ml": None, "estadistico": {"numeros": ["1234"] * 5, "terminaciones": ["12"] * 10}}})
+    result, hechos = app_module._calcular_stats()
+    assert result == {"by_category": {}}
+    assert hechos == ["gordito"]
+    assert calls == ["stats"]

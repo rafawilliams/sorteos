@@ -75,3 +75,33 @@ class TestClaveSorteo:
     def test_zodiaco_is_gordito(self):
         # DB stores the Dec-2023 draws as "zodiaco"; the API now returns them as "gordito".
         assert clave_sorteo("2023-12-01", "zodiaco", "4231") == clave_sorteo("2023-12-01", "gordito", "4231")
+
+
+class TestMainSeguimiento:
+    """`python actualizar_db.py` freezes recommendations after inserting new draws."""
+
+    def _run(self, monkeypatch, argv, insertados):
+        import actualizar_db
+        llamadas = []
+        monkeypatch.setattr(actualizar_db, "actualizar", lambda desde=None: insertados)
+        monkeypatch.setattr(actualizar_db, "registrar_seguimiento", lambda: llamadas.append(1) or ["dominical"])
+        actualizar_db.main(argv)
+        return llamadas
+
+    def test_registers_when_new_draws(self, monkeypatch):
+        assert self._run(monkeypatch, [], 2) == [1]
+
+    def test_skips_without_new_draws(self, monkeypatch):
+        assert self._run(monkeypatch, [], 0) == []
+
+    def test_flag_skips(self, monkeypatch):
+        assert self._run(monkeypatch, ["--sin-seguimiento"], 2) == []
+
+    def test_registration_failure_does_not_fail_the_sync(self, monkeypatch, capsys):
+        import actualizar_db
+        monkeypatch.setattr(actualizar_db, "actualizar", lambda desde=None: 1)
+        def boom():
+            raise RuntimeError("boom")
+        monkeypatch.setattr(actualizar_db, "registrar_seguimiento", boom)
+        actualizar_db.main([])                       # no exception, exit code stays 0
+        assert "seguimiento" in capsys.readouterr().out.lower()

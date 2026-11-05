@@ -11,13 +11,17 @@ Draws are the dicts returned by app.get_sorteos(): {"id": "12", "fecha": "YYYY-M
 """
 
 import json
+import logging
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from math import comb
 
-from sqlalchemy import Column, Date, DateTime, Float, Integer, String, Text
+from sqlalchemy import Column, Date, DateTime, Float, Index, Integer, String, Text
+from sqlalchemy.exc import DBAPIError, IntegrityError
 
 from base import Base
+
+log = logging.getLogger("sorteos")
 
 PREMIOS = ("primero", "segundo", "tercero")
 METODOS = ("ml", "estadistico", "combinada")
@@ -26,6 +30,7 @@ N_TERMINACIONES = 10
 VENTANA_PESO = 20          # recent compared draws used for the weight
 MINIMO_PESO = 10           # below this, 50/50
 DIAS_CATEGORIA_ACTIVA = 365
+SORTEOS_FORMATO = 10       # recent draws of a category that decide if it has 4-digit prizes
 
 
 class Prediccion(Base):
@@ -45,6 +50,11 @@ class Prediccion(Base):
 
     def lista_terminaciones(self):
         return json.loads(self.terminaciones)
+
+
+# One frozen record per (category, draw, method): a concurrent second registration is rejected.
+INDICE_UNICO = Index("uq_predicciones_registro", Prediccion.categoria, Prediccion.ultimo_id,
+                     Prediccion.metodo, unique=True)
 
 
 # ---------------------------------------------------------------------------
@@ -67,15 +77,17 @@ def digitos_en_posicion(numero, premio):
 
 
 def comparar(numeros, terminaciones, sorteo):
-    """Metrics of one method's frozen recommendation against a real draw."""
+    """Metrics of one method's frozen recommendation against a real draw.
+
+    Without a 4-digit prize (extraordinario: 5 digits) the number metrics do not apply: None."""
     p4 = _premios_4(sorteo)
     ends = _terminaciones_premios(sorteo)
     digitos = [digitos_en_posicion(n, p) for n in numeros for p in p4]
     acertadas = [t for t in terminaciones if t in ends]
     return {
-        "exactos": sum(n in p4 for n in numeros),
+        "exactos": sum(n in p4 for n in numeros) if p4 else None,
         "numeros_acertados": [n for n in numeros if n in p4],
-        "terminacion_numeros": sum(n[-2:] in ends for n in numeros),
+        "terminacion_numeros": sum(n[-2:] in ends for n in numeros) if p4 else None,
         "digitos_media": sum(digitos) / len(digitos) if digitos else None,
         "terminaciones_aciertos": len(acertadas),
         "terminaciones_acertadas": acertadas,
@@ -125,7 +137,21 @@ def combinar(lista_ml, lista_est, peso, n):
 # ---------------------------------------------------------------------------
 
 def _ensure_table(session):
-    Prediccion.__table__.create(session.get_bind(), checkfirst=True)
+    bind = session.get_bind()
+    Prediccion.__table__.create(bind, checkfirst=True)
+    try:
+        INDICE_UNICO.create(bind, checkfirst=True)  # tables created before the index existed
+    except DBAPIError:
+        # Duplicate rows left by the old registration race (or a concurrent creation): the tab
+        # must keep working; the index is retried on the next call.
+        log.warning("Seguimiento: no se pudo crear el índice único de predicciones "
+                    "(¿filas duplicadas?)", exc_info=True)
+
+
+def _tiene_cuatro_cifras(cat_sorteos):
+    """Whether the category's recent draws have any 4-digit prize (extraordinario does not)."""
+    recientes = sorted(cat_sorteos, key=lambda s: (s["fecha"], int(s["id"])))[-SORTEOS_FORMATO:]
+    return any(_premios_4(s) for s in recientes)
 
 
 def objetivo(registro, sorteos_cat):
@@ -211,6 +237,9 @@ def registrar(session, sorteos, recos, hoy=None, ahora=None):
         if date.fromisoformat(ultima) < hoy - timedelta(days=DIAS_CATEGORIA_ACTIVA):
             continue
         est, ml = r["estadistico"], r.get("ml")
+        if not _tiene_cuatro_cifras(cat_sorteos):     # out of scope: only endings are frozen
+            est = {**est, "numeros": []}
+            ml = {**ml, "numeros": []} if ml else None
         p = peso if ml else 0.0
         filas = {"estadistico": est}
         if ml:
@@ -230,7 +259,12 @@ def registrar(session, sorteos, recos, hoy=None, ahora=None):
                 creado_en=ahora,
             ))
         hechos.append(cat)
-    session.commit()
+    try:
+        session.commit()
+    except IntegrityError:
+        # Another request froze these draws first; theirs stays, this one is dropped.
+        session.rollback()
+        return []
     return hechos
 
 
@@ -256,13 +290,16 @@ def resumen(session, sorteos):
     for m in METODOS:
         filas = [(c["metodos"][m], c["azar"]) for c in comparados if m in c["metodos"]]
         dig = [(f["digitos_media"], a["digitos_media"]) for f, a in filas if f["digitos_media"] is not None]
+        # Number metrics only where they apply: frozen numbers and a 4-digit prize to compare with.
+        con_numeros = [(f, a) for f, a in filas if f["exactos"] is not None and f["numeros"]]
         n = len(filas)
         marcador[m] = {
             "sorteos": n,
-            "exactos": sum(f["exactos"] for f, _ in filas),
-            "exactos_azar": sum(a["exactos"] for _, a in filas),
-            "terminacion_numeros": sum(f["terminacion_numeros"] for f, _ in filas),
-            "terminacion_numeros_azar": sum(a["terminacion_numeros"] for _, a in filas),
+            "sorteos_numeros": len(con_numeros),
+            "exactos": sum(f["exactos"] for f, _ in con_numeros),
+            "exactos_azar": sum(a["exactos"] for _, a in con_numeros),
+            "terminacion_numeros": sum(f["terminacion_numeros"] for f, _ in con_numeros),
+            "terminacion_numeros_azar": sum(a["terminacion_numeros"] for _, a in con_numeros),
             "digitos_media": sum(d for d, _ in dig) / len(dig) if dig else None,
             "digitos_media_azar": 0.4,
             "terminaciones_media": sum(f["terminaciones_aciertos"] for f, _ in filas) / n if n else None,
