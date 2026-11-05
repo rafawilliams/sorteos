@@ -23,4 +23,4 @@ Subir el harness `rsc` a la versión mayor 4.0.5. Trae el método `asdd`, que re
 - Para un clon nuevo: ejecutar `npx @ericrisco/rsc sync` para reconstruir `.rsc/` y las skills.
 
 ## Next
-PR a main (2026-11-05).
+PR a main (2026-11-05). Spec: [rsc-4](../sdd/specs/rsc-4.md).

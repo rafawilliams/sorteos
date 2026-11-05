@@ -7,12 +7,12 @@ timestamp: 2026-11-05T12:00:00Z
 topic: sdd
 slug: rsc-4
 branch: chore/rsc-4
-status: draft
+status: clarified
 ---
 
 # Spec — Actualizar el harness rsc a 4.0.5
 
-> Slug: `rsc-4` · Status: draft · Created: 2026-11-05
+> Slug: `rsc-4` · Status: clarified — aprobada por el dueño el 2026-11-05 · Created: 2026-11-05
 > Inherits: [constitution](../constitution.md)
 > Ficha FTD: [rsc-4](../../ftd/rsc-4.md)
 
@@ -70,5 +70,5 @@ Salidas de comandos, registradas en la ficha FTD [rsc-4](../../ftd/rsc-4.md): `r
 - Given el diff contra `main`, When se filtra por archivos de la app (`*.py` fuera de `.claude/` y `.rsc/`, `static/`, `templates/`), Then no hay cambios.
 
 ## Points to clarify
-- **suposición tomada** — Nadie más trabaja con un clon que dependa de las copias versionadas. *Base:* proyecto de un único desarrollador. *Riesgo:* un colaborador tendría que ejecutar `rsc sync` una vez.
+- **suposición tomada** (validada por el dueño, 2026-11-05) — Nadie más trabaja con un clon que dependa de las copias versionadas. *Base:* proyecto de un único desarrollador. *Riesgo:* un colaborador tendría que ejecutar `rsc sync` una vez.
 - **decisión diferida** — Si conviene migrar specs viejos al formato ASDD; queda fuera de este ciclo.
