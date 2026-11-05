@@ -349,7 +349,7 @@ function renderDecenas(){
   const dr=stats.decena_recomendada||{};
   const cats=Object.keys(dr);
   if(!cats.length){document.getElementById('decenaContainer').innerHTML='<p style="color:var(--text-muted);text-align:center;padding:40px;">No hay suficientes datos para análisis de decenas.</p>';return}
-  const methodLabel={triple:'Patrón de 3 sorteos',pair:'Patrón de 2 sorteos',fallback:'Frecuencia general'};
+  const methodLabel={triple:'Patrón de 3 sorteos',pair:'Patrón de 2 sorteos',frecuencia:'Frecuencia general',fallback:'Frecuencia general'};
   let h='<div class="decena-grid">';
   cats.forEach(cat=>{
     const d=dr[cat];
@@ -383,7 +383,8 @@ function renderDecenas(){
           <div class="decena-main">
             <div class="decena-rec-label">Decena recomendada</div>
             <div class="decena-rec-number">${d.recommended}</div>
-            <div class="decena-confidence">${d.confidence}% confianza · ${d.match_count} coincidencias</div>
+            <div class="decena-confidence" title="Veces más probable que una decena al azar (×1.00 = azar)">${fmtLift(d.confidence)} · ${d.method==='frecuencia'||d.method==='fallback'?`${d.match_count} sorteos (ningún patrón llega a ${d.minimo||20} coincidencias)`:`${d.match_count} sorteos coincidentes`} · ${d.muestras??'—'} decenas</div>
+            <div class="decena-confidence" style="opacity:0.85;">${d.backtest?`ℹ Prueba con los últimos ${d.backtest.sorteos} sorteos: la decena recomendada salió en algún premio el ${d.backtest.acierto_pct}% de las veces, frente al ${d.backtest.acierto_pct_azar}% del azar.`:'ℹ Muy pocos sorteos desde 1995 para comprobarlo.'}</div>
           </div>
           <div class="decena-last3">
             <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:6px;">Últimos 3 sorteos:</div>

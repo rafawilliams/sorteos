@@ -154,70 +154,101 @@ def number_recommendation(numbers: list[str], top: int = 5) -> list[dict]:
 # Decena recommendation (based on last 3 draws pattern matching)
 # ---------------------------------------------------------------------------
 
-def decena_recommendation(sorteos: list[dict], category: str) -> dict | None:
-    """Recommend next decena for a category based on last-3-draw pattern matching."""
-    cat_sorteos = [s for s in sorteos if s.get("cat") == category and s.get("primero")]
-    if len(cat_sorteos) < 4:
+DECENA_MIN_COINCIDENCIAS = 20     # below this, a pattern is too thin to report
+
+
+def _decenas_premios(s: dict) -> list[str]:
+    """Tens digit of every prize of a draw (any format with 2+ digits), 1st, 2nd and 3rd."""
+    return [d for d in (_extract_decena(s.get(p) or "") for p in ("primero", "segundo", "tercero")) if d]
+
+
+def _serie_decenas(sorteos: list[dict], category: str) -> list[dict]:
+    """Category draws since RECO_DATE_FROM with a 1st-prize decena, oldest first."""
+    return [s for s in reversed(sorteos) if s.get("cat") == category and s.get("primero")
+            and s.get("fecha", "") >= RECO_DATE_FROM and _extract_decena(s["primero"]) is not None]
+
+
+def _decena_desde(claves: list[str], siguientes: list[list[str]], fechas: list[str],
+                  min_coincidencias: int) -> dict | None:
+    """Core of decena_recommendation over chronological lists (claves = 1st-prize decenas)."""
+    if len(claves) < 4:
         return None
 
-    # Reverse to chronological order (oldest first)
-    cat_chrono = list(reversed(cat_sorteos))
+    def seguidores(largo: int) -> tuple[Counter, int]:
+        objetivo = tuple(claves[-largo:])
+        c: Counter = Counter()
+        n = 0
+        for i in range(len(claves) - largo):
+            if tuple(claves[i:i + largo]) == objetivo:
+                c.update(siguientes[i + largo])
+                n += 1
+        return c, n
 
-    decena_seq = []
-    fecha_seq = []
-    for s in cat_chrono:
-        d = _extract_decena(s["primero"])
-        if d is not None:
-            decena_seq.append(d)
-            fecha_seq.append(s.get("fecha", ""))
-
-    if len(decena_seq) < 4:
-        return None
-
-    last_3 = decena_seq[-3:]
-    last_3_fechas = fecha_seq[-3:]
-    target_triple = tuple(last_3)
-
-    # Search history for matching triples and what followed
-    followers: Counter = Counter()
-    match_count = 0
-    for i in range(len(decena_seq) - 3):
-        triple = (decena_seq[i], decena_seq[i + 1], decena_seq[i + 2])
-        if triple == target_triple:
-            followers[decena_seq[i + 3]] += 1
-            match_count += 1
-
+    followers, match_count = seguidores(3)
     method = "triple"
-
-    # Fallback: match last 2 decenas
-    if match_count == 0:
-        target_pair = tuple(last_3[-2:])
-        for i in range(len(decena_seq) - 2):
-            pair = (decena_seq[i], decena_seq[i + 1])
-            if pair == target_pair and i + 2 < len(decena_seq):
-                followers[decena_seq[i + 2]] += 1
-                match_count += 1
+    if match_count < min_coincidencias:
+        followers, match_count = seguidores(2)
         method = "pair"
+    if match_count < min_coincidencias:
+        followers = Counter(d for ds in siguientes for d in ds)
+        match_count = len(claves)
+        method = "frecuencia"
 
-    # Fallback: overall frequency
-    if match_count == 0:
-        followers = Counter(decena_seq)
-        match_count = len(decena_seq)
-        method = "fallback"
-
-    recommended = followers.most_common(1)[0][0]
-    rec_count = followers[recommended]
-    confidence = round(rec_count / match_count * 100, 1) if match_count else 0
-    distribution = {str(i): followers.get(str(i), 0) for i in range(10)}
-
+    muestras = sum(followers.values())
+    if not muestras:
+        return None
+    recommended = min(followers, key=lambda d: (-followers[d], d))     # ties → smallest digit
+    lift = followers[recommended] / muestras * 10                        # at most ×10 (always the same)
     return {
-        "last_3": last_3,
-        "last_3_fechas": last_3_fechas,
+        "last_3": claves[-3:],
+        "last_3_fechas": fechas[-3:],
         "recommended": recommended,
-        "confidence": confidence,
+        "lift": round(lift, 2),
+        "confidence": min(round(lift, 2), 15.0),
         "match_count": match_count,
-        "follower_distribution": distribution,
+        "muestras": muestras,
+        "minimo": min_coincidencias,
+        "follower_distribution": {str(i): followers.get(str(i), 0) for i in range(10)},
         "method": method,
+    }
+
+
+def decena_recommendation(sorteos: list[dict], category: str,
+                          min_coincidencias: int = DECENA_MIN_COINCIDENCIAS) -> dict | None:
+    """Recommend the next decena of a category (draws since RECO_DATE_FROM, newest first in input).
+
+    Pattern = 1st-prize tens digit of the last 3 draws; what follows = tens digits of the 3 prizes of the
+    next draw. With fewer than `min_coincidencias` matching draws it drops to the last 2 draws, then to
+    the overall frequency. `confidence`/`lift` = times more likely than chance (10 %)."""
+    serie = _serie_decenas(sorteos, category)
+    return _decena_desde([_extract_decena(s["primero"]) for s in serie],
+                         [_decenas_premios(s) for s in serie],
+                         [s.get("fecha", "") for s in serie], min_coincidencias)
+
+
+def decena_backtest(sorteos: list[dict], category: str, last_n: int = 200) -> dict | None:
+    """Walk-forward check over the last `last_n` draws of the category: recommend with the older draws
+    only; a hit is the decena appearing in any of the target's prizes. Chance per draw = distinct
+    decenas of its prizes ÷ 10. None with fewer than `last_n` + 30 draws since RECO_DATE_FROM."""
+    serie = _serie_decenas(sorteos, category)
+    if len(serie) < last_n + 30:
+        return None
+    claves = [_extract_decena(s["primero"]) for s in serie]
+    siguientes = [_decenas_premios(s) for s in serie]
+    fechas = [s.get("fecha", "") for s in serie]
+    n = len(serie)
+    aciertos = 0
+    azar = 0.0
+    for j in range(n - last_n, n):                   # target = serie[j]; history = serie[:j]
+        rec = _decena_desde(claves[:j], siguientes[:j], fechas[:j], DECENA_MIN_COINCIDENCIAS)
+        reales = set(siguientes[j])
+        aciertos += bool(rec) and rec["recommended"] in reales
+        azar += len(reales) / 10
+    return {
+        "sorteos": last_n,
+        "aciertos": aciertos,
+        "acierto_pct": round(100 * aciertos / last_n, 1),
+        "acierto_pct_azar": round(100 * azar / last_n, 1),
     }
 
 
@@ -849,8 +880,9 @@ def construir_stats(sorteos: list[dict], recent: list[dict], ml_batch: dict,
 
     decena_reco = {}
     for cat_key in all_cats:
-        reco = decena_recommendation(sorteos, cat_key)
+        reco = decena_recommendation(recent, cat_key)
         if reco:
+            reco["backtest"] = decena_backtest(recent, cat_key)
             decena_reco[cat_key] = reco
 
     stats_by_cat = {}
