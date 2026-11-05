@@ -24,13 +24,21 @@ La búsqueda en `static/app.js` encontró 6 sitios: los 2 del revisor (177 y 195
 - [x] Con una categoría maliciosa inyectada, ningún `<img>` aparece y el texto se ve literal — prueba: navegador (ver Evidence), rojo con el `app.js` de main.
 - [x] La página normal se ve igual — prueba: navegador, `cat-pill cat-miercolito | Miercolito`, `cat-dominical | Dominical`, `cat-gordito | Gordito del Zodiaco`.
 - [x] `node --check` y la suite completa en verde — prueba: node OK, `250 passed`.
-- [ ] `rsc risk` y un revisor si tier ≥ 1.
+- [x] `rsc risk` → tier 1; revisor de seguridad: el diff es correcto (sin doble escape; `catClase` no rompe las clases reales). Should-fix corregidos, del mismo tipo y con el mismo riesgo:
+  - la serie (`renderSeriesLetras`, `.bar-label`) y la letra, que vienen de la API sin validar → `esc()`;
+  - el selector de categorías del Simulador (`initSimCats`) → `<option>` creadas con el DOM (`value` + `textContent`, con su etiqueta);
+  - nit: `&cat=` del Simulador → `encodeURIComponent`.
+  Fuera (nits, endurecimiento aparte): números (4 caracteres) y terminaciones (2) sin `esc`, demasiado cortos para ejecutar código; la exportación CSV; `catKey` con `esc` en vez de `catClase`.
 
 ## Evidence
 - Categoría inyectada en `allSorteos`: `"><img src=x onerror="window.__xss=1">`; después, `renderSorteos()` y `renderStatCounters()`.
   - Con el arreglo: 0 `<img>`, `__xss = 0`; la etiqueta se ve literal y la clase queda `cat-pill cat-imgsrcxonerrorwindow__xss1`.
   - Con el `app.js` de main: 3 `<img>`, `__xss = 1` (el `onerror` se ejecuta).
+- Serie, letra y categoría del Simulador inyectadas en `stats`; después, `renderSeriesLetras()` e `initSimCats()`:
+  - con el arreglo: 0 `<img>`, `__xss = 0`; el selector muestra «Dominical», «Extraordinario», «Gordito del Zodiaco», «Miercolito»;
+  - con el `app.js` de main: 2 `<img>`, `__xss = 4`.
+- Suite completa `250 passed`; `node --check` OK.
 - `rsc risk --base origin/main` → tier 1, 1 revisor.
 
 ## Next
-Revisor de seguridad (tier 1).
+Push y PR a main.

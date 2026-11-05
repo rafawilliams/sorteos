@@ -422,9 +422,9 @@ function renderStatsForPrize(prize){
 function renderSeriesLetras(){
   const sf=stats.series_folio||{},series=sf.series||[],letras=stats.letras||[];
   const sMax=Math.max(...series.map(s=>s.count),1);
-  document.getElementById('seriesChart').innerHTML=series.map(s=>`<div class="bar-row"><span class="bar-label">${s.value}</span><div class="bar-track"><div class="bar-fill gold" style="width:${(s.count/sMax*100).toFixed(1)}%">${s.count}</div></div></div>`).join('');
+  document.getElementById('seriesChart').innerHTML=series.map(s=>`<div class="bar-row"><span class="bar-label">${esc(s.value)}</span><div class="bar-track"><div class="bar-fill gold" style="width:${(s.count/sMax*100).toFixed(1)}%">${s.count}</div></div></div>`).join('');
   const lMax=Math.max(...letras.map(l=>l.count),1);
-  document.getElementById('letrasChart').innerHTML=letras.map(l=>`<div class="bar-row"><span class="bar-label">${l.letra}</span><div class="bar-track"><div class="bar-fill green" style="width:${(l.count/lMax*100).toFixed(1)}%">${l.count}</div></div></div>`).join('');
+  document.getElementById('letrasChart').innerHTML=letras.map(l=>`<div class="bar-row"><span class="bar-label">${esc(l.letra)}</span><div class="bar-track"><div class="bar-fill green" style="width:${(l.count/lMax*100).toFixed(1)}%">${l.count}</div></div></div>`).join('');
 }
 
 // ==================== OTHER PRIZE FORMATS (2 and 5 digits) ====================
@@ -1030,7 +1030,8 @@ function initSimCats(){
   const sel=document.getElementById('simCat');if(!sel||!stats)return;
   const cats=Object.keys(stats.by_category||{});
   sel.innerHTML='<option value="">Todas</option>';
-  cats.forEach(c=>{sel.innerHTML+=`<option value="${c}">${c}</option>`;});
+  // DOM, not innerHTML: the category comes from the data (external API)
+  cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=catLabel(c);sel.appendChild(o);});
 }
 let simChartInstance=null;
 async function runSimulation(){
@@ -1040,7 +1041,7 @@ async function runSimulation(){
   const from=document.getElementById('simFrom').value;
   const to=document.getElementById('simTo').value;
   let url=`/api/simulador?numero=${num}`;
-  if(cat)url+=`&cat=${cat}`;
+  if(cat)url+=`&cat=${encodeURIComponent(cat)}`;
   if(from)url+=`&from=${from}`;
   if(to)url+=`&to=${to}`;
 
