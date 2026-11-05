@@ -112,3 +112,25 @@ class TestFuncionesDominio:
         assert res["last_update"] == "2026-10-30"
         assert "dominical" in res["by_category"]
         assert "2" in res["formatos"] and "5" in res["formatos"]
+
+
+class TestRecosTresPremios:
+    """Per-category recommendations use the 1st, 2nd and 3rd 4-digit prizes (feat/recos-tres-premios)."""
+
+    def test_extract_numbers_all_prizes_newest_first(self):
+        nums = estadisticas._extract_numbers(SAMPLE_DRAWS, "dominical", prize=None)
+        assert nums[:3] == ["4215", "1234", "9915"]        # newest draw first, prizes in order
+        assert len(nums) == 12                              # 4 dominical draws × 3 prizes
+
+    def test_two_digit_prizes_are_skipped(self):
+        assert estadisticas._extract_numbers(SAMPLE_DRAWS, "gordito", prize=None) == ["4215"]
+
+    def test_construir_stats_by_category_uses_three_prizes(self, monkeypatch):
+        vistos = []
+        real = estadisticas.number_recommendation
+        monkeypatch.setattr(estadisticas, "number_recommendation",
+                            lambda nums, top=5: vistos.append(list(nums)) or real(nums, top))
+        recent = estadisticas._filter_recent(SAMPLE_DRAWS)
+        estadisticas.construir_stats(SAMPLE_DRAWS, recent, {}, {"trained": False}, "2026-10-30")
+        assert estadisticas._extract_numbers(recent, "dominical", prize=None) in vistos
+        assert estadisticas._extract_numbers(recent, "miercolito", prize=None) in vistos

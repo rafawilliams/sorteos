@@ -201,10 +201,11 @@ class LotteryPredictor:
         return pos_probs
 
     def predict_from_probs(self, pos_probs: list[np.ndarray],
-                           sorteos: list[dict], prize: str = "primero",
+                           sorteos: list[dict], prize: str | None = "primero",
                            top: int = 5) -> list[dict]:
         """Generate top number recommendations from pre-computed probabilities.
-        Uses vectorized Monte Carlo for speed."""
+        Uses vectorized Monte Carlo for speed. `prize=None`: the "already drawn" bonus counts
+        the 1st, 2nd and 3rd 4-digit prizes."""
         if not pos_probs:
             return []
 
@@ -221,8 +222,9 @@ class LotteryPredictor:
         candidates = dict(zip(unique, counts))
 
         # Score top candidates
+        prizes = ("primero", "segundo", "tercero") if prize is None else (prize,)
         hist = Counter(
-            s[prize] for s in sorteos if len(s.get(prize) or "") == 4
+            s[p] for s in sorteos for p in prizes if len(s.get(p) or "") == 4
         )
         # Pre-sort by MC count descending, take top 200
         top_idx = np.argsort(counts)[-200:][::-1]
@@ -342,7 +344,7 @@ class LotteryPredictor:
                 feat_cat = self._compute_features(df_cat)
                 cat_probs = self._avg_pos_probs(feat_cat)
                 cat_reco[cat_key] = self.predict_from_probs(
-                    cat_probs, cat_sorteos, "primero"
+                    cat_probs, cat_sorteos, None      # any 4-digit prize, like Seguimiento
                 )
                 cat_endings[cat_key] = self.predict_endings_from_probs(cat_probs)
 

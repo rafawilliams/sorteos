@@ -54,14 +54,17 @@ def _es_4_cifras(p: str) -> bool:
 
 
 def _extract_numbers(sorteos: list[dict], category: str | None = None,
-                     prize: str = "primero") -> list[str]:
+                     prize: str | None = "primero") -> list[str]:
+    """4-digit prizes in draw order. `prize=None` takes 1st, 2nd and 3rd of each draw, in that order."""
+    prizes = ("primero", "segundo", "tercero") if prize is None else (prize,)
     nums = []
     for s in sorteos:
         if category and s.get("cat") != category:
             continue
-        p = s.get(prize, "")
-        if _es_4_cifras(p):
-            nums.append(p)
+        for pr in prizes:
+            p = s.get(pr, "")
+            if _es_4_cifras(p):
+                nums.append(p)
     return nums
 
 
@@ -799,13 +802,16 @@ def construir_stats(sorteos: list[dict], recent: list[dict], ml_batch: dict,
     stats_by_cat = {}
     for cat_key in all_cats:
         cat_nums = _extract_numbers(sorteos, cat_key, prize="primero")
-        recent_cat_nums = _extract_numbers(recent, cat_key, prize="primero")
+        # Recommendations use every 4-digit prize: the three are drawn alike, and Seguimiento
+        # scores them against all three.
+        reco_nums = (_extract_numbers(recent, cat_key, prize=None)
+                     or _extract_numbers(sorteos, cat_key, prize=None))
         if cat_nums:
             stats_by_cat[cat_key] = {
                 "total": len(cat_nums),
                 "digit_frequency": digit_frequency(cat_nums),
                 "hot_cold": hot_cold(cat_nums),
-                "recommendations": number_recommendation(recent_cat_nums or cat_nums),
+                "recommendations": number_recommendation(reco_nums),
                 "ml_recommendations": ml_cat_reco.get(cat_key, []),
             }
 
