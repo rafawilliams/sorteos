@@ -45,6 +45,16 @@ class TestEnvFlag:
         assert "debug=True" not in src
 
 
+class TestPoolConexiones:
+    """Una conexión del pool que MariaDB ya cerró no debe llegar a una petición."""
+
+    def test_pre_ping_activo(self):
+        assert base.engine.pool._pre_ping is True
+
+    def test_recicla_conexiones(self):
+        assert 0 < base.engine.pool._recycle <= 3600
+
+
 class TestDatabaseUrl:
     def test_missing_raises(self, monkeypatch):
         monkeypatch.delenv("DATABASE_URL", raising=False)

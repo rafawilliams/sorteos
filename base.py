@@ -34,6 +34,8 @@ def api_credentials():
 
 DATABASE_URL = require_env("DATABASE_URL")
 
-engine = create_engine(DATABASE_URL)
+# pre_ping: comprueba la conexión antes de usarla; recycle: la renueva cada hora.
+# Sin ello, una conexión que MariaDB cerró por inactividad hace fallar la primera petición.
+engine = create_engine(DATABASE_URL, pool_pre_ping=True, pool_recycle=3600)
 Session = sessionmaker(bind=engine)
 Base = declarative_base()
