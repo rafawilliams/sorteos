@@ -56,3 +56,4 @@ models/
 .claude/commands/python-review.md
 .claude/commands/resume-session.md
 .claude/commands/save-session.md
+.claude/skills/security-audit

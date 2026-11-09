@@ -26,6 +26,7 @@
     "python",
     "review",
     "sdd-init",
+    "security-audit",
     "ship",
     "simplify-code",
     "source-grounded-development",
@@ -47,7 +48,7 @@
     "refuter-tests"
   ],
   "ownSkills": [],
-  "catalogVersion": "4.0.5",
+  "catalogVersion": "4.1.0",
   "tier": null,
   "optOuts": [
     "trunk-open"
