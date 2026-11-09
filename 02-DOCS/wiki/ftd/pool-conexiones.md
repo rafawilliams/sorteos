@@ -1,7 +1,9 @@
 ---
 author: rafawilliams
 branch: fix/pool-conexiones
-status: in-progress
+status: done
+merged: 2026-11-09
+pr: #35
 ---
 # Conexiones viejas del pool a MariaDB
 
@@ -23,4 +25,4 @@ La primera petición tras un rato sin tráfico devolvía 500 (`mariadb.Interface
 - Después: `pytest` → `263 passed`. Engine real de `base.py` tras cerrar el servidor la conexión → consulta OK (9296 sorteos). Servidor en `127.0.0.1:5000` recargado con el cambio: `/api/sorteos` → 200, 200.
 
 ## Next
-Commit y PR a `main`. Queda sin explicar el primer fallo visto justo tras arrancar (pool vacío); si reaparece, investigarlo aparte.
+Fusionado en main el 2026-11-09 (846631c).
