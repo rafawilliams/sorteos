@@ -170,3 +170,14 @@ Rama `feat/react-etapa-1-contrato`, apilada sobre `feat/react-frontend` (PR #37 
 - red: 12 de 17 pruebas de estructura fallaron contra el esqueleto; después, 7 de 11 nuevas (mapas y diccionarios vacíos). Mutaciones comprobadas: quitar la tolerancia a ocultos, desactivar la comparación de tipos y confundir booleano con número hacen fallar 2 pruebas cada una.
 - done-check: `pytest tests/test_contrato_front.py -q` en verde contra la base sembrada (9 passed; 87 con las demás de contrato); contra la base real se salta sin escribir (9 skipped). **Pendiente** la mutación «renombrar una clave de un fixture» del done-check: se anota abajo al hacerla.
 - mutación del done-check de T009 (hecha): renombrar `ontime_endings` en `frontend/fixtures/gaps.json` hace fallar `test_gaps` con «campo nuevo sin fixture: ontime_endings»; revertida con `git checkout`, vuelven los 9 en verde.
+
+### Revisión de T008 — ronda 3 (1 should-fix, 3 nits, 1 question) — 2026-11-11
+- should-fix L9 (arreglado): `monthly_recommendation` usaba `date.today()` (el mes objetivo salió «Diciembre 2026» por generar el 11 de noviembre). `_reloj_fijo` ahora fija también `estadisticas._dt.date.today()` (con una subclase de `date`) además de `seguimiento.registrar`, y toda la generación va dentro del reloj fijo: `target_month` = 2 (Febrero) y `target_year` = 2026 siempre. Dos generaciones seguidas: mismo hash en los 14 fixtures.
+- nit L10 (arreglado): `fijar_valores_volatiles` solo sustituye `train_date` si es un texto; si cambiara de tipo, el fixture lo deja a la vista (4 pruebas).
+- nit L11/L12 (arreglados): prueba de que `_guardar` aplica la normalización; sustituida la prueba que no podía fallar por tres que sí (hoy de `estadisticas` fijado, restauración tras excepción, la fecha falsa sigue comportándose como `date`); y una prueba sobre los fixtures (`test_los_fixtures_no_dependen_del_dia_en_que_se_generaron`) que cubre el cableado de punta a punta.
+- question L13 (arreglado): toda la generación va sobre una base de Seguimiento en memoria; ya no se crea ni se toca la tabla `predicciones` de la base sembrada.
+- **Límite de rondas:** esta era la 3.ª y última ronda de T008; el ledger no permite una cuarta. Los arreglos de esta ronda no se han vuelto a revisar. Se anota en la cola de decisiones.
+- controls T008: tests ✅ (45 del generador, 95 con todo el contrato) build n/a security ✅ (la guarda y el aborto antes de escribir) traceability ✅ (AC6) — status T008: complete.
+
+## Decision queue (adiciones — etapa 1)
+- [review-after] Q3 — Los arreglos de la ronda 3 de T008 (reloj fijo completo, normalización de `train_date`, generación sobre Seguimiento en memoria) no tuvieron una cuarta revisión porque el ledger limita a 3 rondas; revisarlos en la revisión de cierre de la rama, evidencia: 45 pruebas del generador, mutaciones comprobadas y hashes idénticos entre generaciones, T008
