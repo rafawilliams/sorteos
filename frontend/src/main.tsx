@@ -3,7 +3,8 @@
 import { montarIslas } from './montaje'
 import { crearLegacyStore } from './store/legacyStore'
 
-const modulos = import.meta.glob('./tabs/*.tsx', { eager: true })
+// Las pruebas viven junto a cada isla (`Gaps.test.tsx`): se excluyen o entrarían en el bundle de producción.
+const modulos = import.meta.glob(['./tabs/*.tsx', '!./tabs/*.test.tsx'], { eager: true })
 
 try {
   montarIslas(modulos, crearLegacyStore())

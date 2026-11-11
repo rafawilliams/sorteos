@@ -71,14 +71,19 @@ export function montarIslas(modulos: Record<string, unknown>, store: Store, doc:
     if (marcador.hasAttribute(MARCA_MONTADO)) return
     marcador.setAttribute(MARCA_MONTADO, '')
     const { Componente } = modulo
-    createRoot(marcador).render(
-      <StrictMode>
-        <StoreProvider store={store}>
-          <FronteraDeIsla nombre={nombre}>
-            <Componente />
-          </FronteraDeIsla>
-        </StoreProvider>
-      </StrictMode>,
-    )
+    try {
+      createRoot(marcador).render(
+        <StrictMode>
+          <StoreProvider store={store}>
+            <FronteraDeIsla nombre={nombre}>
+              <Componente />
+            </FronteraDeIsla>
+          </StoreProvider>
+        </StrictMode>,
+      )
+    } catch (error) {
+      marcador.removeAttribute(MARCA_MONTADO) // sin root no hay isla: que una llamada posterior pueda reintentarlo
+      console.error(`No se pudo montar la isla «${nombre}»`, error)
+    }
   })
 }

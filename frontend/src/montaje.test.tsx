@@ -18,6 +18,22 @@ function Rota(): never {
   throw new Error('fallo interno con detalles secretos')
 }
 
+// `createRoot` real, salvo cuando una prueba pide que falle una vez.
+const control = vi.hoisted(() => ({ fallarCreateRoot: false }))
+vi.mock('react-dom/client', async (original) => {
+  const real = await original<typeof import('react-dom/client')>()
+  return {
+    ...real,
+    createRoot: (...args: Parameters<typeof real.createRoot>) => {
+      if (control.fallarCreateRoot) {
+        control.fallarCreateRoot = false
+        throw new Error('contenedor inválido')
+      }
+      return real.createRoot(...args)
+    },
+  }
+})
+
 const modulo = (nombre: string, Componente: unknown) => ({ nombre, Componente })
 
 let errores: ReturnType<typeof vi.spyOn>
@@ -111,6 +127,18 @@ describe('montarIslas', () => {
     await montar(modulos, store)
     expect(el.querySelectorAll('p')).toHaveLength(1)
     expect(errores).not.toHaveBeenCalled()
+  })
+
+  it('si createRoot lanza, el marcador no queda marcado y un segundo intento lo monta', async () => {
+    const el = marca('gaps')
+    const modulos = { a: modulo('gaps', Hola) }
+    const store = crearStoreFalso()
+    control.fallarCreateRoot = true
+    await montar(modulos, store)
+    expect(errores).toHaveBeenCalledWith(expect.stringContaining('gaps'), expect.any(Error))
+    expect(el.hasAttribute('data-react-montado')).toBe(false)
+    await montar(modulos, store)
+    expect(el.textContent).toBe('hola gaps')
   })
 
   it('una isla que falla muestra un aviso genérico, sin detalles, y no rompe las demás', async () => {
