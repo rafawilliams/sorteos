@@ -1,9 +1,59 @@
+// PUENTE PARA LAS ISLAS REACT (frontend/src/store/legacyStore.ts)
+// Va el primero: applyTheme corre antes de las declaraciones `let` de abajo, así que _lpEmit no puede leer el estado
+// mientras no exista la caché (nadie ha pedido aún una instantánea).
+var _lpListeners=new Set(), _lpCache=null, _lpStatsBueno=null;
+function _lpStatsOk(x){return !!x&&typeof x==='object'&&typeof x.total_sorteos==='number'}
+function _lpLeer(campo){
+  switch(campo){
+    case 'sorteos': return allSorteos;
+    case 'ready': return allSorteos.length>0;
+    case 'stats': if(_lpStatsOk(stats))_lpStatsBueno=stats;return _lpStatsBueno;
+    case 'useML': return useML;
+    case 'prize': return currentPrize;
+    case 'statsPrize': return currentStatsPrize;
+    case 'theme': return document.documentElement.getAttribute('data-theme')==='light'?'light':'dark';
+    case 'activeTab': {const t=document.querySelector('#navTabs .nav-tab.active');return t&&t.dataset.tab?t.dataset.tab:'predicciones'}
+  }
+}
+function _lpSnapshot(){
+  if(!_lpCache){
+    _lpCache={};
+    ['sorteos','ready','stats','useML','prize','statsPrize','theme','activeTab'].forEach(c=>{_lpCache[c]=_lpLeer(c)});
+  }
+  return _lpCache;
+}
+function _lpEmit(...campos){
+  let cambio=true;
+  if(_lpCache){
+    const sig={..._lpCache};
+    campos.forEach(c=>{
+      if(c==='sorteos'){sig.sorteos=_lpLeer('sorteos');sig.ready=_lpLeer('ready')}
+      else sig[c]=_lpLeer(c);
+    });
+    cambio=Object.keys(sig).some(k=>sig[k]!==_lpCache[k]);
+    if(cambio)_lpCache=sig;
+  }
+  if(!cambio)return;
+  _lpListeners.forEach(fn=>{try{fn()}catch(e){console.error(e)}});
+  document.dispatchEvent(new CustomEvent('lp:change',{detail:{campos}}));
+}
+window.LP={
+  getSnapshot:_lpSnapshot,
+  subscribe(fn){_lpListeners.add(fn);return()=>{_lpListeners.delete(fn)}},
+  setUseML(v){setUseMLLP(!!v)},
+  setPrize(p){const tab=document.querySelector('#prizeTabs .prize-tab[data-prize="'+p+'"]');if(tab)selectPrize(tab)},
+  setStatsPrize(p){const tab=document.querySelector('#statsPrizeTabs .prize-tab[data-prize="'+p+'"]');if(tab)selectStatsPrize(tab)},
+  toast(msg,ms){showToast(msg,ms)},
+  reload(){return loadData().catch(e=>{console.error('Error reloading:',e)})}
+};
+
 // THEME
 function applyTheme(theme){
   document.documentElement.setAttribute('data-theme',theme);
   document.getElementById('themeIcon').textContent=theme==='light'?'🌙':'☀️';
   document.getElementById('themeLabel').textContent=theme==='light'?'Oscuro':'Claro';
   localStorage.setItem('theme',theme);
+  _lpEmit('theme');
 }
 function toggleTheme(){
   const current=document.documentElement.getAttribute('data-theme')||'dark';
@@ -75,6 +125,7 @@ function activateNavTab(tab){
   tab.setAttribute('tabindex','0');
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.getElementById('sec-'+tab.dataset.tab).classList.add('active');
+  _lpEmit('activeTab');
   if(tab.dataset.tab==='precision') loadBacktesting();
   if(tab.dataset.tab==='seguimiento') loadSeguimiento();
   if(tab.dataset.tab==='gaps') loadGaps();
@@ -118,14 +169,21 @@ async function loadData(){
   try{
     const sRes=await fetch('/api/sorteos?all=true');
     const sData=await sRes.json();
-    allSorteos=sData.data||sData;
+    const lista=sData.data||sData;
+    if(!sRes.ok||!Array.isArray(lista))throw new Error('Respuesta inválida de /api/sorteos');
+    allSorteos=lista;
+    _lpEmit('sorteos');
     renderQuick();
   }catch(e){console.error('Error loading sorteos:',e)}
   // Phase 2: Load stats (heavy ML computation — may take >60s on first load)
   const loadStats=async(attempt=1)=>{
     try{
       const stRes=await fetch('/api/stats',{signal:AbortSignal.timeout(180000)});
-      stats=await stRes.json();
+      const cuerpo=await stRes.json();
+      // Un 500 con cuerpo JSON (o {}) no puede ocupar el lugar de las estadísticas: cuenta como fallo y reintenta.
+      if(!stRes.ok||!_lpStatsOk(cuerpo))throw new Error('Respuesta inválida de /api/stats');
+      stats=cuerpo;
+      _lpEmit('stats');
       renderFull();
     }catch(e){
       if(attempt<3){console.warn(`Stats attempt ${attempt} failed, retrying...`);return loadStats(attempt+1);}
@@ -145,7 +203,7 @@ function renderQuick(){
 function renderFull(){
   // Full renders once stats are available
   renderLastUpdate();buildCategoryUI();renderStatCounters();
-  renderRecommendations('all');renderDecenas();renderStatsForPrize('primero');renderSeriesLetras();renderFormatos();
+  renderRecommendations('all');renderDecenas();renderStatsForPrize(currentStatsPrize);renderSeriesLetras();renderFormatos();
   renderRadarChart();renderScatterChart();
   renderPositionGrids();renderHeatmap();renderTrendChart();renderVolumeChart();
   renderEndingsSection();renderMonthlySection();renderFavorites();initSimCats();renderDashboard();
@@ -260,21 +318,26 @@ function _setAriaTab(container,active){
   active.setAttribute('aria-selected','true');
   active.setAttribute('tabindex','0');
 }
+function _statsListas(){return _lpStatsOk(stats)}
+function selectPrize(tab){
+  _setAriaTab(document.getElementById('prizeTabs'),tab);currentPrize=tab.dataset.prize;
+  _lpEmit('prize');
+  const cat=document.querySelector('#recoCatTabs .cat-tab.active');
+  if(_statsListas()&&cat)renderRecommendations(cat.dataset.cat);
+}
+function selectStatsPrize(tab){
+  _setAriaTab(document.getElementById('statsPrizeTabs'),tab);currentStatsPrize=tab.dataset.prize;
+  _lpEmit('statsPrize');
+  if(_statsListas()){renderStatsForPrize(currentStatsPrize);triggerReveals()}
+}
 function initPrizeTabs(){
-  const wrap=document.getElementById('prizeTabs');
-  wrap.querySelectorAll('.prize-tab').forEach(tab=>{
-    tab.addEventListener('click',()=>{
-      _setAriaTab(wrap,tab);currentPrize=tab.dataset.prize;
-      renderRecommendations(document.querySelector('#recoCatTabs .cat-tab.active').dataset.cat);
-    });
+  document.getElementById('prizeTabs').querySelectorAll('.prize-tab').forEach(tab=>{
+    tab.addEventListener('click',()=>selectPrize(tab));
   });
 }
 function initStatsPrizeTabs(){
-  const wrap=document.getElementById('statsPrizeTabs');
-  wrap.querySelectorAll('.prize-tab').forEach(tab=>{
-    tab.addEventListener('click',()=>{
-      _setAriaTab(wrap,tab);renderStatsForPrize(tab.dataset.prize);triggerReveals();
-    });
+  document.getElementById('statsPrizeTabs').querySelectorAll('.prize-tab').forEach(tab=>{
+    tab.addEventListener('click',()=>selectStatsPrize(tab));
   });
 }
 function initEndCatTabs(){
@@ -295,14 +358,19 @@ function initRecoCatTabs(){
 }
 
 // ML TOGGLE
-function toggleML(){
-  useML=!useML;
+function toggleML(){setUseMLLP(!useML)}
+function setUseMLLP(valor){
+  if(valor===useML)return;
+  useML=valor;
   document.querySelectorAll('.ml-toggle').forEach(b=>{
     b.classList.toggle('active',useML);
     b.textContent=useML?'🤖 ML Activo':'📊 Estadístico';
     b.setAttribute('aria-pressed',String(useML));
   });
-  renderRecommendations(document.querySelector('#recoCatTabs .cat-tab.active').dataset.cat);
+  _lpEmit('useML');
+  const cat=document.querySelector('#recoCatTabs .cat-tab.active');
+  if(!_statsListas()||!cat)return; // aún no hay estadísticas: solo cambia el modo; renderFull lo usará al llegar
+  renderRecommendations(cat.dataset.cat);
   renderEndingsSection();
   // Show ML info badge
   const info=stats.ml_info||{};
