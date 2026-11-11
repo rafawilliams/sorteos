@@ -15,6 +15,7 @@
 - [Plan — Modularizar el backend](sdd/plans/modularizar-backend.md)
 - [Plan — Mejoras de UI (Esferas de Sorteo, Dashboard y Visualización)](sdd/plans/mejoras-ui-esferas.md)
 - [Plan — Migrar el front-end a React](sdd/plans/frontend-react.md)
+- [Análisis — Migrar el front-end a React](sdd/analysis/frontend-react.md)
 - [Verificación — Seguimiento (2026-10-31)](sdd/verifications/seguimiento-recomendaciones-2026-10-31.md)
 - [Verificación — Modularizar el backend (2026-11-02)](sdd/verifications/modularizar-backend-2026-11-02.md)
 - [Verificación — Mejoras de UI (2026-11-02)](sdd/verifications/mejoras-ui-esferas-2026-11-02.md)
