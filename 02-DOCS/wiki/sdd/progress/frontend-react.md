@@ -291,3 +291,16 @@ Todos sobre la suite de contrato, es decir, sobre lo que T015 y T052 tendrán qu
 
 ## Decision queue (adiciones — etapa 1)
 - [review-after] Q5 — Los arreglos de la ronda 3 de T014 (la suite de contrato del Store: setters, observación continua de `reload`, campos tras un fallo) no tuvieron una cuarta revisión porque el ledger limita a 3 rondas; revisarlos en la revisión de cierre de la rama o al ejercitar la suite con `LegacyStore` (T015), evidencia: 67 pruebas en `store`, 20 almacenes defectuosos y mutantes comprobados, T014
+
+## T015 — 2026-11-11
+- status: complete (commits c2f17ba + d77b954)
+- red/green: la suite de contrato y `puente.test.ts` (24 pruebas nuevas) contra `static/app.js` real en jsdom (`legacyHarness.ts`, plantilla real, fetch → fixtures). 8 mutantes del puente, todos detectados (dos sobrevivieron al principio y se añadieron pruebas: `ready` recalculado y cuerpo de error en `/api/sorteos`).
+- files: static/app.js (puente `window.LP` al inicio, `selectPrize`/`selectStatsPrize`/`setUseMLLP`, guardas de respuesta en `loadData`, `currentStatsPrize` ahora se guarda), frontend/src/store/{legacyStore,legacyHarness}.ts, tests, `@types/node` 22.20.5 (arnés).
+- cambios de comportamiento de app.js (declarados): `loadData` trata como fallo un `!ok` o un cuerpo inválido (reintenta `/api/stats` hasta 3 veces); `toggleML` no repinta si aún no hay stats; `renderFull` conserva el premio de estadísticas elegido.
+- risk: tier 1 — 1 revisor
+- review: ronda 1 → 6 hallazgos (3 should-fix, 2 nits, 1 question). L56–L59 arreglados (detail del evento = cadena, un evento por campo; pruebas que ahora pueden fallar, mutación de la guarda comprobada; selector sin interpolar); L61 intencional (reintento inmediato ya existía ante errores de red); L60 aparcado.
+- controls: tests ✅ (272 front, 397 py con base sembrada) build ✅ typecheck 0 security ✅ npm audit 0 traceability ✅
+- decision: Q6 review-after (abajo). Ronda 2 de 3; los arreglos de la ronda 2 no se han vuelto a revisar con un revisor aparte (cambios acotados, con mutación comprobada).
+
+## Decision queue (adiciones — etapa 1)
+- [review-after] Q6 — T015/L60: `renderFull` vuelve a llamar a `init*Tabs`, así que cada `reload()` desde React duplica listeners de las pestañas de premio/categoría (inocuo para el estado, cuesta repintados). Recomendación: guardar con una marca en el nodo al migrar esas pestañas (T046/T052) o antes si molesta. Evidencia: ledger L60.
