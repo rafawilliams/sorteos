@@ -205,3 +205,16 @@ Rama `feat/react-etapa-1-contrato`, apilada sobre `feat/react-frontend` (PR #37 
 - red/green: el typecheck falló dos veces al principio (un artefacto de TypeScript al inferir listas de objetos con claves distintas, que se resolvió permitiendo `undefined` en los valores de diccionarios dentro de la comprobación) y quedó en 0.
 - done-check: `npm --prefix frontend run typecheck` sale con 0. **Mutaciones comprobadas (7 de 7 detectadas)**: renombrar un campo de `Stats` (8 errores), quitar `lift` de `RecomendacionNumero`, renombrar `numeros_aplican`, quitar `ratio` de `GapNumero` (solo lo ve la variante nueva), cambiar `total` de number a string, y añadir un campo nuevo al fixture de stats o a un registro anidado de Seguimiento (lo detecta `Cubre`). Todo restaurado.
 - no cubierto por fixtures, tipado leyendo el código: `POST /api/actualizar`, `numeros_acertados` con elementos (en los fixtures siempre vacío), `peso_ml: null`.
+
+## T012 — 2026-11-11
+- status: complete (en revisión)
+- qué: `frontend/src/lib/formato.ts` con `CAT_LABELS`, `catLabel`, `catClase`, `formatDate`, `fmtLift` y `liftBar`, con las reglas exactas de `static/app.js` (plan §0). Diferencia deliberada: `catLabel` usa `Object.hasOwn`, así que «toString» o «constructor» ya no devuelven una función como en el código viejo.
+- red: con un esqueleto vacío fallaron 14 de 15 pruebas; green: 15. Mutaciones comprobadas (7 de 7): cambiar la etiqueta del gordito, `k in CAT_LABELS`, quitar el tope del 100 %, un decimal en vez de dos, quitar el guion de `catClase`, `formatDate` que solo comprueba `undefined` y sin la hora local (cambiaría de día según la zona horaria).
+- done-check: `FE test lib` en verde con las 4 categorías exactas, una desconocida y los formatos de §0.
+
+## T013 — 2026-11-11
+- status: complete (en revisión)
+- qué: `frontend/src/components/Balls.tsx` (equivale a `renderBalls`: una esfera por carácter, el premio tal como llega, `aria-label` con el premio completo, esferas `aria-hidden`, valor vacío como guion largo `num-empty`) y `frontend/src/sin-relleno.test.ts`, que vigila con `import.meta.glob` que ningún fuente de `frontend/src` use relleno de ceros salvo `lib/numeroSimulador.ts`.
+- decisión: la variante `hot` se añade a `VarianteBola` (`gold`, `green`, `purple`, `hot`): el código viejo la usa para la decena caliente y mi bloque de interfaces de T013 no la listaba.
+- red: 17 de 17 pruebas fallaron con el esqueleto; green: 17 + 3 de la guardia. Mutaciones comprobadas (6 de 7; la séptima, `texto === ''` en vez de `!texto`, es un mutante equivalente porque el texto ya está sin espacios): rellenar a 4 cifras (9 fallos), cortar a 4 caracteres, esferas visibles a lectores, etiqueta accesible, variante y tamaño por defecto. La guardia se comprobó con un archivo que rellena (falla) y con el permitido (pasa).
+- done-check: `FE test components/Balls` en verde con premios `"98"`, `"0074"`, `"05309"` y `""`; una prueba falla si el relleno aparece fuera de `lib/numeroSimulador.ts`.
