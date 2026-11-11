@@ -153,3 +153,19 @@ Rama `feat/react-etapa-1-contrato`, apilada sobre `feat/react-frontend` (PR #37 
 - nit L3 (arreglado): prueba de ids únicos con los 600 ids reales de la base sembrada.
 - nit L4 (arreglado): nueva variante `backtesting_sin_modelo.json` (`ml: {}`, con el modelo sustituido por uno sin entrenar).
 - red: 4 pruebas fallaron por aserciones antes de implementar; green: 28 pruebas. 14 fixtures regenerados.
+
+### Revisión de T008 — ronda 2 (1 should-fix, 2 nits, 1 question) — 2026-11-11
+- should-fix L5 (arreglado): los fixtures de Seguimiento dependían del reloj (`date.today()` y `datetime.now()`). Ahora hay un reloj fijo (`HOY_FIJO` = 2026-01-15, `AHORA_FIJO`): `llevar_al_presente` mueve las fechas a ese «hoy» y `_reloj_fijo` hace que `seguimiento.registrar` lo use. Además `fijar_valores_volatiles` fija `ml_info.train_date` (hora de entrenamiento del modelo, que cambia con cada worktree). Comprobado: dos generaciones seguidas dan el mismo hash en los 14 fixtures y ninguno contiene la fecha de hoy.
+- nit L6 (arreglado): dos pruebas nuevas (con `sys.modules["app"] = None`) fijan que la guarda va antes de importar la aplicación y que con 600 sorteos deja pasar. Mutación comprobada: mover la guarda tras el import hace fallar una.
+- nit L7 (arreglado a nivel de fixture): `test_el_fixture_de_seguimiento_trae_comparados_y_pendientes_con_datos` (en T009). Mutante comprobado: con `ULTIMOS_SIN_COMPARAR = 0` el generador deja `comparados: 0`, y esa prueba lo detectaría.
+- nit L8 (arreglado): `llevar_al_presente` usa el sorteo más nuevo con `max`, no `sorteos[0]`.
+- question (sin acción): `SimpleNamespace(trained=False)` sustituye a `predictor` solo mientras se pide `/api/backtesting`, que hoy solo lee `.trained`; si esa ruta usara otro atributo daría un 500 que `_pedir` convierte en un error claro.
+- red: 3 de 8 pruebas nuevas fallaron antes de implementar; green: 35 pruebas del generador.
+- nota del revisor: `comparison.best_method` sale «ML» con `ml: {}` (comportamiento real de la API con el modelo sin entrenar); el front no debe tomarlo como verdad semántica.
+
+## T009 — 2026-11-11
+- status: complete (en revisión)
+- qué: `tests/contrato_front.py` (`aplanar` y `diferencias`: reduce un JSON a «ruta → tipos» y compara claves en los dos sentidos y tipos; con `tolerar_vacios` un nulo, una lista vacía o un diccionario vacío valen por cualquier cosa), `tests/test_contrato_front.py` (la forma de cada endpoint en vivo frente a su fixture; se salta si la base no es la sembrada de 600 sorteos), `tests/test_contrato_front_estructura.py` (28 pruebas de las funciones de comparación) y `tests/test_contrato_front_variantes.py` (cada variante solo difiere del principal en nulos o vacíos; todos los backtests cubiertos con y sin valor; Seguimiento con datos).
+- decisión: los diccionarios cuyas claves son datos (dígitos, terminaciones, fechas, meses, categorías, premios) se tratan como mapas: la clave pasa a `*` y se comparan las formas de sus valores. Sin eso, variantes legítimas (una categoría ausente, otras terminaciones) daban falsos fallos. En TypeScript serán `Record<string, …>`.
+- red: 12 de 17 pruebas de estructura fallaron contra el esqueleto; después, 7 de 11 nuevas (mapas y diccionarios vacíos). Mutaciones comprobadas: quitar la tolerancia a ocultos, desactivar la comparación de tipos y confundir booleano con número hacen fallar 2 pruebas cada una.
+- done-check: `pytest tests/test_contrato_front.py -q` en verde contra la base sembrada (9 passed; 87 con las demás de contrato); contra la base real se salta sin escribir (9 skipped). **Pendiente** la mutación «renombrar una clave de un fixture» del done-check: se anota abajo al hacerla.

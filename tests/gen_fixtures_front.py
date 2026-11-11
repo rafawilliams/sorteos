@@ -17,7 +17,7 @@ import json
 import os
 import sys
 from contextlib import contextmanager
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from types import SimpleNamespace
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -26,6 +26,8 @@ SORTEOS_ESPERADOS = 600
 MAX_ELEMENTOS = 25
 POCOS_SORTEOS = 150          # menos de 230 desde 1995: los backtests de estadísticas salen None
 ULTIMOS_SIN_COMPARAR = 12    # sorteos que se «esconden» para que Seguimiento tenga registros por comparar
+HOY_FIJO = date(2026, 1, 15)             # reloj de referencia: los fixtures no deben cambiar según el día
+AHORA_FIJO = datetime(2026, 1, 15, 12, 0)
 DESTINO = os.path.join(os.path.dirname(__file__), "..", "frontend", "fixtures")
 
 
@@ -85,6 +87,42 @@ def desplazar_fechas(sorteos, dias):
     return resultado
 
 
+def llevar_al_presente(sorteos):
+    """Copia con las fechas movidas para que el sorteo más nuevo caiga 3 días antes de `HOY_FIJO`.
+
+    Seguimiento solo congela categorías con un sorteo del último año; la base sembrada llega a 2019.
+    Se usa un «hoy» constante, no el del sistema, para que regenerar otro día dé los mismos fixtures.
+    """
+    reciente = max(date.fromisoformat(s["fecha"]) for s in sorteos)     # no se asume el orden de la lista
+    return desplazar_fechas(sorteos, (HOY_FIJO - reciente).days - 3)
+
+
+@contextmanager
+def _reloj_fijo():
+    """Hace que `seguimiento.registrar` use `HOY_FIJO` y `AHORA_FIJO` (el endpoint no se los pasa)."""
+    import seguimiento
+
+    original = seguimiento.registrar
+
+    def con_reloj(session, sorteos, recos, hoy=None, ahora=None):
+        return original(session, sorteos, recos, hoy=HOY_FIJO, ahora=AHORA_FIJO)
+
+    seguimiento.registrar = con_reloj
+    try:
+        yield
+    finally:
+        seguimiento.registrar = original
+
+
+def fijar_valores_volatiles(cuerpo):
+    """Copia con los valores que cambian con la ejecución (no con la forma) fijados al reloj de referencia."""
+    resultado = copy.deepcopy(cuerpo)
+    ml_info = resultado.get("ml_info") if isinstance(resultado, dict) else None
+    if isinstance(ml_info, dict) and "train_date" in ml_info:
+        ml_info["train_date"] = AHORA_FIJO.strftime("%Y-%m-%d %H:%M")
+    return resultado
+
+
 def a_formatos_reales(sorteos):
     """Copia con los formatos de premio de los datos reales.
 
@@ -109,7 +147,7 @@ def _guardar(destino, nombre, cuerpo):
     os.makedirs(destino, exist_ok=True)
     ruta = os.path.join(destino, nombre + ".json")
     with open(ruta, "w", encoding="utf-8", newline="\n") as f:
-        json.dump(recortar(cuerpo), f, ensure_ascii=False, indent=1, sort_keys=True)
+        json.dump(recortar(fijar_valores_volatiles(cuerpo)), f, ensure_ascii=False, indent=1, sort_keys=True)
         f.write("\n")
     print(f"  {nombre}.json")
     return ruta
@@ -167,12 +205,11 @@ def _seguimiento_con_datos(app_module, client, sorteos):
     """/api/seguimiento con registros pendientes y ya comparados.
 
     La base sembrada llega hasta 2019 y Seguimiento solo congela categorías con un sorteo en el último año,
-    así que se llevan las fechas al presente. Se calcula una primera vez sin los sorteos más nuevos (se
+    así que se llevan las fechas a un «hoy» fijo (`llevar_al_presente`). Se calcula una primera vez sin los sorteos más nuevos (se
     congelan las recomendaciones) y otra con todos (esos sorteos ya existen y se comparan).
     """
-    reciente = date.fromisoformat(sorteos[0]["fecha"])
-    presentes = desplazar_fechas(sorteos, (date.today() - reciente).days - 3)
-    with _seguimiento_en_memoria(app_module):
+    presentes = llevar_al_presente(sorteos)
+    with _reloj_fijo(), _seguimiento_en_memoria(app_module):
         with _con_sorteos(app_module, presentes[ULTIMOS_SIN_COMPARAR:]):
             _pedir(client, "/api/stats")
         with _con_sorteos(app_module, presentes):

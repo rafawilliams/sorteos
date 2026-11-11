@@ -2,6 +2,7 @@
 import copy
 import os
 import sys
+from datetime import date, timedelta
 
 import pytest
 
@@ -167,3 +168,68 @@ class TestGenerarRespetaLaGuarda:
             gen.generar(destino=str(tmp_path), contar=contar)
         assert llamadas == [1]
         assert list(tmp_path.iterdir()) == []
+
+
+class TestRelojFijo:
+    def test_llevar_al_presente_deja_el_sorteo_mas_nuevo_tres_dias_antes_del_hoy_fijo(self):
+        r = gen.llevar_al_presente(SORTEOS)
+        assert max(s["fecha"] for s in r) == (gen.HOY_FIJO - timedelta(days=3)).isoformat()
+
+    def test_conserva_el_orden_y_las_distancias_entre_sorteos(self):
+        r = gen.llevar_al_presente(SORTEOS)
+        assert [s["id"] for s in r] == [s["id"] for s in SORTEOS]
+        assert (date.fromisoformat(r[0]["fecha"]) - date.fromisoformat(r[3]["fecha"])).days == 3
+
+    def test_no_depende_de_que_el_primero_sea_el_mas_nuevo(self):
+        al_reves = list(reversed(SORTEOS))
+        assert max(s["fecha"] for s in gen.llevar_al_presente(al_reves)) == (gen.HOY_FIJO - timedelta(days=3)).isoformat()
+
+    def test_no_depende_del_dia_en_que_se_ejecuta(self, monkeypatch):
+        antes = gen.llevar_al_presente(SORTEOS)
+        class FechaFalsa(date):
+            @classmethod
+            def today(cls):
+                return date(2031, 7, 7)
+        monkeypatch.setattr(gen, "date", FechaFalsa)
+        assert gen.llevar_al_presente(SORTEOS) == antes
+
+    def test_reloj_fijo_pasa_hoy_y_ahora_fijos_a_registrar_y_lo_restaura(self, monkeypatch):
+        import seguimiento
+        llamadas = []
+
+        def falso(session, sorteos, recos, hoy=None, ahora=None):
+            llamadas.append((hoy, ahora))
+            return ["hecho"]
+        monkeypatch.setattr(seguimiento, "registrar", falso)
+        with gen._reloj_fijo():
+            assert seguimiento.registrar(None, [], {}) == ["hecho"]
+        assert llamadas == [(gen.HOY_FIJO, gen.AHORA_FIJO)]
+        assert seguimiento.registrar is falso
+
+
+class TestGuardaAntesDeImportarLaApp:
+    def test_con_base_real_aborta_sin_haber_importado_la_aplicacion(self, tmp_path, monkeypatch):
+        monkeypatch.setitem(sys.modules, "app", None)          # importar `app` fallaría con ImportError
+        with pytest.raises(SystemExit):
+            gen.generar(destino=str(tmp_path), contar=lambda: 9296)
+
+    def test_con_la_base_sembrada_la_guarda_deja_pasar_y_sigue_hasta_importar_la_aplicacion(self, tmp_path, monkeypatch):
+        monkeypatch.setitem(sys.modules, "app", None)
+        with pytest.raises(ImportError):
+            gen.generar(destino=str(tmp_path), contar=lambda: 600)
+        assert list(tmp_path.iterdir()) == []
+
+
+class TestFijarValoresVolatiles:
+    def test_fija_la_fecha_de_entrenamiento_del_modelo(self):
+        r = gen.fijar_valores_volatiles({"ml_info": {"train_date": "2026-11-11 11:52", "otros": 1}})
+        assert r["ml_info"] == {"train_date": "2026-01-15 12:00", "otros": 1}
+
+    def test_no_toca_respuestas_sin_ml_info_ni_otros_valores(self):
+        cuerpo = {"data": [1, 2], "total": 2, "ml_info": {"sin_fecha": True}}
+        assert gen.fijar_valores_volatiles(cuerpo) == cuerpo
+
+    def test_no_modifica_el_original(self):
+        original = {"ml_info": {"train_date": "2026-11-11 11:52"}}
+        gen.fijar_valores_volatiles(original)
+        assert original["ml_info"]["train_date"] == "2026-11-11 11:52"

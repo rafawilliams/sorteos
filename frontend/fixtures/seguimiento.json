@@ -68,17 +68,17 @@
     },
     "ml": {
      "alguna_terminacion": true,
-     "digitos_media": 0.5333333333333333,
+     "digitos_media": 0.3333333333333333,
      "exactos": 0,
      "numeros": [
       "3929",
       "3681",
       "8633",
-      "5977",
-      "5761"
+      "7159",
+      "6256"
      ],
      "numeros_acertados": [],
-     "terminacion_numeros": 1,
+     "terminacion_numeros": 0,
      "terminaciones": [
       "53",
       "63",
@@ -86,10 +86,10 @@
       "93",
       "73",
       "54",
-      "64",
       "03",
-      "14",
-      "51"
+      "64",
+      "51",
+      "14"
      ],
      "terminaciones_acertadas": [
       "14"
@@ -98,10 +98,10 @@
     }
    },
    "peso_ml": 0.5,
-   "registrado_en": "2026-11-11T11:58",
+   "registrado_en": "2026-01-15T12:00",
    "sorteo": {
     "cat": "extraordinario",
-    "fecha": "2026-10-11",
+    "fecha": "2025-12-15",
     "folio": "591",
     "id": "592",
     "letra": "ABCD",
@@ -128,9 +128,9 @@
      "numeros": [
       "8004",
       "4744",
-      "7368",
+      "4059",
       "4742",
-      "6018"
+      "7368"
      ],
      "numeros_acertados": [],
      "terminacion_numeros": 0,
@@ -141,9 +141,9 @@
       "31",
       "98",
       "94",
-      "48",
-      "46",
       "22",
+      "46",
+      "24",
       "41"
      ],
      "terminaciones_acertadas": [],
@@ -183,9 +183,9 @@
      "exactos": 0,
      "numeros": [
       "8004",
+      "4059",
       "7368",
       "6018",
-      "4059",
       "8494"
      ],
      "numeros_acertados": [],
@@ -194,12 +194,12 @@
       "28",
       "38",
       "98",
-      "48",
       "22",
       "24",
-      "23",
       "32",
       "92",
+      "23",
+      "48",
       "34"
      ],
      "terminaciones_acertadas": [],
@@ -207,10 +207,10 @@
     }
    },
    "peso_ml": 0.5,
-   "registrado_en": "2026-11-11T11:58",
+   "registrado_en": "2026-01-15T12:00",
    "sorteo": {
     "cat": "gordito",
-    "fecha": "2026-10-08",
+    "fecha": "2025-12-12",
     "folio": "590",
     "id": "591",
     "letra": "ABCD",
@@ -232,28 +232,28 @@
    "metodos": {
     "combinada": {
      "alguna_terminacion": false,
-     "digitos_media": 0.5333333333333333,
+     "digitos_media": 0.6666666666666666,
      "exactos": 0,
      "numeros": [
-      "4687",
+      "4161",
       "6631",
-      "8689",
+      "4183",
       "6661",
-      "1127"
+      "3111"
      ],
      "numeros_acertados": [],
      "terminacion_numeros": 0,
      "terminaciones": [
       "81",
       "11",
-      "41",
       "33",
-      "21",
-      "61",
+      "41",
       "38",
+      "21",
       "51",
-      "42",
-      "78"
+      "61",
+      "78",
+      "64"
      ],
      "terminaciones_acertadas": [],
      "terminaciones_aciertos": 0
@@ -288,38 +288,38 @@
     },
     "ml": {
      "alguna_terminacion": false,
-     "digitos_media": 0.5333333333333333,
+     "digitos_media": 0.7333333333333333,
      "exactos": 0,
      "numeros": [
-      "4687",
-      "8689",
+      "4161",
+      "4183",
+      "3111",
       "1127",
-      "4221",
-      "4011"
+      "3178"
      ],
      "numeros_acertados": [],
      "terminacion_numeros": 0,
      "terminaciones": [
+      "11",
       "41",
       "81",
       "21",
       "51",
       "61",
-      "11",
       "71",
-      "42",
-      "82",
-      "22"
+      "31",
+      "12",
+      "13"
      ],
      "terminaciones_acertadas": [],
      "terminaciones_aciertos": 0
     }
    },
    "peso_ml": 0.5,
-   "registrado_en": "2026-11-11T11:58",
+   "registrado_en": "2026-01-15T12:00",
    "sorteo": {
     "cat": "miercolito",
-    "fecha": "2026-10-04",
+    "fecha": "2025-12-08",
     "folio": "589",
     "id": "590",
     "letra": "ABCD",
@@ -403,8 +403,8 @@
       "2369",
       "7361",
       "7385",
-      "9333",
-      "7325"
+      "7325",
+      "9333"
      ],
      "numeros_acertados": [],
      "terminacion_numeros": 0,
@@ -415,20 +415,20 @@
       "39",
       "89",
       "99",
-      "61",
       "62",
+      "61",
       "29",
-      "71"
+      "09"
      ],
      "terminaciones_acertadas": [],
      "terminaciones_aciertos": 0
     }
    },
    "peso_ml": 0.5,
-   "registrado_en": "2026-11-11T11:58",
+   "registrado_en": "2026-01-15T12:00",
    "sorteo": {
     "cat": "dominical",
-    "fecha": "2026-10-01",
+    "fecha": "2025-12-05",
     "folio": "588",
     "id": "589",
     "letra": "ABCD",
@@ -444,7 +444,7 @@
   "combinada": {
    "alguna_terminacion_pct": 0.0,
    "alguna_terminacion_pct_azar": 27.3469387755102,
-   "digitos_media": 0.4666666666666667,
+   "digitos_media": 0.5,
    "digitos_media_azar": 0.4,
    "exactos": 0,
    "exactos_azar": 0.006,
@@ -478,7 +478,7 @@
    "exactos_azar": 0.006,
    "sorteos": 4,
    "sorteos_numeros": 4,
-   "terminacion_numeros": 1,
+   "terminacion_numeros": 0,
    "terminacion_numeros_azar": 0.6,
    "terminaciones_media": 0.25,
    "terminaciones_media_azar": 0.3
@@ -491,11 +491,11 @@
    "metodos": {
     "combinada": {
      "numeros": [
-      "9749",
+      "4835",
       "9235",
-      "9785",
+      "9749",
       "9835",
-      "9299"
+      "9785"
      ],
      "terminaciones": [
       "49",
@@ -504,10 +504,10 @@
       "19",
       "79",
       "85",
-      "99",
-      "01",
+      "69",
       "55",
-      "69"
+      "99",
+      "01"
      ]
     },
     "estadistico": {
@@ -533,41 +533,41 @@
     },
     "ml": {
      "numeros": [
+      "4835",
       "9749",
       "9785",
-      "9299",
-      "3811",
-      "3804"
+      "9774",
+      "9299"
      ],
      "terminaciones": [
       "09",
       "19",
       "79",
-      "99",
       "69",
+      "99",
       "89",
       "39",
       "49",
       "29",
-      "01"
+      "00"
      ]
     }
    },
    "numeros_aplican": true,
    "peso_ml": 0.5,
-   "registrado_en": "2026-11-11T11:58",
-   "ultima_fecha": "2026-10-29"
+   "registrado_en": "2026-01-15T12:00",
+   "ultima_fecha": "2026-01-02"
   },
   {
    "categoria": "extraordinario",
    "metodos": {
     "combinada": {
      "numeros": [
-      "9481",
+      "0100",
       "8172",
-      "3929",
+      "2653",
       "4172",
-      "2653"
+      "9481"
      ],
      "terminaciones": [
       "53",
@@ -578,8 +578,8 @@
       "32",
       "13",
       "76",
-      "47",
-      "69"
+      "69",
+      "47"
      ]
     },
     "estadistico": {
@@ -605,52 +605,52 @@
     },
     "ml": {
      "numeros": [
+      "0100",
+      "2653",
       "9481",
       "3929",
-      "2653",
-      "4345",
-      "7487"
+      "9143"
      ],
      "terminaciones": [
       "63",
       "43",
       "03",
       "13",
-      "53",
       "69",
       "49",
-      "64",
+      "53",
       "61",
-      "23"
+      "83",
+      "41"
      ]
     }
    },
    "numeros_aplican": true,
    "peso_ml": 0.5,
-   "registrado_en": "2026-11-11T11:58",
-   "ultima_fecha": "2026-11-08"
+   "registrado_en": "2026-01-15T12:00",
+   "ultima_fecha": "2026-01-12"
   },
   {
    "categoria": "gordito",
    "metodos": {
     "combinada": {
      "numeros": [
-      "5928",
+      "6044",
       "4744",
-      "0320",
+      "8494",
       "4742",
-      "8494"
+      "0320"
      ],
      "terminaciones": [
-      "22",
-      "53",
       "24",
+      "53",
+      "22",
       "31",
-      "42",
-      "94",
-      "20",
-      "49",
       "44",
+      "94",
+      "42",
+      "49",
+      "54",
       "46"
      ]
     },
@@ -677,52 +677,52 @@
     },
     "ml": {
      "numeros": [
-      "5928",
-      "0320",
+      "6044",
       "8494",
+      "0320",
       "9528",
       "6118"
      ],
      "terminaciones": [
-      "22",
       "24",
-      "42",
-      "20",
+      "22",
       "44",
+      "42",
+      "54",
+      "74",
+      "20",
       "52",
       "25",
-      "72",
-      "28",
-      "54"
+      "72"
      ]
     }
    },
    "numeros_aplican": true,
    "peso_ml": 0.5,
-   "registrado_en": "2026-11-11T11:58",
-   "ultima_fecha": "2026-11-05"
+   "registrado_en": "2026-01-15T12:00",
+   "ultima_fecha": "2026-01-09"
   },
   {
    "categoria": "miercolito",
    "metodos": {
     "combinada": {
      "numeros": [
-      "6381",
+      "3111",
       "6661",
-      "5862",
+      "1127",
       "6631",
-      "5992"
+      "7616"
      ],
      "terminaciones": [
-      "81",
       "61",
       "33",
       "62",
       "64",
-      "91",
-      "42",
-      "41",
       "31",
+      "42",
+      "81",
+      "91",
+      "32",
       "38"
      ]
     },
@@ -749,37 +749,37 @@
     },
     "ml": {
      "numeros": [
-      "6381",
-      "5862",
-      "5992",
-      "5869",
-      "0261"
+      "3111",
+      "1127",
+      "7616",
+      "9195",
+      "4231"
      ],
      "terminaciones": [
       "61",
       "62",
-      "91",
-      "41",
       "31",
-      "81",
-      "51",
+      "91",
+      "32",
+      "41",
       "66",
       "92",
-      "21"
+      "51",
+      "81"
      ]
     }
    },
    "numeros_aplican": true,
    "peso_ml": 0.5,
-   "registrado_en": "2026-11-11T11:58",
-   "ultima_fecha": "2026-11-01"
+   "registrado_en": "2026-01-15T12:00",
+   "ultima_fecha": "2026-01-05"
   }
  ],
  "peso_ml": 0.5,
  "sin_registro": [
   {
    "cat": "extraordinario",
-   "fecha": "2026-11-08",
+   "fecha": "2026-01-12",
    "folio": "599",
    "id": "600",
    "letra": "ABCD",
@@ -790,7 +790,7 @@
   },
   {
    "cat": "gordito",
-   "fecha": "2026-11-05",
+   "fecha": "2026-01-09",
    "folio": "598",
    "id": "599",
    "letra": "ABCD",
@@ -801,7 +801,7 @@
   },
   {
    "cat": "miercolito",
-   "fecha": "2026-11-01",
+   "fecha": "2026-01-05",
    "folio": "597",
    "id": "598",
    "letra": "ABCD",
@@ -812,7 +812,7 @@
   },
   {
    "cat": "dominical",
-   "fecha": "2026-10-29",
+   "fecha": "2026-01-02",
    "folio": "596",
    "id": "597",
    "letra": "ABCD",
@@ -823,7 +823,7 @@
   },
   {
    "cat": "extraordinario",
-   "fecha": "2026-10-25",
+   "fecha": "2025-12-29",
    "folio": "595",
    "id": "596",
    "letra": "ABCD",
@@ -834,7 +834,7 @@
   },
   {
    "cat": "gordito",
-   "fecha": "2026-10-22",
+   "fecha": "2025-12-26",
    "folio": "594",
    "id": "595",
    "letra": "ABCD",
@@ -845,7 +845,7 @@
   },
   {
    "cat": "miercolito",
-   "fecha": "2026-10-18",
+   "fecha": "2025-12-22",
    "folio": "593",
    "id": "594",
    "letra": "ABCD",
@@ -856,7 +856,7 @@
   },
   {
    "cat": "dominical",
-   "fecha": "2026-10-15",
+   "fecha": "2025-12-19",
    "folio": "592",
    "id": "593",
    "letra": "ABCD",
