@@ -317,3 +317,13 @@ Todos sobre la suite de contrato, es decir, sobre lo que T015 y T052 tendrán qu
 
 ## Decision queue (adiciones — etapa 1)
 - [review-after] Q7 — T016/L65: `Skeleton` replica `skelCard` sin `aria-busy` ni texto para lectores de pantalla (una isla puede estar en carga 50–100 s). Recomendación: que cada isla ponga `aria-busy="true"` en su contenedor mientras `stats` es nulo (se decide al migrar la primera isla con datos, T017, y se aplica igual a todas), sin cambiar el marcado de `Skeleton`. Evidencia: ledger L65.
+
+## T011 — 2026-11-11
+- status: complete (commits 44ee853 + 5cb871e). Se hizo después de T016 porque se había saltado al pasar de T010 a T012; T017 depende de ella.
+- red/green: 40 pruebas fallaron contra el esqueleto (por aserción) antes de implementar; `client.test.ts` 46 pruebas; 337 en todo el front, `typecheck` 0, `npm audit` 0. 13 mutantes del cliente, todos detectados.
+- files: frontend/src/api/{client.ts,client.test.ts}
+- desviación declarada: mensaje genérico nuevo `'Error del servidor'` (el plan solo nombra `'Error de conexión'`) para respuestas de error sin `error` público (500/429 en HTML); decisión registrada en decisions.md.
+- risk: tier 1 — 1 revisor
+- review: ronda 1 → VERDICT pass, 4 nits. L67 (cuerpo array) y L68 (`last_n` no finito) arreglados; L66 intencional (el 503 de `/api/actualizar` nombra `ACTUALIZAR_TOKEN`; ya se mostraba igual en `app.js`, app de uso personal); L69 intencional (el plan pide mensajes genéricos: se pierde «No se pudo cargar el seguimiento»; T020 debe mostrar el texto del cliente).
+- contrato para T054: con `status === 401` hay que borrar el token de `sessionStorage` (como hace `app.js`); `auth_required` no se propaga.
+- controls: tests ✅ build n/a security ✅ (audit 0; ningún dato interno llega al usuario) traceability ✅ (AC5). Ronda 2 de 3; los dos arreglos son acotados y con prueba.
