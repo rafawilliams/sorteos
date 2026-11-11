@@ -146,3 +146,10 @@ Rama `feat/react-etapa-1-contrato`, apilada sobre `feat/react-frontend` (PR #37 
 - hallazgo propio durante la tarea: con 600 sorteos sembrados los tres fixtures de estadísticas salían con **todos** los backtests en `null` (cada categoría tiene ~150 sorteos y el backtest necesita 230), lo que habría dado un falso verde al contrato. Se añadió la variante `stats_con_backtests`.
 - done-check: `gen_fixtures_front.py` crea 13 JSON válidos (271 KB). Se ejecutó contra la base sembrada `sorteos_capturas` mediante un envoltorio que comprueba los 600 sorteos antes de lanzar.
 - no cubierto por fixtures (se tipa leyendo el código): `POST /api/actualizar` (401, 502, 503, 504 y éxito), porque generarlo ejecutaría la sincronización externa.
+
+### Revisión de T008 — ronda 1 (2 should-fix, 2 nits) — 2026-11-11
+- should-fix L1 (arreglado): `seguimiento.json` salía idéntico al vacío porque la base sembrada llega a 2019 y Seguimiento solo congela categorías con un sorteo en el último año. Ahora `_seguimiento_con_datos` lleva las fechas al presente (`desplazar_fechas`), calcula una vez sin los 12 sorteos más nuevos (se congelan las recomendaciones) y otra con todos; en una base en memoria. Resultado: 4 comparados, 4 pendientes y 8 sin registro.
+- should-fix L2 (arreglado): `generar(destino, contar)` acepta un `contar` inyectable, aborta antes de importar la aplicación o escribir, y dos pruebas exigen que se llame a ese `contar` y que no quede nada escrito con 9296 o 0 sorteos.
+- nit L3 (arreglado): prueba de ids únicos con los 600 ids reales de la base sembrada.
+- nit L4 (arreglado): nueva variante `backtesting_sin_modelo.json` (`ml: {}`, con el modelo sustituido por uno sin entrenar).
+- red: 4 pruebas fallaron por aserciones antes de implementar; green: 28 pruebas. 14 fixtures regenerados.
