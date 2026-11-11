@@ -58,3 +58,9 @@ Context   — el done-check pedía que `/api/stats` siga respondiendo 200 sin el
 Options    — (1) `/api/stats`; (2) `/api/sorteos?page=1&per_page=1`.
 Decision   — se usa `/api/sorteos`.
 Why        — `/api/stats` entrena el modelo (50-100 s) y registra filas en `predicciones` de la base real al correr en local; `/api/sorteos` demuestra igual que `/api/*` no depende del build y no escribe.
+
+## 2026-11-11 — Mensaje genérico «Error del servidor» en el cliente de API  (feature: frontend-react, task: T011)
+Context   — el plan fija `'Error de conexión'` y el `error` público del servidor, pero un 500 de `/api/stats`, `/api/gaps` o `/api/backtesting` y un 429 devuelven HTML de Flask, sin `error` público que mostrar.
+Options    — (a) usar `'Error de conexión'` para todo; (b) mostrar el texto del cuerpo o de la excepción; (c) un segundo mensaje genérico para «el servidor respondió con error».
+Decision   — (c): `'Error del servidor'` para toda respuesta de error sin `error` público aceptable (texto de hasta 200 caracteres, solo en `/api/comparar`, `/api/simulador` y `/api/actualizar`).
+Why        — (a) confunde al usuario (la red funciona) y (b) puede filtrar trazas o datos internos; (c) distingue el fallo sin mostrar nada interno.
