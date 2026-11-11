@@ -52,3 +52,9 @@
 - Creado `02-DOCS/wiki/sdd/config.yaml`: strict TDD con pytest, modo interactivo, enrutado de modelos apagado.
 - Presupuesto de revisión: el dueño eligió 900 líneas por PR (opciones: 400 por defecto o 900); el presupuesto de archivos sube de 12 a 25 por coherencia. Entrega `ask-on-risk`.
 - Los comandos de front (tipos, pruebas, build) se añadirán a `testing.commands` con la tarea T002.
+
+## 2026-11-11 — T004: comprobación de la API sin build  (feature: frontend-react, task: T004)
+Context   — el done-check pedía que `/api/stats` siga respondiendo 200 sin el build.
+Options    — (1) `/api/stats`; (2) `/api/sorteos?page=1&per_page=1`.
+Decision   — se usa `/api/sorteos`.
+Why        — `/api/stats` entrena el modelo (50-100 s) y registra filas en `predicciones` de la base real al correr en local; `/api/sorteos` demuestra igual que `/api/*` no depende del build y no escribe.

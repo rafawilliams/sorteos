@@ -155,9 +155,13 @@ def get_last_update() -> str:
 # Routes
 # ---------------------------------------------------------------------------
 
+# Interfaz React construida con `npm --prefix frontend run build` (no se commitea).
+FRONTEND_BUILD = os.path.join(app.static_folder, "dist", "app.js")
+
+
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("index.html", react_built=os.path.isfile(FRONTEND_BUILD))
 
 
 @app.route("/api/sorteos")

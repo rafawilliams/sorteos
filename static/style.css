@@ -345,3 +345,7 @@ tbody tr{transition:background .2s}tbody tr:hover{background:rgba(212,175,55,0.0
   .pagination{gap:4px}
   .page-btn{padding:6px 10px;font-size:0.75rem}
 }
+
+/* Aviso: la interfaz React no está construida (spec frontend-react) */
+.build-notice{margin:12px auto;max-width:960px;padding:12px 16px;border:1px solid var(--border-strong);border-radius:8px;background:var(--surface-2);color:var(--text-primary);font-size:.9rem}
+.build-notice code{font-family:'JetBrains Mono',monospace;color:var(--gold-300)}
