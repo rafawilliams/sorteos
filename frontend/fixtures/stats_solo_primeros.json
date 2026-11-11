@@ -1,0 +1,5254 @@
+{
+ "by_category": {
+  "dominical": {
+   "digit_frequency": {
+    "0": 52,
+    "1": 61,
+    "2": 68,
+    "3": 65,
+    "4": 60,
+    "5": 59,
+    "6": 51,
+    "7": 64,
+    "8": 61,
+    "9": 59
+   },
+   "hot_cold": {
+    "cold": [
+     {
+      "count": 1,
+      "number": "1824"
+     },
+     {
+      "count": 1,
+      "number": "3811"
+     },
+     {
+      "count": 1,
+      "number": "4552"
+     },
+     {
+      "count": 1,
+      "number": "2045"
+     },
+     {
+      "count": 1,
+      "number": "1654"
+     },
+     {
+      "count": 1,
+      "number": "7573"
+     },
+     {
+      "count": 1,
+      "number": "3456"
+     },
+     {
+      "count": 1,
+      "number": "9577"
+     },
+     {
+      "count": 1,
+      "number": "6916"
+     },
+     {
+      "count": 1,
+      "number": "5573"
+     }
+    ],
+    "hot": [
+     {
+      "count": 2,
+      "number": "6070"
+     },
+     {
+      "count": 2,
+      "number": "4835"
+     },
+     {
+      "count": 1,
+      "number": "4201"
+     },
+     {
+      "count": 1,
+      "number": "4480"
+     },
+     {
+      "count": 1,
+      "number": "7932"
+     },
+     {
+      "count": 1,
+      "number": "3397"
+     },
+     {
+      "count": 1,
+      "number": "1800"
+     },
+     {
+      "count": 1,
+      "number": "9477"
+     },
+     {
+      "count": 1,
+      "number": "9222"
+     },
+     {
+      "count": 1,
+      "number": "9932"
+     }
+    ]
+   },
+   "ml_recommendations": [
+    {
+     "confidence": 1.9,
+     "number": "9043",
+     "score": 210.4
+    },
+    {
+     "confidence": 1.1,
+     "number": "3492",
+     "score": 187.2
+    },
+    {
+     "confidence": 1.0,
+     "number": "9221",
+     "score": 186.3
+    },
+    {
+     "confidence": 1.0,
+     "number": "5491",
+     "score": 185.7
+    },
+    {
+     "confidence": 1.9,
+     "number": "9042",
+     "score": 61.7
+    }
+   ],
+   "recommendations": [
+    {
+     "confidence": 4.26,
+     "lift": 4.26,
+     "number": "9872",
+     "score": 4.2579,
+     "veces": 0
+    },
+    {
+     "confidence": 4.13,
+     "lift": 4.13,
+     "number": "9832",
+     "score": 4.1275,
+     "veces": 0
+    },
+    {
+     "confidence": 3.97,
+     "lift": 3.97,
+     "number": "9072",
+     "score": 3.9728,
+     "veces": 0
+    },
+    {
+     "confidence": 3.85,
+     "lift": 3.85,
+     "number": "9032",
+     "score": 3.8511,
+     "veces": 1
+    },
+    {
+     "confidence": 3.8,
+     "lift": 3.8,
+     "number": "9871",
+     "score": 3.7983,
+     "veces": 0
+    }
+   ],
+   "total": 150
+  },
+  "extraordinario": {
+   "digit_frequency": {
+    "0": 63,
+    "1": 72,
+    "2": 63,
+    "3": 52,
+    "4": 52,
+    "5": 54,
+    "6": 67,
+    "7": 54,
+    "8": 63,
+    "9": 60
+   },
+   "hot_cold": {
+    "cold": [
+     {
+      "count": 1,
+      "number": "0520"
+     },
+     {
+      "count": 1,
+      "number": "0106"
+     },
+     {
+      "count": 1,
+      "number": "4333"
+     },
+     {
+      "count": 1,
+      "number": "4741"
+     },
+     {
+      "count": 1,
+      "number": "2803"
+     },
+     {
+      "count": 1,
+      "number": "5168"
+     },
+     {
+      "count": 1,
+      "number": "9197"
+     },
+     {
+      "count": 1,
+      "number": "1796"
+     },
+     {
+      "count": 1,
+      "number": "1876"
+     },
+     {
+      "count": 1,
+      "number": "1743"
+     }
+    ],
+    "hot": [
+     {
+      "count": 2,
+      "number": "4616"
+     },
+     {
+      "count": 1,
+      "number": "9614"
+     },
+     {
+      "count": 1,
+      "number": "4712"
+     },
+     {
+      "count": 1,
+      "number": "7861"
+     },
+     {
+      "count": 1,
+      "number": "8950"
+     },
+     {
+      "count": 1,
+      "number": "7726"
+     },
+     {
+      "count": 1,
+      "number": "3968"
+     },
+     {
+      "count": 1,
+      "number": "0436"
+     },
+     {
+      "count": 1,
+      "number": "8351"
+     },
+     {
+      "count": 1,
+      "number": "7761"
+     }
+    ]
+   },
+   "ml_recommendations": [
+    {
+     "confidence": 1.2,
+     "number": "0100",
+     "score": 190.2
+    },
+    {
+     "confidence": 1.2,
+     "number": "5231",
+     "score": 189.4
+    },
+    {
+     "confidence": 1.8,
+     "number": "0791",
+     "score": 61.4
+    },
+    {
+     "confidence": 1.7,
+     "number": "0991",
+     "score": 54.9
+    },
+    {
+     "confidence": 1.6,
+     "number": "0392",
+     "score": 54.7
+    }
+   ],
+   "recommendations": [
+    {
+     "confidence": 3.19,
+     "lift": 3.19,
+     "number": "8961",
+     "score": 3.1858,
+     "veces": 0
+    },
+    {
+     "confidence": 3.15,
+     "lift": 3.15,
+     "number": "8951",
+     "score": 3.1466,
+     "veces": 0
+    },
+    {
+     "confidence": 3.12,
+     "lift": 3.12,
+     "number": "8962",
+     "score": 3.1197,
+     "veces": 0
+    },
+    {
+     "confidence": 3.08,
+     "lift": 3.08,
+     "number": "8952",
+     "score": 3.0814,
+     "veces": 0
+    },
+    {
+     "confidence": 3.08,
+     "lift": 3.08,
+     "number": "6961",
+     "score": 3.0769,
+     "veces": 0
+    }
+   ],
+   "total": 150
+  },
+  "gordito": {
+   "digit_frequency": {
+    "0": 59,
+    "1": 62,
+    "2": 42,
+    "3": 63,
+    "4": 77,
+    "5": 52,
+    "6": 59,
+    "7": 68,
+    "8": 53,
+    "9": 65
+   },
+   "hot_cold": {
+    "cold": [
+     {
+      "count": 1,
+      "number": "8935"
+     },
+     {
+      "count": 1,
+      "number": "3611"
+     },
+     {
+      "count": 1,
+      "number": "1584"
+     },
+     {
+      "count": 1,
+      "number": "1139"
+     },
+     {
+      "count": 1,
+      "number": "3432"
+     },
+     {
+      "count": 1,
+      "number": "0916"
+     },
+     {
+      "count": 1,
+      "number": "4339"
+     },
+     {
+      "count": 1,
+      "number": "8085"
+     },
+     {
+      "count": 1,
+      "number": "4119"
+     },
+     {
+      "count": 1,
+      "number": "4315"
+     }
+    ],
+    "hot": [
+     {
+      "count": 2,
+      "number": "4949"
+     },
+     {
+      "count": 1,
+      "number": "4450"
+     },
+     {
+      "count": 1,
+      "number": "5654"
+     },
+     {
+      "count": 1,
+      "number": "4735"
+     },
+     {
+      "count": 1,
+      "number": "2837"
+     },
+     {
+      "count": 1,
+      "number": "3340"
+     },
+     {
+      "count": 1,
+      "number": "8589"
+     },
+     {
+      "count": 1,
+      "number": "1795"
+     },
+     {
+      "count": 1,
+      "number": "4902"
+     },
+     {
+      "count": 1,
+      "number": "0637"
+     }
+    ]
+   },
+   "ml_recommendations": [
+    {
+     "confidence": 1.2,
+     "number": "7489",
+     "score": 191.1
+    },
+    {
+     "confidence": 1.1,
+     "number": "1143",
+     "score": 188.0
+    },
+    {
+     "confidence": 1.1,
+     "number": "6118",
+     "score": 187.4
+    },
+    {
+     "confidence": 1.0,
+     "number": "0320",
+     "score": 185.7
+    },
+    {
+     "confidence": 0.8,
+     "number": "0916",
+     "score": 177.9
+    }
+   ],
+   "recommendations": [
+    {
+     "confidence": 5.58,
+     "lift": 5.58,
+     "number": "4747",
+     "score": 5.5838,
+     "veces": 0
+    },
+    {
+     "confidence": 4.86,
+     "lift": 4.86,
+     "number": "9747",
+     "score": 4.8637,
+     "veces": 0
+    },
+    {
+     "confidence": 4.79,
+     "lift": 4.79,
+     "number": "4743",
+     "score": 4.7924,
+     "veces": 0
+    },
+    {
+     "confidence": 4.66,
+     "lift": 4.66,
+     "number": "4947",
+     "score": 4.6583,
+     "veces": 0
+    },
+    {
+     "confidence": 4.65,
+     "lift": 4.65,
+     "number": "0747",
+     "score": 4.647,
+     "veces": 0
+    }
+   ],
+   "total": 150
+  },
+  "miercolito": {
+   "digit_frequency": {
+    "0": 54,
+    "1": 67,
+    "2": 52,
+    "3": 58,
+    "4": 61,
+    "5": 58,
+    "6": 58,
+    "7": 59,
+    "8": 70,
+    "9": 63
+   },
+   "hot_cold": {
+    "cold": [
+     {
+      "count": 1,
+      "number": "3657"
+     },
+     {
+      "count": 1,
+      "number": "9195"
+     },
+     {
+      "count": 1,
+      "number": "5514"
+     },
+     {
+      "count": 1,
+      "number": "4803"
+     },
+     {
+      "count": 1,
+      "number": "5977"
+     },
+     {
+      "count": 1,
+      "number": "9125"
+     },
+     {
+      "count": 1,
+      "number": "8179"
+     },
+     {
+      "count": 1,
+      "number": "5930"
+     },
+     {
+      "count": 1,
+      "number": "6252"
+     },
+     {
+      "count": 1,
+      "number": "2591"
+     }
+    ],
+    "hot": [
+     {
+      "count": 2,
+      "number": "5139"
+     },
+     {
+      "count": 2,
+      "number": "0841"
+     },
+     {
+      "count": 1,
+      "number": "8824"
+     },
+     {
+      "count": 1,
+      "number": "8899"
+     },
+     {
+      "count": 1,
+      "number": "9143"
+     },
+     {
+      "count": 1,
+      "number": "7837"
+     },
+     {
+      "count": 1,
+      "number": "0272"
+     },
+     {
+      "count": 1,
+      "number": "5218"
+     },
+     {
+      "count": 1,
+      "number": "6576"
+     },
+     {
+      "count": 1,
+      "number": "7378"
+     }
+    ]
+   },
+   "ml_recommendations": [
+    {
+     "confidence": 1.8,
+     "number": "9143",
+     "score": 211.0
+    },
+    {
+     "confidence": 1.5,
+     "number": "9648",
+     "score": 200.3
+    },
+    {
+     "confidence": 1.1,
+     "number": "3111",
+     "score": 187.7
+    },
+    {
+     "confidence": 2.0,
+     "number": "6243",
+     "score": 64.9
+    },
+    {
+     "confidence": 2.0,
+     "number": "6145",
+     "score": 64.7
+    }
+   ],
+   "recommendations": [
+    {
+     "confidence": 4.15,
+     "lift": 4.15,
+     "number": "5144",
+     "score": 4.1462,
+     "veces": 0
+    },
+    {
+     "confidence": 4.03,
+     "lift": 4.03,
+     "number": "5844",
+     "score": 4.0251,
+     "veces": 0
+    },
+    {
+     "confidence": 3.83,
+     "lift": 3.83,
+     "number": "5134",
+     "score": 3.8256,
+     "veces": 0
+    },
+    {
+     "confidence": 3.8,
+     "lift": 3.8,
+     "number": "8144",
+     "score": 3.8001,
+     "veces": 0
+    },
+    {
+     "confidence": 3.77,
+     "lift": 3.77,
+     "number": "5141",
+     "score": 3.7657,
+     "veces": 0
+    }
+   ],
+   "total": 150
+  }
+ },
+ "decena_recomendada": {
+  "dominical": {
+   "backtest": null,
+   "confidence": 1.24,
+   "follower_distribution": {
+    "0": 52,
+    "1": 44,
+    "2": 51,
+    "3": 56,
+    "4": 43,
+    "5": 41,
+    "6": 39,
+    "7": 43,
+    "8": 43,
+    "9": 38
+   },
+   "last_3": [
+    "3",
+    "8",
+    "0"
+   ],
+   "last_3_fechas": [
+    "2019-08-25",
+    "2019-09-08",
+    "2019-09-22"
+   ],
+   "lift": 1.24,
+   "match_count": 150,
+   "method": "frecuencia",
+   "minimo": 20,
+   "muestras": 450,
+   "recommended": "3"
+  },
+  "extraordinario": {
+   "backtest": null,
+   "confidence": 1.22,
+   "follower_distribution": {
+    "0": 42,
+    "1": 48,
+    "2": 45,
+    "3": 47,
+    "4": 52,
+    "5": 47,
+    "6": 40,
+    "7": 55,
+    "8": 39,
+    "9": 35
+   },
+   "last_3": [
+    "6",
+    "1",
+    "1"
+   ],
+   "last_3_fechas": [
+    "2019-09-04",
+    "2019-09-18",
+    "2019-10-02"
+   ],
+   "lift": 1.22,
+   "match_count": 150,
+   "method": "frecuencia",
+   "minimo": 20,
+   "muestras": 450,
+   "recommended": "7"
+  },
+  "gordito": {
+   "backtest": null,
+   "confidence": 1.18,
+   "follower_distribution": {
+    "0": 36,
+    "1": 37,
+    "2": 45,
+    "3": 49,
+    "4": 53,
+    "5": 52,
+    "6": 45,
+    "7": 38,
+    "8": 49,
+    "9": 46
+   },
+   "last_3": [
+    "3",
+    "5",
+    "5"
+   ],
+   "last_3_fechas": [
+    "2019-09-01",
+    "2019-09-15",
+    "2019-09-29"
+   ],
+   "lift": 1.18,
+   "match_count": 150,
+   "method": "frecuencia",
+   "minimo": 20,
+   "muestras": 450,
+   "recommended": "4"
+  },
+  "miercolito": {
+   "backtest": null,
+   "confidence": 1.16,
+   "follower_distribution": {
+    "0": 38,
+    "1": 46,
+    "2": 41,
+    "3": 51,
+    "4": 48,
+    "5": 36,
+    "6": 52,
+    "7": 42,
+    "8": 51,
+    "9": 45
+   },
+   "last_3": [
+    "4",
+    "9",
+    "2"
+   ],
+   "last_3_fechas": [
+    "2019-08-28",
+    "2019-09-11",
+    "2019-09-25"
+   ],
+   "lift": 1.16,
+   "match_count": 150,
+   "method": "frecuencia",
+   "minimo": 20,
+   "muestras": 450,
+   "recommended": "6"
+  }
+ },
+ "digit_frequency": {
+  "0": 228,
+  "1": 262,
+  "2": 225,
+  "3": 238,
+  "4": 250,
+  "5": 223,
+  "6": 235,
+  "7": 245,
+  "8": 247,
+  "9": 247
+ },
+ "endings": {
+  "by_prize": {
+   "primero": [
+    {
+     "count": 13,
+     "ending": "43"
+    },
+    {
+     "count": 12,
+     "ending": "24"
+    },
+    {
+     "count": 12,
+     "ending": "41"
+    },
+    {
+     "count": 11,
+     "ending": "39"
+    },
+    {
+     "count": 11,
+     "ending": "70"
+    },
+    {
+     "count": 10,
+     "ending": "32"
+    },
+    {
+     "count": 10,
+     "ending": "81"
+    },
+    {
+     "count": 10,
+     "ending": "53"
+    },
+    {
+     "count": 9,
+     "ending": "80"
+    },
+    {
+     "count": 9,
+     "ending": "37"
+    },
+    {
+     "count": 9,
+     "ending": "00"
+    },
+    {
+     "count": 9,
+     "ending": "68"
+    },
+    {
+     "count": 9,
+     "ending": "51"
+    },
+    {
+     "count": 9,
+     "ending": "33"
+    },
+    {
+     "count": 9,
+     "ending": "31"
+    }
+   ],
+   "segundo": [
+    {
+     "count": 14,
+     "ending": "49"
+    },
+    {
+     "count": 12,
+     "ending": "38"
+    },
+    {
+     "count": 11,
+     "ending": "33"
+    },
+    {
+     "count": 10,
+     "ending": "20"
+    },
+    {
+     "count": 10,
+     "ending": "04"
+    },
+    {
+     "count": 10,
+     "ending": "89"
+    },
+    {
+     "count": 10,
+     "ending": "46"
+    },
+    {
+     "count": 10,
+     "ending": "93"
+    },
+    {
+     "count": 10,
+     "ending": "69"
+    },
+    {
+     "count": 10,
+     "ending": "41"
+    },
+    {
+     "count": 9,
+     "ending": "29"
+    },
+    {
+     "count": 9,
+     "ending": "62"
+    },
+    {
+     "count": 9,
+     "ending": "97"
+    },
+    {
+     "count": 9,
+     "ending": "30"
+    },
+    {
+     "count": 9,
+     "ending": "72"
+    }
+   ],
+   "tercero": [
+    {
+     "count": 14,
+     "ending": "53"
+    },
+    {
+     "count": 11,
+     "ending": "32"
+    },
+    {
+     "count": 11,
+     "ending": "12"
+    },
+    {
+     "count": 11,
+     "ending": "55"
+    },
+    {
+     "count": 10,
+     "ending": "64"
+    },
+    {
+     "count": 10,
+     "ending": "11"
+    },
+    {
+     "count": 10,
+     "ending": "38"
+    },
+    {
+     "count": 10,
+     "ending": "02"
+    },
+    {
+     "count": 10,
+     "ending": "79"
+    },
+    {
+     "count": 9,
+     "ending": "25"
+    },
+    {
+     "count": 9,
+     "ending": "06"
+    },
+    {
+     "count": 9,
+     "ending": "33"
+    },
+    {
+     "count": 9,
+     "ending": "86"
+    },
+    {
+     "count": 9,
+     "ending": "49"
+    },
+    {
+     "count": 9,
+     "ending": "17"
+    }
+   ]
+  },
+  "frequency": {
+   "00": 19,
+   "01": 15,
+   "02": 21,
+   "03": 12,
+   "04": 19,
+   "05": 19,
+   "06": 20,
+   "07": 16,
+   "08": 16,
+   "09": 11,
+   "10": 13,
+   "11": 23,
+   "12": 24,
+   "13": 16,
+   "14": 14,
+   "15": 18,
+   "16": 19,
+   "17": 18,
+   "18": 16,
+   "19": 14,
+   "20": 17,
+   "21": 18,
+   "22": 18,
+   "23": 10,
+   "24": 25,
+   "25": 19,
+   "26": 20,
+   "27": 20,
+   "28": 16,
+   "29": 19,
+   "30": 22,
+   "31": 19,
+   "32": 26,
+   "33": 29,
+   "34": 16,
+   "35": 17,
+   "36": 11,
+   "37": 16,
+   "38": 27,
+   "39": 20,
+   "40": 14,
+   "41": 26,
+   "42": 22,
+   "43": 21,
+   "44": 17,
+   "45": 15,
+   "46": 22,
+   "47": 18,
+   "48": 11,
+   "49": 30,
+   "50": 18,
+   "51": 18,
+   "52": 17,
+   "53": 30,
+   "54": 14,
+   "55": 22,
+   "56": 11,
+   "57": 15,
+   "58": 18,
+   "59": 13,
+   "60": 14,
+   "61": 22,
+   "62": 19,
+   "63": 17,
+   "64": 25,
+   "65": 11,
+   "66": 18,
+   "67": 16,
+   "68": 17,
+   "69": 17,
+   "70": 18,
+   "71": 18,
+   "72": 22,
+   "73": 19,
+   "74": 15,
+   "75": 17,
+   "76": 16,
+   "77": 15,
+   "78": 17,
+   "79": 21,
+   "80": 20,
+   "81": 25,
+   "82": 17,
+   "83": 15,
+   "84": 17,
+   "85": 16,
+   "86": 22,
+   "87": 8,
+   "88": 20,
+   "89": 22,
+   "90": 14,
+   "91": 17,
+   "92": 16,
+   "93": 17,
+   "94": 19,
+   "95": 17,
+   "96": 18,
+   "97": 19,
+   "98": 18,
+   "99": 9
+  },
+  "hot_cold": {
+   "cold": [
+    {
+     "count": 8,
+     "ending": "87"
+    },
+    {
+     "count": 9,
+     "ending": "99"
+    },
+    {
+     "count": 10,
+     "ending": "23"
+    },
+    {
+     "count": 11,
+     "ending": "65"
+    },
+    {
+     "count": 11,
+     "ending": "48"
+    },
+    {
+     "count": 11,
+     "ending": "56"
+    },
+    {
+     "count": 11,
+     "ending": "36"
+    },
+    {
+     "count": 11,
+     "ending": "09"
+    },
+    {
+     "count": 12,
+     "ending": "03"
+    },
+    {
+     "count": 13,
+     "ending": "59"
+    },
+    {
+     "count": 13,
+     "ending": "10"
+    },
+    {
+     "count": 14,
+     "ending": "19"
+    },
+    {
+     "count": 14,
+     "ending": "60"
+    },
+    {
+     "count": 14,
+     "ending": "40"
+    },
+    {
+     "count": 14,
+     "ending": "90"
+    }
+   ],
+   "hot": [
+    {
+     "count": 30,
+     "ending": "49"
+    },
+    {
+     "count": 30,
+     "ending": "53"
+    },
+    {
+     "count": 29,
+     "ending": "33"
+    },
+    {
+     "count": 27,
+     "ending": "38"
+    },
+    {
+     "count": 26,
+     "ending": "32"
+    },
+    {
+     "count": 26,
+     "ending": "41"
+    },
+    {
+     "count": 25,
+     "ending": "24"
+    },
+    {
+     "count": 25,
+     "ending": "64"
+    },
+    {
+     "count": 25,
+     "ending": "81"
+    },
+    {
+     "count": 24,
+     "ending": "12"
+    },
+    {
+     "count": 23,
+     "ending": "11"
+    },
+    {
+     "count": 22,
+     "ending": "72"
+    },
+    {
+     "count": 22,
+     "ending": "89"
+    },
+    {
+     "count": 22,
+     "ending": "42"
+    },
+    {
+     "count": 22,
+     "ending": "61"
+    }
+   ]
+  },
+  "recommendations": [
+   {
+    "confidence": 1.68,
+    "ending": "49",
+    "lift": 1.68,
+    "score": 45.3
+   },
+   {
+    "confidence": 1.67,
+    "ending": "53",
+    "lift": 1.67,
+    "score": 45.2
+   },
+   {
+    "confidence": 1.61,
+    "ending": "33",
+    "lift": 1.61,
+    "score": 43.5
+   },
+   {
+    "confidence": 1.5,
+    "ending": "38",
+    "lift": 1.5,
+    "score": 40.4
+   },
+   {
+    "confidence": 1.42,
+    "ending": "81",
+    "lift": 1.42,
+    "score": 38.3
+   },
+   {
+    "confidence": 1.39,
+    "ending": "32",
+    "lift": 1.39,
+    "score": 37.4
+   },
+   {
+    "confidence": 1.38,
+    "ending": "12",
+    "lift": 1.38,
+    "score": 37.3
+   },
+   {
+    "confidence": 1.38,
+    "ending": "41",
+    "lift": 1.38,
+    "score": 37.3
+   },
+   {
+    "confidence": 1.37,
+    "ending": "64",
+    "lift": 1.37,
+    "score": 37.1
+   },
+   {
+    "confidence": 1.36,
+    "ending": "24",
+    "lift": 1.36,
+    "score": 36.8
+   }
+  ],
+  "total_endings": 1800,
+  "trends": [
+   {
+    "endings": {
+     "12": 0,
+     "24": 1,
+     "32": 0,
+     "33": 0,
+     "38": 1,
+     "41": 0,
+     "49": 0,
+     "53": 0,
+     "64": 0,
+     "81": 0
+    },
+    "month": "2017-11"
+   },
+   {
+    "endings": {
+     "12": 1,
+     "24": 0,
+     "32": 0,
+     "33": 1,
+     "38": 0,
+     "41": 1,
+     "49": 0,
+     "53": 0,
+     "64": 0,
+     "81": 0
+    },
+    "month": "2017-12"
+   },
+   {
+    "endings": {
+     "12": 1,
+     "24": 0,
+     "32": 0,
+     "33": 0,
+     "38": 0,
+     "41": 1,
+     "49": 0,
+     "53": 0,
+     "64": 0,
+     "81": 3
+    },
+    "month": "2018-01"
+   },
+   {
+    "endings": {
+     "12": 1,
+     "24": 1,
+     "32": 0,
+     "33": 1,
+     "38": 0,
+     "41": 1,
+     "49": 1,
+     "53": 0,
+     "64": 0,
+     "81": 1
+    },
+    "month": "2018-02"
+   },
+   {
+    "endings": {
+     "12": 1,
+     "24": 0,
+     "32": 0,
+     "33": 0,
+     "38": 1,
+     "41": 0,
+     "49": 0,
+     "53": 2,
+     "64": 1,
+     "81": 0
+    },
+    "month": "2018-03"
+   },
+   {
+    "endings": {
+     "12": 0,
+     "24": 0,
+     "32": 0,
+     "33": 1,
+     "38": 0,
+     "41": 0,
+     "49": 1,
+     "53": 0,
+     "64": 1,
+     "81": 1
+    },
+    "month": "2018-04"
+   },
+   {
+    "endings": {
+     "12": 0,
+     "24": 0,
+     "32": 0,
+     "33": 0,
+     "38": 0,
+     "41": 0,
+     "49": 0,
+     "53": 0,
+     "64": 0,
+     "81": 0
+    },
+    "month": "2018-05"
+   },
+   {
+    "endings": {
+     "12": 0,
+     "24": 0,
+     "32": 0,
+     "33": 1,
+     "38": 0,
+     "41": 0,
+     "49": 2,
+     "53": 0,
+     "64": 0,
+     "81": 0
+    },
+    "month": "2018-06"
+   },
+   {
+    "endings": {
+     "12": 0,
+     "24": 0,
+     "32": 1,
+     "33": 1,
+     "38": 1,
+     "41": 1,
+     "49": 2,
+     "53": 0,
+     "64": 0,
+     "81": 0
+    },
+    "month": "2018-07"
+   },
+   {
+    "endings": {
+     "12": 1,
+     "24": 1,
+     "32": 0,
+     "33": 2,
+     "38": 0,
+     "41": 0,
+     "49": 0,
+     "53": 0,
+     "64": 0,
+     "81": 0
+    },
+    "month": "2018-08"
+   },
+   {
+    "endings": {
+     "12": 0,
+     "24": 0,
+     "32": 0,
+     "33": 0,
+     "38": 1,
+     "41": 0,
+     "49": 0,
+     "53": 2,
+     "64": 0,
+     "81": 0
+    },
+    "month": "2018-09"
+   },
+   {
+    "endings": {
+     "12": 0,
+     "24": 0,
+     "32": 0,
+     "33": 0,
+     "38": 0,
+     "41": 0,
+     "49": 0,
+     "53": 0,
+     "64": 0,
+     "81": 1
+    },
+    "month": "2018-10"
+   },
+   {
+    "endings": {
+     "12": 1,
+     "24": 0,
+     "32": 0,
+     "33": 0,
+     "38": 0,
+     "41": 0,
+     "49": 0,
+     "53": 0,
+     "64": 1,
+     "81": 0
+    },
+    "month": "2018-11"
+   },
+   {
+    "endings": {
+     "12": 2,
+     "24": 0,
+     "32": 0,
+     "33": 0,
+     "38": 2,
+     "41": 0,
+     "49": 0,
+     "53": 0,
+     "64": 0,
+     "81": 0
+    },
+    "month": "2018-12"
+   },
+   {
+    "endings": {
+     "12": 0,
+     "24": 0,
+     "32": 2,
+     "33": 0,
+     "38": 1,
+     "41": 0,
+     "49": 0,
+     "53": 3,
+     "64": 0,
+     "81": 1
+    },
+    "month": "2019-01"
+   },
+   {
+    "endings": {
+     "12": 0,
+     "24": 1,
+     "32": 0,
+     "33": 0,
+     "38": 1,
+     "41": 0,
+     "49": 1,
+     "53": 1,
+     "64": 1,
+     "81": 0
+    },
+    "month": "2019-02"
+   },
+   {
+    "endings": {
+     "12": 2,
+     "24": 0,
+     "32": 1,
+     "33": 1,
+     "38": 0,
+     "41": 0,
+     "49": 1,
+     "53": 2,
+     "64": 0,
+     "81": 1
+    },
+    "month": "2019-03"
+   },
+   {
+    "endings": {
+     "12": 0,
+     "24": 1,
+     "32": 0,
+     "33": 1,
+     "38": 0,
+     "41": 0,
+     "49": 0,
+     "53": 0,
+     "64": 2,
+     "81": 1
+    },
+    "month": "2019-04"
+   },
+   {
+    "endings": {
+     "12": 0,
+     "24": 0,
+     "32": 0,
+     "33": 2,
+     "38": 1,
+     "41": 1,
+     "49": 0,
+     "53": 0,
+     "64": 0,
+     "81": 1
+    },
+    "month": "2019-05"
+   },
+   {
+    "endings": {
+     "12": 0,
+     "24": 0,
+     "32": 1,
+     "33": 0,
+     "38": 1,
+     "41": 0,
+     "49": 0,
+     "53": 0,
+     "64": 0,
+     "81": 0
+    },
+    "month": "2019-06"
+   },
+   {
+    "endings": {
+     "12": 0,
+     "24": 1,
+     "32": 0,
+     "33": 0,
+     "38": 0,
+     "41": 1,
+     "49": 0,
+     "53": 0,
+     "64": 0,
+     "81": 1
+    },
+    "month": "2019-07"
+   },
+   {
+    "endings": {
+     "12": 0,
+     "24": 0,
+     "32": 1,
+     "33": 0,
+     "38": 1,
+     "41": 0,
+     "49": 0,
+     "53": 0,
+     "64": 0,
+     "81": 0
+    },
+    "month": "2019-08"
+   },
+   {
+    "endings": {
+     "12": 1,
+     "24": 1,
+     "32": 0,
+     "33": 0,
+     "38": 0,
+     "41": 0,
+     "49": 2,
+     "53": 0,
+     "64": 1,
+     "81": 0
+    },
+    "month": "2019-09"
+   },
+   {
+    "endings": {
+     "12": 0,
+     "24": 0,
+     "32": 0,
+     "33": 0,
+     "38": 0,
+     "41": 0,
+     "49": 0,
+     "53": 0,
+     "64": 0,
+     "81": 0
+    },
+    "month": "2019-10"
+   }
+  ]
+ },
+ "endings_by_category": {
+  "dominical": {
+   "backtest": null,
+   "ml_recommendations": [
+    {
+     "confidence": 1.54,
+     "ending": "42",
+     "lift": 1.54,
+     "score": 154.0
+    },
+    {
+     "confidence": 1.53,
+     "ending": "43",
+     "lift": 1.53,
+     "score": 152.7
+    },
+    {
+     "confidence": 1.5,
+     "ending": "45",
+     "lift": 1.5,
+     "score": 150.0
+    },
+    {
+     "confidence": 1.5,
+     "ending": "40",
+     "lift": 1.5,
+     "score": 149.9
+    },
+    {
+     "confidence": 1.43,
+     "ending": "44",
+     "lift": 1.43,
+     "score": 142.5
+    },
+    {
+     "confidence": 1.41,
+     "ending": "49",
+     "lift": 1.41,
+     "score": 141.0
+    },
+    {
+     "confidence": 1.4,
+     "ending": "41",
+     "lift": 1.4,
+     "score": 139.9
+    },
+    {
+     "confidence": 1.4,
+     "ending": "47",
+     "lift": 1.4,
+     "score": 139.8
+    },
+    {
+     "confidence": 1.37,
+     "ending": "46",
+     "lift": 1.37,
+     "score": 137.5
+    },
+    {
+     "confidence": 1.27,
+     "ending": "48",
+     "lift": 1.27,
+     "score": 127.3
+    }
+   ],
+   "recommendations": [
+    {
+     "confidence": 2.53,
+     "ending": "33",
+     "lift": 2.53,
+     "score": 17.1
+    },
+    {
+     "confidence": 2.25,
+     "ending": "49",
+     "lift": 2.25,
+     "score": 15.2
+    },
+    {
+     "confidence": 2.12,
+     "ending": "85",
+     "lift": 2.12,
+     "score": 14.3
+    },
+    {
+     "confidence": 2.06,
+     "ending": "55",
+     "lift": 2.06,
+     "score": 13.9
+    },
+    {
+     "confidence": 2.03,
+     "ending": "01",
+     "lift": 2.03,
+     "score": 13.7
+    },
+    {
+     "confidence": 1.95,
+     "ending": "02",
+     "lift": 1.95,
+     "score": 13.2
+    },
+    {
+     "confidence": 1.91,
+     "ending": "25",
+     "lift": 1.91,
+     "score": 12.9
+    },
+    {
+     "confidence": 1.86,
+     "ending": "73",
+     "lift": 1.86,
+     "score": 12.6
+    },
+    {
+     "confidence": 1.74,
+     "ending": "88",
+     "lift": 1.74,
+     "score": 11.8
+    },
+    {
+     "confidence": 1.74,
+     "ending": "75",
+     "lift": 1.74,
+     "score": 11.7
+    }
+   ],
+   "total_endings": 450
+  },
+  "extraordinario": {
+   "backtest": null,
+   "ml_recommendations": [
+    {
+     "confidence": 1.42,
+     "ending": "91",
+     "lift": 1.42,
+     "score": 142.2
+    },
+    {
+     "confidence": 1.29,
+     "ending": "94",
+     "lift": 1.29,
+     "score": 129.4
+    },
+    {
+     "confidence": 1.29,
+     "ending": "90",
+     "lift": 1.29,
+     "score": 129.3
+    },
+    {
+     "confidence": 1.28,
+     "ending": "98",
+     "lift": 1.28,
+     "score": 127.7
+    },
+    {
+     "confidence": 1.27,
+     "ending": "92",
+     "lift": 1.27,
+     "score": 127.4
+    },
+    {
+     "confidence": 1.25,
+     "ending": "95",
+     "lift": 1.25,
+     "score": 125.3
+    },
+    {
+     "confidence": 1.24,
+     "ending": "71",
+     "lift": 1.24,
+     "score": 123.7
+    },
+    {
+     "confidence": 1.21,
+     "ending": "99",
+     "lift": 1.21,
+     "score": 120.5
+    },
+    {
+     "confidence": 1.19,
+     "ending": "41",
+     "lift": 1.19,
+     "score": 118.7
+    },
+    {
+     "confidence": 1.16,
+     "ending": "31",
+     "lift": 1.16,
+     "score": 116.2
+    }
+   ],
+   "recommendations": [
+    {
+     "confidence": 2.55,
+     "ending": "53",
+     "lift": 2.55,
+     "score": 17.2
+    },
+    {
+     "confidence": 2.23,
+     "ending": "72",
+     "lift": 2.23,
+     "score": 15.1
+    },
+    {
+     "confidence": 1.91,
+     "ending": "32",
+     "lift": 1.91,
+     "score": 12.9
+    },
+    {
+     "confidence": 1.88,
+     "ending": "76",
+     "lift": 1.88,
+     "score": 12.7
+    },
+    {
+     "confidence": 1.75,
+     "ending": "47",
+     "lift": 1.75,
+     "score": 11.8
+    },
+    {
+     "confidence": 1.73,
+     "ending": "05",
+     "lift": 1.73,
+     "score": 11.7
+    },
+    {
+     "confidence": 1.72,
+     "ending": "12",
+     "lift": 1.72,
+     "score": 11.6
+    },
+    {
+     "confidence": 1.67,
+     "ending": "39",
+     "lift": 1.67,
+     "score": 11.3
+    },
+    {
+     "confidence": 1.63,
+     "ending": "00",
+     "lift": 1.63,
+     "score": 11.0
+    },
+    {
+     "confidence": 1.63,
+     "ending": "30",
+     "lift": 1.63,
+     "score": 11.0
+    }
+   ],
+   "total_endings": 450
+  },
+  "gordito": {
+   "backtest": null,
+   "ml_recommendations": [
+    {
+     "confidence": 1.2,
+     "ending": "78",
+     "lift": 1.2,
+     "score": 120.0
+    },
+    {
+     "confidence": 1.2,
+     "ending": "88",
+     "lift": 1.2,
+     "score": 119.5
+    },
+    {
+     "confidence": 1.19,
+     "ending": "98",
+     "lift": 1.19,
+     "score": 119.4
+    },
+    {
+     "confidence": 1.17,
+     "ending": "58",
+     "lift": 1.17,
+     "score": 116.8
+    },
+    {
+     "confidence": 1.17,
+     "ending": "48",
+     "lift": 1.17,
+     "score": 116.6
+    },
+    {
+     "confidence": 1.16,
+     "ending": "28",
+     "lift": 1.16,
+     "score": 115.7
+    },
+    {
+     "confidence": 1.15,
+     "ending": "38",
+     "lift": 1.15,
+     "score": 114.8
+    },
+    {
+     "confidence": 1.14,
+     "ending": "70",
+     "lift": 1.14,
+     "score": 114.2
+    },
+    {
+     "confidence": 1.14,
+     "ending": "68",
+     "lift": 1.14,
+     "score": 114.0
+    },
+    {
+     "confidence": 1.14,
+     "ending": "80",
+     "lift": 1.14,
+     "score": 113.8
+    }
+   ],
+   "recommendations": [
+    {
+     "confidence": 2.02,
+     "ending": "53",
+     "lift": 2.02,
+     "score": 13.6
+    },
+    {
+     "confidence": 1.94,
+     "ending": "31",
+     "lift": 1.94,
+     "score": 13.1
+    },
+    {
+     "confidence": 1.91,
+     "ending": "94",
+     "lift": 1.91,
+     "score": 12.9
+    },
+    {
+     "confidence": 1.87,
+     "ending": "49",
+     "lift": 1.87,
+     "score": 12.6
+    },
+    {
+     "confidence": 1.87,
+     "ending": "46",
+     "lift": 1.87,
+     "score": 12.6
+    },
+    {
+     "confidence": 1.84,
+     "ending": "41",
+     "lift": 1.84,
+     "score": 12.4
+    },
+    {
+     "confidence": 1.71,
+     "ending": "63",
+     "lift": 1.71,
+     "score": 11.6
+    },
+    {
+     "confidence": 1.71,
+     "ending": "64",
+     "lift": 1.71,
+     "score": 11.5
+    },
+    {
+     "confidence": 1.62,
+     "ending": "89",
+     "lift": 1.62,
+     "score": 11.0
+    },
+    {
+     "confidence": 1.57,
+     "ending": "27",
+     "lift": 1.57,
+     "score": 10.6
+    }
+   ],
+   "total_endings": 450
+  },
+  "miercolito": {
+   "backtest": null,
+   "ml_recommendations": [
+    {
+     "confidence": 1.51,
+     "ending": "43",
+     "lift": 1.51,
+     "score": 151.2
+    },
+    {
+     "confidence": 1.5,
+     "ending": "45",
+     "lift": 1.5,
+     "score": 150.1
+    },
+    {
+     "confidence": 1.45,
+     "ending": "48",
+     "lift": 1.45,
+     "score": 145.2
+    },
+    {
+     "confidence": 1.3,
+     "ending": "53",
+     "lift": 1.3,
+     "score": 130.0
+    },
+    {
+     "confidence": 1.29,
+     "ending": "55",
+     "lift": 1.29,
+     "score": 129.1
+    },
+    {
+     "confidence": 1.28,
+     "ending": "83",
+     "lift": 1.28,
+     "score": 128.3
+    },
+    {
+     "confidence": 1.27,
+     "ending": "85",
+     "lift": 1.27,
+     "score": 127.4
+    },
+    {
+     "confidence": 1.26,
+     "ending": "49",
+     "lift": 1.26,
+     "score": 125.5
+    },
+    {
+     "confidence": 1.25,
+     "ending": "58",
+     "lift": 1.25,
+     "score": 124.9
+    },
+    {
+     "confidence": 1.23,
+     "ending": "88",
+     "lift": 1.23,
+     "score": 123.3
+    }
+   ],
+   "recommendations": [
+    {
+     "confidence": 2.03,
+     "ending": "33",
+     "lift": 2.03,
+     "score": 13.7
+    },
+    {
+     "confidence": 1.99,
+     "ending": "64",
+     "lift": 1.99,
+     "score": 13.4
+    },
+    {
+     "confidence": 1.97,
+     "ending": "42",
+     "lift": 1.97,
+     "score": 13.3
+    },
+    {
+     "confidence": 1.93,
+     "ending": "81",
+     "lift": 1.93,
+     "score": 13.1
+    },
+    {
+     "confidence": 1.9,
+     "ending": "38",
+     "lift": 1.9,
+     "score": 12.9
+    },
+    {
+     "confidence": 1.85,
+     "ending": "11",
+     "lift": 1.85,
+     "score": 12.5
+    },
+    {
+     "confidence": 1.76,
+     "ending": "43",
+     "lift": 1.76,
+     "score": 11.9
+    },
+    {
+     "confidence": 1.7,
+     "ending": "78",
+     "lift": 1.7,
+     "score": 11.5
+    },
+    {
+     "confidence": 1.7,
+     "ending": "08",
+     "lift": 1.7,
+     "score": 11.5
+    },
+    {
+     "confidence": 1.66,
+     "ending": "84",
+     "lift": 1.66,
+     "score": 11.2
+    }
+   ],
+   "total_endings": 450
+  }
+ },
+ "formatos": {
+  "2": {
+   "by_category": {
+    "dominical": 300,
+    "extraordinario": 300,
+    "gordito": 300,
+    "miercolito": 300
+   },
+   "by_prize": {
+    "segundo": 600,
+    "tercero": 600
+   },
+   "date_range": {
+    "from": "2014-01-05",
+    "to": "2019-10-02"
+   },
+   "digit_frequency": {
+    "0": 231,
+    "1": 245,
+    "2": 265,
+    "3": 251,
+    "4": 241,
+    "5": 230,
+    "6": 239,
+    "7": 219,
+    "8": 237,
+    "9": 242
+   },
+   "hot_cold": {
+    "cold": [
+     {
+      "count": 5,
+      "number": "48"
+     },
+     {
+      "count": 6,
+      "number": "56"
+     },
+     {
+      "count": 6,
+      "number": "87"
+     },
+     {
+      "count": 6,
+      "number": "23"
+     },
+     {
+      "count": 6,
+      "number": "99"
+     },
+     {
+      "count": 7,
+      "number": "03"
+     },
+     {
+      "count": 7,
+      "number": "37"
+     },
+     {
+      "count": 7,
+      "number": "70"
+     },
+     {
+      "count": 7,
+      "number": "14"
+     },
+     {
+      "count": 8,
+      "number": "65"
+     }
+    ],
+    "hot": [
+     {
+      "count": 23,
+      "number": "49"
+     },
+     {
+      "count": 22,
+      "number": "38"
+     },
+     {
+      "count": 20,
+      "number": "33"
+     },
+     {
+      "count": 20,
+      "number": "53"
+     },
+     {
+      "count": 19,
+      "number": "12"
+     },
+     {
+      "count": 17,
+      "number": "64"
+     },
+     {
+      "count": 17,
+      "number": "79"
+     },
+     {
+      "count": 17,
+      "number": "46"
+     },
+     {
+      "count": 16,
+      "number": "42"
+     },
+     {
+      "count": 16,
+      "number": "11"
+     }
+    ]
+   },
+   "position_frequency": [
+    {
+     "0": 120,
+     "1": 116,
+     "2": 126,
+     "3": 130,
+     "4": 124,
+     "5": 116,
+     "6": 124,
+     "7": 113,
+     "8": 119,
+     "9": 112
+    },
+    {
+     "0": 111,
+     "1": 129,
+     "2": 139,
+     "3": 121,
+     "4": 117,
+     "5": 114,
+     "6": 115,
+     "7": 106,
+     "8": 118,
+     "9": 130
+    }
+   ],
+   "total": 1200
+  },
+  "5": {
+   "by_category": {},
+   "by_prize": {},
+   "date_range": null,
+   "digit_frequency": {
+    "0": 0,
+    "1": 0,
+    "2": 0,
+    "3": 0,
+    "4": 0,
+    "5": 0,
+    "6": 0,
+    "7": 0,
+    "8": 0,
+    "9": 0
+   },
+   "hot_cold": {
+    "cold": [],
+    "hot": []
+   },
+   "position_frequency": [
+    {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 0,
+     "4": 0,
+     "5": 0,
+     "6": 0,
+     "7": 0,
+     "8": 0,
+     "9": 0
+    },
+    {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 0,
+     "4": 0,
+     "5": 0,
+     "6": 0,
+     "7": 0,
+     "8": 0,
+     "9": 0
+    },
+    {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 0,
+     "4": 0,
+     "5": 0,
+     "6": 0,
+     "7": 0,
+     "8": 0,
+     "9": 0
+    },
+    {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 0,
+     "4": 0,
+     "5": 0,
+     "6": 0,
+     "7": 0,
+     "8": 0,
+     "9": 0
+    },
+    {
+     "0": 0,
+     "1": 0,
+     "2": 0,
+     "3": 0,
+     "4": 0,
+     "5": 0,
+     "6": 0,
+     "7": 0,
+     "8": 0,
+     "9": 0
+    }
+   ],
+   "total": 0
+  }
+ },
+ "hot_cold": {
+  "cold": [
+   {
+    "count": 1,
+    "number": "1824"
+   },
+   {
+    "count": 1,
+    "number": "3657"
+   },
+   {
+    "count": 1,
+    "number": "8935"
+   },
+   {
+    "count": 1,
+    "number": "0520"
+   },
+   {
+    "count": 1,
+    "number": "3811"
+   },
+   {
+    "count": 1,
+    "number": "9195"
+   },
+   {
+    "count": 1,
+    "number": "3611"
+   },
+   {
+    "count": 1,
+    "number": "0106"
+   },
+   {
+    "count": 1,
+    "number": "4552"
+   },
+   {
+    "count": 1,
+    "number": "5514"
+   }
+  ],
+  "hot": [
+   {
+    "count": 2,
+    "number": "5139"
+   },
+   {
+    "count": 2,
+    "number": "0841"
+   },
+   {
+    "count": 2,
+    "number": "4333"
+   },
+   {
+    "count": 2,
+    "number": "6070"
+   },
+   {
+    "count": 2,
+    "number": "4949"
+   },
+   {
+    "count": 2,
+    "number": "4961"
+   },
+   {
+    "count": 2,
+    "number": "9024"
+   },
+   {
+    "count": 2,
+    "number": "4982"
+   },
+   {
+    "count": 2,
+    "number": "5067"
+   },
+   {
+    "count": 2,
+    "number": "2868"
+   }
+  ]
+ },
+ "last_digit_pairs": {
+  "00": 9,
+  "02": 7,
+  "14": 7,
+  "16": 8,
+  "18": 7,
+  "24": 12,
+  "26": 8,
+  "31": 9,
+  "32": 10,
+  "33": 9,
+  "37": 9,
+  "39": 11,
+  "41": 12,
+  "43": 13,
+  "51": 9,
+  "53": 10,
+  "55": 8,
+  "61": 7,
+  "64": 8,
+  "66": 8,
+  "68": 9,
+  "70": 11,
+  "72": 8,
+  "73": 8,
+  "75": 8,
+  "80": 9,
+  "81": 10,
+  "86": 8,
+  "89": 8,
+  "95": 8
+ },
+ "last_update": "2019-10-02",
+ "letras": [
+  {
+   "count": 600,
+   "letra": "ABCD"
+  }
+ ],
+ "ml_endings": [
+  {
+   "confidence": 1.35,
+   "ending": "24",
+   "lift": 1.35,
+   "score": 135.4
+  },
+  {
+   "confidence": 1.32,
+   "ending": "23",
+   "lift": 1.32,
+   "score": 131.7
+  },
+  {
+   "confidence": 1.25,
+   "ending": "29",
+   "lift": 1.25,
+   "score": 124.5
+  },
+  {
+   "confidence": 1.23,
+   "ending": "14",
+   "lift": 1.23,
+   "score": 123.3
+  },
+  {
+   "confidence": 1.2,
+   "ending": "28",
+   "lift": 1.2,
+   "score": 120.4
+  },
+  {
+   "confidence": 1.2,
+   "ending": "13",
+   "lift": 1.2,
+   "score": 119.9
+  },
+  {
+   "confidence": 1.19,
+   "ending": "84",
+   "lift": 1.19,
+   "score": 119.5
+  },
+  {
+   "confidence": 1.17,
+   "ending": "20",
+   "lift": 1.17,
+   "score": 117.2
+  },
+  {
+   "confidence": 1.16,
+   "ending": "83",
+   "lift": 1.16,
+   "score": 116.2
+  },
+  {
+   "confidence": 1.16,
+   "ending": "25",
+   "lift": 1.16,
+   "score": 115.8
+  }
+ ],
+ "ml_info": {
+  "model_type": "HistGradientBoosting (4 classifiers)",
+  "train_date": "2026-01-15 12:00",
+  "train_samples": 1750,
+  "trained": true
+ },
+ "ml_prizes": {
+  "primero": [
+   {
+    "confidence": 0.9,
+    "number": "5139",
+    "score": 333.0
+   },
+   {
+    "confidence": 1.7,
+    "number": "2223",
+    "score": 204.8
+   },
+   {
+    "confidence": 1.5,
+    "number": "1924",
+    "score": 198.6
+   },
+   {
+    "confidence": 1.3,
+    "number": "0823",
+    "score": 195.2
+   },
+   {
+    "confidence": 1.2,
+    "number": "0133",
+    "score": 189.5
+   }
+  ],
+  "segundo": [
+   {
+    "confidence": 1.7,
+    "number": "2224",
+    "score": 56.2
+   },
+   {
+    "confidence": 1.7,
+    "number": "2223",
+    "score": 54.8
+   },
+   {
+    "confidence": 1.6,
+    "number": "2724",
+    "score": 54.7
+   },
+   {
+    "confidence": 1.6,
+    "number": "2229",
+    "score": 52.8
+   },
+   {
+    "confidence": 1.5,
+    "number": "4623",
+    "score": 50.3
+   }
+  ],
+  "tercero": [
+   {
+    "confidence": 1.7,
+    "number": "2224",
+    "score": 56.2
+   },
+   {
+    "confidence": 1.7,
+    "number": "2223",
+    "score": 54.8
+   },
+   {
+    "confidence": 1.6,
+    "number": "2724",
+    "score": 54.7
+   },
+   {
+    "confidence": 1.6,
+    "number": "2229",
+    "score": 52.8
+   },
+   {
+    "confidence": 1.5,
+    "number": "4623",
+    "score": 50.3
+   }
+  ]
+ },
+ "ml_recommendations": [
+  {
+   "confidence": 0.9,
+   "number": "5139",
+   "score": 333.0
+  },
+  {
+   "confidence": 1.7,
+   "number": "2223",
+   "score": 204.8
+  },
+  {
+   "confidence": 1.5,
+   "number": "1924",
+   "score": 198.6
+  },
+  {
+   "confidence": 1.3,
+   "number": "0823",
+   "score": 195.2
+  },
+  {
+   "confidence": 1.2,
+   "number": "0133",
+   "score": 189.5
+  }
+ ],
+ "monthly_reco": {
+  "digit_advantage": [
+   {
+    "0": 0.9,
+    "1": 4.1,
+    "2": -0.7,
+    "3": -2.6,
+    "4": 1.7,
+    "5": -0.7,
+    "6": -3.6,
+    "7": -4.6,
+    "8": -2.9,
+    "9": 8.3
+   },
+   {
+    "0": 1.7,
+    "1": -3.0,
+    "2": -4.5,
+    "3": 2.6,
+    "4": 4.3,
+    "5": 8.0,
+    "6": -8.2,
+    "7": 4.6,
+    "8": -1.4,
+    "9": -4.0
+   },
+   {
+    "0": 0.3,
+    "1": -1.5,
+    "2": -1.0,
+    "3": -1.8,
+    "4": 13.0,
+    "5": 0.4,
+    "6": -0.3,
+    "7": -2.5,
+    "8": -0.1,
+    "9": -6.6
+   },
+   {
+    "0": -3.4,
+    "1": 13.0,
+    "2": 6.2,
+    "3": -0.4,
+    "4": 6.0,
+    "5": -7.4,
+    "6": -4.1,
+    "7": -0.8,
+    "8": -3.4,
+    "9": -5.6
+   }
+  ],
+  "monthly_profiles": [
+   {
+    "draws": 52,
+    "hot": [
+     {
+      "count": 1,
+      "number": "4653"
+     },
+     {
+      "count": 1,
+      "number": "3694"
+     },
+     {
+      "count": 1,
+      "number": "4982"
+     },
+     {
+      "count": 1,
+      "number": "0907"
+     },
+     {
+      "count": 1,
+      "number": "2114"
+     },
+     {
+      "count": 1,
+      "number": "9032"
+     },
+     {
+      "count": 1,
+      "number": "7632"
+     },
+     {
+      "count": 1,
+      "number": "2053"
+     },
+     {
+      "count": 1,
+      "number": "6730"
+     },
+     {
+      "count": 1,
+      "number": "4634"
+     }
+    ],
+    "month": 1,
+    "name": "Enero",
+    "numbers": 52,
+    "position_freq": [
+     {
+      "0": 13.5,
+      "1": 9.6,
+      "2": 13.5,
+      "3": 13.5,
+      "4": 13.5,
+      "5": 3.8,
+      "6": 7.7,
+      "7": 9.6,
+      "8": 5.8,
+      "9": 9.6
+     },
+     {
+      "0": 17.3,
+      "1": 9.6,
+      "2": 7.7,
+      "3": 0.0,
+      "4": 3.8,
+      "5": 7.7,
+      "6": 23.1,
+      "7": 5.8,
+      "8": 11.5,
+      "9": 13.5
+     },
+     {
+      "0": 5.8,
+      "1": 13.5,
+      "2": 9.6,
+      "3": 15.4,
+      "4": 7.7,
+      "5": 9.6,
+      "6": 7.7,
+      "7": 9.6,
+      "8": 9.6,
+      "9": 11.5
+     },
+     {
+      "0": 7.7,
+      "1": 15.4,
+      "2": 13.5,
+      "3": 11.5,
+      "4": 17.3,
+      "5": 13.5,
+      "6": 5.8,
+      "7": 7.7,
+      "8": 5.8,
+      "9": 1.9
+     }
+    ],
+    "top_endings": [
+     {
+      "count": 3,
+      "ending": "95"
+     },
+     {
+      "count": 3,
+      "ending": "11"
+     },
+     {
+      "count": 2,
+      "ending": "53"
+     },
+     {
+      "count": 2,
+      "ending": "14"
+     },
+     {
+      "count": 2,
+      "ending": "32"
+     },
+     {
+      "count": 2,
+      "ending": "72"
+     },
+     {
+      "count": 2,
+      "ending": "24"
+     },
+     {
+      "count": 2,
+      "ending": "35"
+     },
+     {
+      "count": 1,
+      "ending": "94"
+     },
+     {
+      "count": 1,
+      "ending": "82"
+     }
+    ]
+   },
+   {
+    "draws": 48,
+    "hot": [
+     {
+      "count": 1,
+      "number": "0496"
+     },
+     {
+      "count": 1,
+      "number": "3453"
+     },
+     {
+      "count": 1,
+      "number": "0744"
+     },
+     {
+      "count": 1,
+      "number": "9234"
+     },
+     {
+      "count": 1,
+      "number": "2804"
+     },
+     {
+      "count": 1,
+      "number": "2762"
+     },
+     {
+      "count": 1,
+      "number": "4961"
+     },
+     {
+      "count": 1,
+      "number": "9024"
+     },
+     {
+      "count": 1,
+      "number": "5381"
+     },
+     {
+      "count": 1,
+      "number": "1388"
+     }
+    ],
+    "month": 2,
+    "name": "Febrero",
+    "numbers": 48,
+    "position_freq": [
+     {
+      "0": 10.4,
+      "1": 14.6,
+      "2": 8.3,
+      "3": 6.2,
+      "4": 12.5,
+      "5": 8.3,
+      "6": 6.2,
+      "7": 6.2,
+      "8": 6.2,
+      "9": 20.8
+     },
+     {
+      "0": 12.5,
+      "1": 8.3,
+      "2": 4.2,
+      "3": 10.4,
+      "4": 12.5,
+      "5": 16.7,
+      "6": 2.1,
+      "7": 14.6,
+      "8": 10.4,
+      "9": 8.3
+     },
+     {
+      "0": 8.3,
+      "1": 8.3,
+      "2": 8.3,
+      "3": 10.4,
+      "4": 25.0,
+      "5": 10.4,
+      "6": 8.3,
+      "7": 8.3,
+      "8": 10.4,
+      "9": 2.1
+     },
+     {
+      "0": 6.2,
+      "1": 25.0,
+      "2": 16.7,
+      "3": 10.4,
+      "4": 16.7,
+      "5": 2.1,
+      "6": 6.2,
+      "7": 8.3,
+      "8": 6.2,
+      "9": 2.1
+     }
+    ],
+    "top_endings": [
+     {
+      "count": 4,
+      "ending": "41"
+     },
+     {
+      "count": 2,
+      "ending": "53"
+     },
+     {
+      "count": 2,
+      "ending": "81"
+     },
+     {
+      "count": 2,
+      "ending": "21"
+     },
+     {
+      "count": 2,
+      "ending": "70"
+     },
+     {
+      "count": 2,
+      "ending": "42"
+     },
+     {
+      "count": 2,
+      "ending": "52"
+     },
+     {
+      "count": 1,
+      "ending": "96"
+     },
+     {
+      "count": 1,
+      "ending": "44"
+     },
+     {
+      "count": 1,
+      "ending": "34"
+     }
+    ]
+   },
+   {
+    "draws": 53,
+    "hot": [
+     {
+      "count": 1,
+      "number": "4382"
+     },
+     {
+      "count": 1,
+      "number": "5228"
+     },
+     {
+      "count": 1,
+      "number": "6070"
+     },
+     {
+      "count": 1,
+      "number": "5231"
+     },
+     {
+      "count": 1,
+      "number": "9939"
+     },
+     {
+      "count": 1,
+      "number": "7933"
+     },
+     {
+      "count": 1,
+      "number": "0981"
+     },
+     {
+      "count": 1,
+      "number": "6653"
+     },
+     {
+      "count": 1,
+      "number": "4949"
+     },
+     {
+      "count": 1,
+      "number": "2658"
+     }
+    ],
+    "month": 3,
+    "name": "Marzo",
+    "numbers": 53,
+    "position_freq": [
+     {
+      "0": 5.7,
+      "1": 7.5,
+      "2": 7.5,
+      "3": 13.2,
+      "4": 11.3,
+      "5": 18.9,
+      "6": 11.3,
+      "7": 7.5,
+      "8": 3.8,
+      "9": 13.2
+     },
+     {
+      "0": 11.3,
+      "1": 11.3,
+      "2": 9.4,
+      "3": 3.8,
+      "4": 9.4,
+      "5": 7.5,
+      "6": 13.2,
+      "7": 5.7,
+      "8": 11.3,
+      "9": 17.0
+     },
+     {
+      "0": 3.8,
+      "1": 7.5,
+      "2": 9.4,
+      "3": 15.1,
+      "4": 13.2,
+      "5": 15.1,
+      "6": 9.4,
+      "7": 11.3,
+      "8": 9.4,
+      "9": 5.7
+     },
+     {
+      "0": 11.3,
+      "1": 7.5,
+      "2": 5.7,
+      "3": 20.8,
+      "4": 13.2,
+      "5": 1.9,
+      "6": 9.4,
+      "7": 11.3,
+      "8": 13.2,
+      "9": 5.7
+     }
+    ],
+    "top_endings": [
+     {
+      "count": 2,
+      "ending": "39"
+     },
+     {
+      "count": 2,
+      "ending": "53"
+     },
+     {
+      "count": 2,
+      "ending": "50"
+     },
+     {
+      "count": 2,
+      "ending": "18"
+     },
+     {
+      "count": 2,
+      "ending": "68"
+     },
+     {
+      "count": 2,
+      "ending": "32"
+     },
+     {
+      "count": 2,
+      "ending": "43"
+     },
+     {
+      "count": 2,
+      "ending": "73"
+     },
+     {
+      "count": 1,
+      "ending": "82"
+     },
+     {
+      "count": 1,
+      "ending": "28"
+     }
+    ]
+   },
+   {
+    "draws": 52,
+    "hot": [
+     {
+      "count": 1,
+      "number": "0797"
+     },
+     {
+      "count": 1,
+      "number": "3944"
+     },
+     {
+      "count": 1,
+      "number": "1475"
+     },
+     {
+      "count": 1,
+      "number": "8171"
+     },
+     {
+      "count": 1,
+      "number": "2610"
+     },
+     {
+      "count": 1,
+      "number": "5364"
+     },
+     {
+      "count": 1,
+      "number": "6850"
+     },
+     {
+      "count": 1,
+      "number": "1586"
+     },
+     {
+      "count": 1,
+      "number": "7873"
+     },
+     {
+      "count": 1,
+      "number": "9906"
+     }
+    ],
+    "month": 4,
+    "name": "Abril",
+    "numbers": 52,
+    "position_freq": [
+     {
+      "0": 7.7,
+      "1": 7.7,
+      "2": 9.6,
+      "3": 7.7,
+      "4": 5.8,
+      "5": 19.2,
+      "6": 9.6,
+      "7": 11.5,
+      "8": 7.7,
+      "9": 13.5
+     },
+     {
+      "0": 11.5,
+      "1": 9.6,
+      "2": 7.7,
+      "3": 15.4,
+      "4": 5.8,
+      "5": 5.8,
+      "6": 5.8,
+      "7": 9.6,
+      "8": 17.3,
+      "9": 11.5
+     },
+     {
+      "0": 9.6,
+      "1": 5.8,
+      "2": 1.9,
+      "3": 9.6,
+      "4": 9.6,
+      "5": 11.5,
+      "6": 5.8,
+      "7": 17.3,
+      "8": 15.4,
+      "9": 13.5
+     },
+     {
+      "0": 17.3,
+      "1": 9.6,
+      "2": 5.8,
+      "3": 7.7,
+      "4": 9.6,
+      "5": 13.5,
+      "6": 11.5,
+      "7": 7.7,
+      "8": 7.7,
+      "9": 9.6
+     }
+    ],
+    "top_endings": [
+     {
+      "count": 3,
+      "ending": "70"
+     },
+     {
+      "count": 2,
+      "ending": "97"
+     },
+     {
+      "count": 2,
+      "ending": "64"
+     },
+     {
+      "count": 2,
+      "ending": "06"
+     },
+     {
+      "count": 2,
+      "ending": "16"
+     },
+     {
+      "count": 2,
+      "ending": "91"
+     },
+     {
+      "count": 2,
+      "ending": "58"
+     },
+     {
+      "count": 2,
+      "ending": "43"
+     },
+     {
+      "count": 2,
+      "ending": "80"
+     },
+     {
+      "count": 2,
+      "ending": "39"
+     }
+    ]
+   },
+   {
+    "draws": 53,
+    "hot": [
+     {
+      "count": 1,
+      "number": "6114"
+     },
+     {
+      "count": 1,
+      "number": "1946"
+     },
+     {
+      "count": 1,
+      "number": "7378"
+     },
+     {
+      "count": 1,
+      "number": "4728"
+     },
+     {
+      "count": 1,
+      "number": "9204"
+     },
+     {
+      "count": 1,
+      "number": "0741"
+     },
+     {
+      "count": 1,
+      "number": "4333"
+     },
+     {
+      "count": 1,
+      "number": "0133"
+     },
+     {
+      "count": 1,
+      "number": "9789"
+     },
+     {
+      "count": 1,
+      "number": "0627"
+     }
+    ],
+    "month": 5,
+    "name": "Mayo",
+    "numbers": 53,
+    "position_freq": [
+     {
+      "0": 15.1,
+      "1": 13.2,
+      "2": 11.3,
+      "3": 3.8,
+      "4": 11.3,
+      "5": 5.7,
+      "6": 11.3,
+      "7": 9.4,
+      "8": 5.7,
+      "9": 13.2
+     },
+     {
+      "0": 5.7,
+      "1": 18.9,
+      "2": 7.5,
+      "3": 9.4,
+      "4": 9.4,
+      "5": 11.3,
+      "6": 9.4,
+      "7": 17.0,
+      "8": 7.5,
+      "9": 3.8
+     },
+     {
+      "0": 7.5,
+      "1": 17.0,
+      "2": 11.3,
+      "3": 13.2,
+      "4": 17.0,
+      "5": 5.7,
+      "6": 3.8,
+      "7": 7.5,
+      "8": 7.5,
+      "9": 9.4
+     },
+     {
+      "0": 15.1,
+      "1": 11.3,
+      "2": 7.5,
+      "3": 13.2,
+      "4": 5.7,
+      "5": 7.5,
+      "6": 13.2,
+      "7": 13.2,
+      "8": 7.5,
+      "9": 5.7
+     }
+    ],
+    "top_endings": [
+     {
+      "count": 3,
+      "ending": "10"
+     },
+     {
+      "count": 2,
+      "ending": "46"
+     },
+     {
+      "count": 2,
+      "ending": "41"
+     },
+     {
+      "count": 2,
+      "ending": "33"
+     },
+     {
+      "count": 2,
+      "ending": "27"
+     },
+     {
+      "count": 2,
+      "ending": "26"
+     },
+     {
+      "count": 2,
+      "ending": "31"
+     },
+     {
+      "count": 2,
+      "ending": "00"
+     },
+     {
+      "count": 1,
+      "ending": "14"
+     },
+     {
+      "count": 1,
+      "ending": "78"
+     }
+    ]
+   },
+   {
+    "draws": 51,
+    "hot": [
+     {
+      "count": 2,
+      "number": "9975"
+     },
+     {
+      "count": 1,
+      "number": "9222"
+     },
+     {
+      "count": 1,
+      "number": "8351"
+     },
+     {
+      "count": 1,
+      "number": "4902"
+     },
+     {
+      "count": 1,
+      "number": "5218"
+     },
+     {
+      "count": 1,
+      "number": "9932"
+     },
+     {
+      "count": 1,
+      "number": "7761"
+     },
+     {
+      "count": 1,
+      "number": "0637"
+     },
+     {
+      "count": 1,
+      "number": "6576"
+     },
+     {
+      "count": 1,
+      "number": "2363"
+     }
+    ],
+    "month": 6,
+    "name": "Junio",
+    "numbers": 51,
+    "position_freq": [
+     {
+      "0": 7.8,
+      "1": 7.8,
+      "2": 9.8,
+      "3": 7.8,
+      "4": 11.8,
+      "5": 5.9,
+      "6": 7.8,
+      "7": 11.8,
+      "8": 15.7,
+      "9": 13.7
+     },
+     {
+      "0": 9.8,
+      "1": 13.7,
+      "2": 9.8,
+      "3": 7.8,
+      "4": 7.8,
+      "5": 7.8,
+      "6": 9.8,
+      "7": 13.7,
+      "8": 7.8,
+      "9": 11.8
+     },
+     {
+      "0": 9.8,
+      "1": 7.8,
+      "2": 9.8,
+      "3": 15.7,
+      "4": 5.9,
+      "5": 7.8,
+      "6": 5.9,
+      "7": 21.6,
+      "8": 13.7,
+      "9": 2.0
+     },
+     {
+      "0": 9.8,
+      "1": 7.8,
+      "2": 11.8,
+      "3": 19.6,
+      "4": 2.0,
+      "5": 11.8,
+      "6": 5.9,
+      "7": 11.8,
+      "8": 9.8,
+      "9": 9.8
+     }
+    ],
+    "top_endings": [
+     {
+      "count": 3,
+      "ending": "89"
+     },
+     {
+      "count": 3,
+      "ending": "75"
+     },
+     {
+      "count": 2,
+      "ending": "22"
+     },
+     {
+      "count": 2,
+      "ending": "18"
+     },
+     {
+      "count": 2,
+      "ending": "32"
+     },
+     {
+      "count": 2,
+      "ending": "76"
+     },
+     {
+      "count": 2,
+      "ending": "33"
+     },
+     {
+      "count": 2,
+      "ending": "73"
+     },
+     {
+      "count": 2,
+      "ending": "70"
+     },
+     {
+      "count": 2,
+      "ending": "03"
+     }
+    ]
+   },
+   {
+    "draws": 54,
+    "hot": [
+     {
+      "count": 1,
+      "number": "5139"
+     },
+     {
+      "count": 1,
+      "number": "1800"
+     },
+     {
+      "count": 1,
+      "number": "3968"
+     },
+     {
+      "count": 1,
+      "number": "8589"
+     },
+     {
+      "count": 1,
+      "number": "0841"
+     },
+     {
+      "count": 1,
+      "number": "9477"
+     },
+     {
+      "count": 1,
+      "number": "0436"
+     },
+     {
+      "count": 1,
+      "number": "1795"
+     },
+     {
+      "count": 1,
+      "number": "0272"
+     },
+     {
+      "count": 1,
+      "number": "1106"
+     }
+    ],
+    "month": 7,
+    "name": "Julio",
+    "numbers": 54,
+    "position_freq": [
+     {
+      "0": 13.0,
+      "1": 16.7,
+      "2": 3.7,
+      "3": 9.3,
+      "4": 7.4,
+      "5": 7.4,
+      "6": 11.1,
+      "7": 9.3,
+      "8": 13.0,
+      "9": 9.3
+     },
+     {
+      "0": 9.3,
+      "1": 14.8,
+      "2": 1.9,
+      "3": 11.1,
+      "4": 7.4,
+      "5": 11.1,
+      "6": 5.6,
+      "7": 11.1,
+      "8": 14.8,
+      "9": 13.0
+     },
+     {
+      "0": 14.8,
+      "1": 13.0,
+      "2": 9.3,
+      "3": 11.1,
+      "4": 9.3,
+      "5": 3.7,
+      "6": 9.3,
+      "7": 9.3,
+      "8": 11.1,
+      "9": 9.3
+     },
+     {
+      "0": 13.0,
+      "1": 7.4,
+      "2": 11.1,
+      "3": 11.1,
+      "4": 9.3,
+      "5": 9.3,
+      "6": 7.4,
+      "7": 5.6,
+      "8": 11.1,
+      "9": 14.8
+     }
+    ],
+    "top_endings": [
+     {
+      "count": 2,
+      "ending": "39"
+     },
+     {
+      "count": 2,
+      "ending": "00"
+     },
+     {
+      "count": 2,
+      "ending": "68"
+     },
+     {
+      "count": 2,
+      "ending": "89"
+     },
+     {
+      "count": 2,
+      "ending": "95"
+     },
+     {
+      "count": 2,
+      "ending": "02"
+     },
+     {
+      "count": 2,
+      "ending": "08"
+     },
+     {
+      "count": 2,
+      "ending": "43"
+     },
+     {
+      "count": 2,
+      "ending": "13"
+     },
+     {
+      "count": 2,
+      "ending": "20"
+     }
+    ]
+   },
+   {
+    "draws": 53,
+    "hot": [
+     {
+      "count": 1,
+      "number": "9143"
+     },
+     {
+      "count": 1,
+      "number": "7932"
+     },
+     {
+      "count": 1,
+      "number": "8950"
+     },
+     {
+      "count": 1,
+      "number": "2837"
+     },
+     {
+      "count": 1,
+      "number": "7837"
+     },
+     {
+      "count": 1,
+      "number": "3397"
+     },
+     {
+      "count": 1,
+      "number": "7726"
+     },
+     {
+      "count": 1,
+      "number": "3340"
+     },
+     {
+      "count": 1,
+      "number": "3131"
+     },
+     {
+      "count": 1,
+      "number": "8897"
+     }
+    ],
+    "month": 8,
+    "name": "Agosto",
+    "numbers": 53,
+    "position_freq": [
+     {
+      "0": 11.3,
+      "1": 5.7,
+      "2": 11.3,
+      "3": 15.1,
+      "4": 1.9,
+      "5": 3.8,
+      "6": 9.4,
+      "7": 18.9,
+      "8": 15.1,
+      "9": 7.5
+     },
+     {
+      "0": 11.3,
+      "1": 9.4,
+      "2": 7.5,
+      "3": 7.5,
+      "4": 7.5,
+      "5": 9.4,
+      "6": 7.5,
+      "7": 9.4,
+      "8": 18.9,
+      "9": 11.3
+     },
+     {
+      "0": 5.7,
+      "1": 7.5,
+      "2": 15.1,
+      "3": 13.2,
+      "4": 11.3,
+      "5": 7.5,
+      "6": 11.3,
+      "7": 9.4,
+      "8": 3.8,
+      "9": 15.1
+     },
+     {
+      "0": 9.4,
+      "1": 11.3,
+      "2": 13.2,
+      "3": 7.5,
+      "4": 5.7,
+      "5": 1.9,
+      "6": 18.9,
+      "7": 17.0,
+      "8": 7.5,
+      "9": 7.5
+     }
+    ],
+    "top_endings": [
+     {
+      "count": 3,
+      "ending": "37"
+     },
+     {
+      "count": 3,
+      "ending": "26"
+     },
+     {
+      "count": 2,
+      "ending": "97"
+     },
+     {
+      "count": 2,
+      "ending": "98"
+     },
+     {
+      "count": 2,
+      "ending": "77"
+     },
+     {
+      "count": 2,
+      "ending": "22"
+     },
+     {
+      "count": 2,
+      "ending": "51"
+     },
+     {
+      "count": 2,
+      "ending": "96"
+     },
+     {
+      "count": 1,
+      "ending": "43"
+     },
+     {
+      "count": 1,
+      "ending": "32"
+     }
+    ]
+   },
+   {
+    "draws": 51,
+    "hot": [
+     {
+      "count": 1,
+      "number": "4450"
+     },
+     {
+      "count": 1,
+      "number": "8824"
+     },
+     {
+      "count": 1,
+      "number": "4201"
+     },
+     {
+      "count": 1,
+      "number": "4712"
+     },
+     {
+      "count": 1,
+      "number": "5654"
+     },
+     {
+      "count": 1,
+      "number": "8899"
+     },
+     {
+      "count": 1,
+      "number": "4480"
+     },
+     {
+      "count": 1,
+      "number": "7861"
+     },
+     {
+      "count": 1,
+      "number": "4735"
+     },
+     {
+      "count": 1,
+      "number": "4843"
+     }
+    ],
+    "month": 9,
+    "name": "Septiembre",
+    "numbers": 51,
+    "position_freq": [
+     {
+      "0": 5.9,
+      "1": 15.7,
+      "2": 5.9,
+      "3": 7.8,
+      "4": 13.7,
+      "5": 5.9,
+      "6": 17.6,
+      "7": 9.8,
+      "8": 11.8,
+      "9": 5.9
+     },
+     {
+      "0": 5.9,
+      "1": 13.7,
+      "2": 5.9,
+      "3": 9.8,
+      "4": 13.7,
+      "5": 5.9,
+      "6": 7.8,
+      "7": 9.8,
+      "8": 17.6,
+      "9": 9.8
+     },
+     {
+      "0": 7.8,
+      "1": 11.8,
+      "2": 11.8,
+      "3": 7.8,
+      "4": 13.7,
+      "5": 7.8,
+      "6": 7.8,
+      "7": 5.9,
+      "8": 19.6,
+      "9": 5.9
+     },
+     {
+      "0": 13.7,
+      "1": 13.7,
+      "2": 3.9,
+      "3": 7.8,
+      "4": 9.8,
+      "5": 11.8,
+      "6": 15.7,
+      "7": 3.9,
+      "8": 5.9,
+      "9": 13.7
+     }
+    ],
+    "top_endings": [
+     {
+      "count": 3,
+      "ending": "80"
+     },
+     {
+      "count": 3,
+      "ending": "29"
+     },
+     {
+      "count": 2,
+      "ending": "24"
+     },
+     {
+      "count": 2,
+      "ending": "43"
+     },
+     {
+      "count": 2,
+      "ending": "49"
+     },
+     {
+      "count": 2,
+      "ending": "15"
+     },
+     {
+      "count": 2,
+      "ending": "86"
+     },
+     {
+      "count": 2,
+      "ending": "11"
+     },
+     {
+      "count": 1,
+      "ending": "50"
+     },
+     {
+      "count": 1,
+      "ending": "01"
+     }
+    ]
+   },
+   {
+    "draws": 45,
+    "hot": [
+     {
+      "count": 1,
+      "number": "9614"
+     },
+     {
+      "count": 1,
+      "number": "2513"
+     },
+     {
+      "count": 1,
+      "number": "6272"
+     },
+     {
+      "count": 1,
+      "number": "1101"
+     },
+     {
+      "count": 1,
+      "number": "9954"
+     },
+     {
+      "count": 1,
+      "number": "2621"
+     },
+     {
+      "count": 1,
+      "number": "6655"
+     },
+     {
+      "count": 1,
+      "number": "7126"
+     },
+     {
+      "count": 1,
+      "number": "7325"
+     },
+     {
+      "count": 1,
+      "number": "6981"
+     }
+    ],
+    "month": 10,
+    "name": "Octubre",
+    "numbers": 45,
+    "position_freq": [
+     {
+      "0": 11.1,
+      "1": 8.9,
+      "2": 11.1,
+      "3": 4.4,
+      "4": 13.3,
+      "5": 4.4,
+      "6": 11.1,
+      "7": 15.6,
+      "8": 6.7,
+      "9": 13.3
+     },
+     {
+      "0": 11.1,
+      "1": 8.9,
+      "2": 13.3,
+      "3": 11.1,
+      "4": 0.0,
+      "5": 11.1,
+      "6": 11.1,
+      "7": 4.4,
+      "8": 8.9,
+      "9": 20.0
+     },
+     {
+      "0": 6.7,
+      "1": 11.1,
+      "2": 11.1,
+      "3": 8.9,
+      "4": 11.1,
+      "5": 20.0,
+      "6": 11.1,
+      "7": 8.9,
+      "8": 4.4,
+      "9": 6.7
+     },
+     {
+      "0": 2.2,
+      "1": 24.4,
+      "2": 13.3,
+      "3": 11.1,
+      "4": 11.1,
+      "5": 15.6,
+      "6": 6.7,
+      "7": 4.4,
+      "8": 8.9,
+      "9": 2.2
+     }
+    ],
+    "top_endings": [
+     {
+      "count": 3,
+      "ending": "72"
+     },
+     {
+      "count": 3,
+      "ending": "51"
+     },
+     {
+      "count": 2,
+      "ending": "21"
+     },
+     {
+      "count": 2,
+      "ending": "55"
+     },
+     {
+      "count": 2,
+      "ending": "25"
+     },
+     {
+      "count": 2,
+      "ending": "48"
+     },
+     {
+      "count": 2,
+      "ending": "53"
+     },
+     {
+      "count": 2,
+      "ending": "44"
+     },
+     {
+      "count": 2,
+      "ending": "31"
+     },
+     {
+      "count": 1,
+      "ending": "14"
+     }
+    ]
+   },
+   {
+    "draws": 44,
+    "hot": [
+     {
+      "count": 1,
+      "number": "2223"
+     },
+     {
+      "count": 1,
+      "number": "4678"
+     },
+     {
+      "count": 1,
+      "number": "4264"
+     },
+     {
+      "count": 1,
+      "number": "9202"
+     },
+     {
+      "count": 1,
+      "number": "3048"
+     },
+     {
+      "count": 1,
+      "number": "4566"
+     },
+     {
+      "count": 1,
+      "number": "8674"
+     },
+     {
+      "count": 1,
+      "number": "7273"
+     },
+     {
+      "count": 1,
+      "number": "2842"
+     },
+     {
+      "count": 1,
+      "number": "1684"
+     }
+    ],
+    "month": 11,
+    "name": "Noviembre",
+    "numbers": 44,
+    "position_freq": [
+     {
+      "0": 4.5,
+      "1": 9.1,
+      "2": 9.1,
+      "3": 9.1,
+      "4": 18.2,
+      "5": 9.1,
+      "6": 4.5,
+      "7": 9.1,
+      "8": 11.4,
+      "9": 15.9
+     },
+     {
+      "0": 9.1,
+      "1": 11.4,
+      "2": 13.6,
+      "3": 4.5,
+      "4": 9.1,
+      "5": 4.5,
+      "6": 13.6,
+      "7": 9.1,
+      "8": 9.1,
+      "9": 15.9
+     },
+     {
+      "0": 9.1,
+      "1": 6.8,
+      "2": 9.1,
+      "3": 6.8,
+      "4": 9.1,
+      "5": 13.6,
+      "6": 13.6,
+      "7": 11.4,
+      "8": 13.6,
+      "9": 6.8
+     },
+     {
+      "0": 6.8,
+      "1": 6.8,
+      "2": 11.4,
+      "3": 6.8,
+      "4": 15.9,
+      "5": 11.4,
+      "6": 11.4,
+      "7": 4.5,
+      "8": 18.2,
+      "9": 6.8
+     }
+    ],
+    "top_endings": [
+     {
+      "count": 2,
+      "ending": "48"
+     },
+     {
+      "count": 2,
+      "ending": "66"
+     },
+     {
+      "count": 2,
+      "ending": "84"
+     },
+     {
+      "count": 2,
+      "ending": "24"
+     },
+     {
+      "count": 2,
+      "ending": "55"
+     },
+     {
+      "count": 2,
+      "ending": "00"
+     },
+     {
+      "count": 1,
+      "ending": "23"
+     },
+     {
+      "count": 1,
+      "ending": "78"
+     },
+     {
+      "count": 1,
+      "ending": "64"
+     },
+     {
+      "count": 1,
+      "ending": "02"
+     }
+    ]
+   },
+   {
+    "draws": 44,
+    "hot": [
+     {
+      "count": 1,
+      "number": "5067"
+     },
+     {
+      "count": 1,
+      "number": "9038"
+     },
+     {
+      "count": 1,
+      "number": "9376"
+     },
+     {
+      "count": 1,
+      "number": "8094"
+     },
+     {
+      "count": 1,
+      "number": "1988"
+     },
+     {
+      "count": 1,
+      "number": "2852"
+     },
+     {
+      "count": 1,
+      "number": "4757"
+     },
+     {
+      "count": 1,
+      "number": "5692"
+     },
+     {
+      "count": 1,
+      "number": "7292"
+     },
+     {
+      "count": 1,
+      "number": "1479"
+     }
+    ],
+    "month": 12,
+    "name": "Diciembre",
+    "numbers": 44,
+    "position_freq": [
+     {
+      "0": 6.8,
+      "1": 9.1,
+      "2": 6.8,
+      "3": 6.8,
+      "4": 11.4,
+      "5": 15.9,
+      "6": 9.1,
+      "7": 11.4,
+      "8": 6.8,
+      "9": 15.9
+     },
+     {
+      "0": 15.9,
+      "1": 4.5,
+      "2": 18.2,
+      "3": 2.3,
+      "4": 11.4,
+      "5": 4.5,
+      "6": 15.9,
+      "7": 9.1,
+      "8": 4.5,
+      "9": 13.6
+     },
+     {
+      "0": 6.8,
+      "1": 6.8,
+      "2": 4.5,
+      "3": 18.2,
+      "4": 11.4,
+      "5": 9.1,
+      "6": 11.4,
+      "7": 9.1,
+      "8": 6.8,
+      "9": 15.9
+     },
+     {
+      "0": 0.0,
+      "1": 4.5,
+      "2": 13.6,
+      "3": 0.0,
+      "4": 13.6,
+      "5": 15.9,
+      "6": 11.4,
+      "7": 13.6,
+      "8": 15.9,
+      "9": 11.4
+     }
+    ],
+    "top_endings": [
+     {
+      "count": 2,
+      "ending": "94"
+     },
+     {
+      "count": 2,
+      "ending": "92"
+     },
+     {
+      "count": 2,
+      "ending": "34"
+     },
+     {
+      "count": 2,
+      "ending": "95"
+     },
+     {
+      "count": 2,
+      "ending": "58"
+     },
+     {
+      "count": 2,
+      "ending": "17"
+     },
+     {
+      "count": 2,
+      "ending": "39"
+     },
+     {
+      "count": 1,
+      "ending": "67"
+     },
+     {
+      "count": 1,
+      "ending": "38"
+     },
+     {
+      "count": 1,
+      "ending": "76"
+     }
+    ]
+   }
+  ],
+  "recommendations": [
+   {
+    "confidence": 15.0,
+    "lift": 20.28,
+    "number": "9541",
+    "score": 20.2809,
+    "veces": 0
+   },
+   {
+    "confidence": 15.0,
+    "lift": 19.69,
+    "number": "9741",
+    "score": 19.6914,
+    "veces": 0
+   },
+   {
+    "confidence": 15.0,
+    "lift": 19.22,
+    "number": "9441",
+    "score": 19.2197,
+    "veces": 0
+   },
+   {
+    "confidence": 15.0,
+    "lift": 17.45,
+    "number": "9041",
+    "score": 17.451,
+    "veces": 0
+   },
+   {
+    "confidence": 14.58,
+    "lift": 14.58,
+    "number": "9841",
+    "score": 14.5818,
+    "veces": 0
+   }
+  ],
+  "target_draws_historical": 48,
+  "target_month": 2,
+  "target_month_name": "Febrero",
+  "target_numbers_historical": 48,
+  "target_year": 2026
+ },
+ "position_frequency": [
+  {
+   "0": 57,
+   "1": 63,
+   "2": 54,
+   "3": 53,
+   "4": 65,
+   "5": 54,
+   "6": 59,
+   "7": 65,
+   "8": 55,
+   "9": 75
+  },
+  {
+   "0": 65,
+   "1": 68,
+   "2": 52,
+   "3": 47,
+   "4": 49,
+   "5": 52,
+   "6": 62,
+   "7": 60,
+   "8": 71,
+   "9": 74
+  },
+  {
+   "0": 48,
+   "1": 59,
+   "2": 56,
+   "3": 73,
+   "4": 72,
+   "5": 60,
+   "6": 52,
+   "7": 65,
+   "8": 63,
+   "9": 52
+  },
+  {
+   "0": 58,
+   "1": 72,
+   "2": 63,
+   "3": 65,
+   "4": 64,
+   "5": 57,
+   "6": 62,
+   "7": 55,
+   "8": 58,
+   "9": 46
+  }
+ ],
+ "prizes": {
+  "primero": {
+   "digit_frequency": {
+    "0": 228,
+    "1": 262,
+    "2": 225,
+    "3": 238,
+    "4": 250,
+    "5": 223,
+    "6": 235,
+    "7": 245,
+    "8": 247,
+    "9": 247
+   },
+   "hot_cold": {
+    "cold": [
+     {
+      "count": 1,
+      "number": "1824"
+     },
+     {
+      "count": 1,
+      "number": "3657"
+     },
+     {
+      "count": 1,
+      "number": "8935"
+     },
+     {
+      "count": 1,
+      "number": "0520"
+     },
+     {
+      "count": 1,
+      "number": "3811"
+     },
+     {
+      "count": 1,
+      "number": "9195"
+     },
+     {
+      "count": 1,
+      "number": "3611"
+     },
+     {
+      "count": 1,
+      "number": "0106"
+     },
+     {
+      "count": 1,
+      "number": "4552"
+     },
+     {
+      "count": 1,
+      "number": "5514"
+     }
+    ],
+    "hot": [
+     {
+      "count": 2,
+      "number": "5139"
+     },
+     {
+      "count": 2,
+      "number": "0841"
+     },
+     {
+      "count": 2,
+      "number": "4333"
+     },
+     {
+      "count": 2,
+      "number": "6070"
+     },
+     {
+      "count": 2,
+      "number": "4949"
+     },
+     {
+      "count": 2,
+      "number": "4961"
+     },
+     {
+      "count": 2,
+      "number": "9024"
+     },
+     {
+      "count": 2,
+      "number": "4982"
+     },
+     {
+      "count": 2,
+      "number": "5067"
+     },
+     {
+      "count": 2,
+      "number": "2868"
+     }
+    ]
+   },
+   "last_digit_pairs": {
+    "00": 9,
+    "02": 7,
+    "14": 7,
+    "16": 8,
+    "18": 7,
+    "24": 12,
+    "26": 8,
+    "31": 9,
+    "32": 10,
+    "33": 9,
+    "37": 9,
+    "39": 11,
+    "41": 12,
+    "43": 13,
+    "51": 9,
+    "53": 10,
+    "55": 8,
+    "61": 7,
+    "64": 8,
+    "66": 8,
+    "68": 9,
+    "70": 11,
+    "72": 8,
+    "73": 8,
+    "75": 8,
+    "80": 9,
+    "81": 10,
+    "86": 8,
+    "89": 8,
+    "95": 8
+   },
+   "position_frequency": [
+    {
+     "0": 57,
+     "1": 63,
+     "2": 54,
+     "3": 53,
+     "4": 65,
+     "5": 54,
+     "6": 59,
+     "7": 65,
+     "8": 55,
+     "9": 75
+    },
+    {
+     "0": 65,
+     "1": 68,
+     "2": 52,
+     "3": 47,
+     "4": 49,
+     "5": 52,
+     "6": 62,
+     "7": 60,
+     "8": 71,
+     "9": 74
+    },
+    {
+     "0": 48,
+     "1": 59,
+     "2": 56,
+     "3": 73,
+     "4": 72,
+     "5": 60,
+     "6": 52,
+     "7": 65,
+     "8": 63,
+     "9": 52
+    },
+    {
+     "0": 58,
+     "1": 72,
+     "2": 63,
+     "3": 65,
+     "4": 64,
+     "5": 57,
+     "6": 62,
+     "7": 55,
+     "8": 58,
+     "9": 46
+    }
+   ],
+   "recommendations": [
+    {
+     "confidence": 2.24,
+     "lift": 2.24,
+     "number": "9931",
+     "score": 2.2393,
+     "veces": 0
+    },
+    {
+     "confidence": 2.18,
+     "lift": 2.18,
+     "number": "9941",
+     "score": 2.1802,
+     "veces": 0
+    },
+    {
+     "confidence": 2.09,
+     "lift": 2.09,
+     "number": "9831",
+     "score": 2.0903,
+     "veces": 0
+    },
+    {
+     "confidence": 2.07,
+     "lift": 2.07,
+     "number": "9934",
+     "score": 2.0675,
+     "veces": 0
+    },
+    {
+     "confidence": 2.05,
+     "lift": 2.05,
+     "number": "9933",
+     "score": 2.0542,
+     "veces": 0
+    }
+   ]
+  },
+  "segundo": {},
+  "tercero": {}
+ },
+ "reco_from": "1995-01-01",
+ "reco_sorteos": 600,
+ "recommendations": [
+  {
+   "confidence": 2.24,
+   "lift": 2.24,
+   "number": "9931",
+   "score": 2.2393,
+   "veces": 0
+  },
+  {
+   "confidence": 2.18,
+   "lift": 2.18,
+   "number": "9941",
+   "score": 2.1802,
+   "veces": 0
+  },
+  {
+   "confidence": 2.09,
+   "lift": 2.09,
+   "number": "9831",
+   "score": 2.0903,
+   "veces": 0
+  },
+  {
+   "confidence": 2.07,
+   "lift": 2.07,
+   "number": "9934",
+   "score": 2.0675,
+   "veces": 0
+  },
+  {
+   "confidence": 2.05,
+   "lift": 2.05,
+   "number": "9933",
+   "score": 2.0542,
+   "veces": 0
+  }
+ ],
+ "series_folio": {
+  "folios": [
+   {
+    "count": 1,
+    "value": "599"
+   },
+   {
+    "count": 1,
+    "value": "598"
+   },
+   {
+    "count": 1,
+    "value": "597"
+   },
+   {
+    "count": 1,
+    "value": "596"
+   },
+   {
+    "count": 1,
+    "value": "595"
+   },
+   {
+    "count": 1,
+    "value": "594"
+   },
+   {
+    "count": 1,
+    "value": "593"
+   },
+   {
+    "count": 1,
+    "value": "592"
+   },
+   {
+    "count": 1,
+    "value": "591"
+   },
+   {
+    "count": 1,
+    "value": "590"
+   }
+  ],
+  "series": [
+   {
+    "count": 30,
+    "value": "11"
+   },
+   {
+    "count": 29,
+    "value": "15"
+   },
+   {
+    "count": 28,
+    "value": "20"
+   },
+   {
+    "count": 27,
+    "value": "3"
+   },
+   {
+    "count": 26,
+    "value": "22"
+   },
+   {
+    "count": 26,
+    "value": "17"
+   },
+   {
+    "count": 25,
+    "value": "5"
+   },
+   {
+    "count": 24,
+    "value": "27"
+   },
+   {
+    "count": 24,
+    "value": "25"
+   },
+   {
+    "count": 23,
+    "value": "26"
+   }
+  ]
+ },
+ "total_sorteos": 600,
+ "trends": [
+  {
+   "digits": {
+    "0": 0,
+    "1": 4,
+    "2": 4,
+    "3": 0,
+    "4": 7,
+    "5": 6,
+    "6": 5,
+    "7": 2,
+    "8": 7,
+    "9": 1
+   },
+   "month": "2017-11",
+   "sorteos": 9
+  },
+  {
+   "digits": {
+    "0": 2,
+    "1": 4,
+    "2": 4,
+    "3": 2,
+    "4": 5,
+    "5": 4,
+    "6": 6,
+    "7": 4,
+    "8": 1,
+    "9": 4
+   },
+   "month": "2017-12",
+   "sorteos": 9
+  },
+  {
+   "digits": {
+    "0": 2,
+    "1": 5,
+    "2": 5,
+    "3": 2,
+    "4": 4,
+    "5": 2,
+    "6": 3,
+    "7": 5,
+    "8": 4,
+    "9": 4
+   },
+   "month": "2018-01",
+   "sorteos": 9
+  },
+  {
+   "digits": {
+    "0": 0,
+    "1": 5,
+    "2": 2,
+    "3": 3,
+    "4": 6,
+    "5": 5,
+    "6": 1,
+    "7": 2,
+    "8": 5,
+    "9": 3
+   },
+   "month": "2018-02",
+   "sorteos": 8
+  },
+  {
+   "digits": {
+    "0": 1,
+    "1": 2,
+    "2": 5,
+    "3": 2,
+    "4": 2,
+    "5": 6,
+    "6": 5,
+    "7": 3,
+    "8": 3,
+    "9": 3
+   },
+   "month": "2018-03",
+   "sorteos": 8
+  },
+  {
+   "digits": {
+    "0": 4,
+    "1": 3,
+    "2": 0,
+    "3": 4,
+    "4": 2,
+    "5": 5,
+    "6": 4,
+    "7": 6,
+    "8": 3,
+    "9": 5
+   },
+   "month": "2018-04",
+   "sorteos": 9
+  },
+  {
+   "digits": {
+    "0": 2,
+    "1": 4,
+    "2": 7,
+    "3": 3,
+    "4": 3,
+    "5": 1,
+    "6": 9,
+    "7": 4,
+    "8": 2,
+    "9": 1
+   },
+   "month": "2018-05",
+   "sorteos": 9
+  },
+  {
+   "digits": {
+    "0": 4,
+    "1": 1,
+    "2": 4,
+    "3": 4,
+    "4": 2,
+    "5": 2,
+    "6": 1,
+    "7": 5,
+    "8": 5,
+    "9": 4
+   },
+   "month": "2018-06",
+   "sorteos": 8
+  },
+  {
+   "digits": {
+    "0": 5,
+    "1": 6,
+    "2": 3,
+    "3": 4,
+    "4": 3,
+    "5": 4,
+    "6": 3,
+    "7": 3,
+    "8": 5,
+    "9": 0
+   },
+   "month": "2018-07",
+   "sorteos": 9
+  },
+  {
+   "digits": {
+    "0": 4,
+    "1": 4,
+    "2": 3,
+    "3": 2,
+    "4": 1,
+    "5": 1,
+    "6": 4,
+    "7": 5,
+    "8": 8,
+    "9": 4
+   },
+   "month": "2018-08",
+   "sorteos": 9
+  },
+  {
+   "digits": {
+    "0": 5,
+    "1": 2,
+    "2": 4,
+    "3": 2,
+    "4": 3,
+    "5": 4,
+    "6": 4,
+    "7": 3,
+    "8": 5,
+    "9": 4
+   },
+   "month": "2018-09",
+   "sorteos": 9
+  },
+  {
+   "digits": {
+    "0": 1,
+    "1": 7,
+    "2": 7,
+    "3": 2,
+    "4": 1,
+    "5": 5,
+    "6": 6,
+    "7": 3,
+    "8": 1,
+    "9": 3
+   },
+   "month": "2018-10",
+   "sorteos": 9
+  },
+  {
+   "digits": {
+    "0": 2,
+    "1": 0,
+    "2": 7,
+    "3": 3,
+    "4": 6,
+    "5": 1,
+    "6": 5,
+    "7": 4,
+    "8": 3,
+    "9": 1
+   },
+   "month": "2018-11",
+   "sorteos": 8
+  },
+  {
+   "digits": {
+    "0": 3,
+    "1": 1,
+    "2": 5,
+    "3": 2,
+    "4": 2,
+    "5": 4,
+    "6": 3,
+    "7": 5,
+    "8": 5,
+    "9": 6
+   },
+   "month": "2018-12",
+   "sorteos": 9
+  },
+  {
+   "digits": {
+    "0": 5,
+    "1": 2,
+    "2": 5,
+    "3": 6,
+    "4": 4,
+    "5": 2,
+    "6": 4,
+    "7": 3,
+    "8": 1,
+    "9": 4
+   },
+   "month": "2019-01",
+   "sorteos": 9
+  },
+  {
+   "digits": {
+    "0": 4,
+    "1": 1,
+    "2": 5,
+    "3": 3,
+    "4": 8,
+    "5": 1,
+    "6": 3,
+    "7": 2,
+    "8": 1,
+    "9": 4
+   },
+   "month": "2019-02",
+   "sorteos": 8
+  },
+  {
+   "digits": {
+    "0": 3,
+    "1": 2,
+    "2": 4,
+    "3": 6,
+    "4": 3,
+    "5": 3,
+    "6": 3,
+    "7": 2,
+    "8": 3,
+    "9": 7
+   },
+   "month": "2019-03",
+   "sorteos": 9
+  },
+  {
+   "digits": {
+    "0": 3,
+    "1": 5,
+    "2": 1,
+    "3": 2,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 4,
+    "8": 3,
+    "9": 2
+   },
+   "month": "2019-04",
+   "sorteos": 8
+  },
+  {
+   "digits": {
+    "0": 3,
+    "1": 5,
+    "2": 2,
+    "3": 6,
+    "4": 6,
+    "5": 0,
+    "6": 2,
+    "7": 5,
+    "8": 3,
+    "9": 4
+   },
+   "month": "2019-05",
+   "sorteos": 9
+  },
+  {
+   "digits": {
+    "0": 2,
+    "1": 3,
+    "2": 7,
+    "3": 5,
+    "4": 1,
+    "5": 3,
+    "6": 5,
+    "7": 4,
+    "8": 2,
+    "9": 4
+   },
+   "month": "2019-06",
+   "sorteos": 9
+  },
+  {
+   "digits": {
+    "0": 5,
+    "1": 4,
+    "2": 2,
+    "3": 3,
+    "4": 3,
+    "5": 3,
+    "6": 2,
+    "7": 4,
+    "8": 5,
+    "9": 5
+   },
+   "month": "2019-07",
+   "sorteos": 9
+  },
+  {
+   "digits": {
+    "0": 2,
+    "1": 1,
+    "2": 3,
+    "3": 8,
+    "4": 2,
+    "5": 1,
+    "6": 1,
+    "7": 7,
+    "8": 3,
+    "9": 4
+   },
+   "month": "2019-08",
+   "sorteos": 8
+  },
+  {
+   "digits": {
+    "0": 3,
+    "1": 3,
+    "2": 3,
+    "3": 1,
+    "4": 9,
+    "5": 4,
+    "6": 2,
+    "7": 3,
+    "8": 6,
+    "9": 2
+   },
+   "month": "2019-09",
+   "sorteos": 9
+  },
+  {
+   "digits": {
+    "0": 0,
+    "1": 1,
+    "2": 0,
+    "3": 0,
+    "4": 1,
+    "5": 0,
+    "6": 1,
+    "7": 0,
+    "8": 0,
+    "9": 1
+   },
+   "month": "2019-10",
+   "sorteos": 1
+  }
+ ]
+}

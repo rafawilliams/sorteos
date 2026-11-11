@@ -162,6 +162,19 @@ def con_numeros_repetidos(sorteos):
     return resultado
 
 
+def solo_primeros_premios_de_4_cifras(sorteos):
+    """Copia con el segundo y el tercer premio de 2 cifras en todas las categorías.
+
+    Así `prizes.segundo` y `prizes.tercero` de `/api/stats` salen `{}` (no hay números de 4 cifras de esos
+    premios), una forma que los datos sembrados no producen.
+    """
+    resultado = copy.deepcopy(sorteos)
+    for s in resultado:
+        for clave in ("segundo", "tercero"):
+            s[clave] = s[clave][-2:]
+    return resultado
+
+
 def a_formatos_reales(sorteos):
     """Copia con los formatos de premio de los datos reales.
 
@@ -202,6 +215,30 @@ def _con_sorteos(app_module, sorteos):
         yield
     finally:
         app_module.get_sorteos = original
+        app_module._cache.clear()
+
+
+@contextmanager
+def _con_modelo_sin_entrenar(app_module):
+    """Sustituye `app.predictor` por uno sin entrenar y que `/api/stats` no entrena al vuelo.
+
+    No se usa el constructor porque `__init__` carga el modelo guardado en `models/`.
+    """
+    original = app_module.predictor
+
+    class SinEntrenar(type(original)):
+        def train(self, *args, **kwargs):
+            return None
+
+    sin_modelo = object.__new__(SinEntrenar)
+    sin_modelo.models, sin_modelo.trained = [None] * 4, False
+    sin_modelo.train_date, sin_modelo.train_samples, sin_modelo.feature_names = None, 0, []
+    app_module.predictor = sin_modelo
+    app_module._cache.clear()
+    try:
+        yield
+    finally:
+        app_module.predictor = original
         app_module._cache.clear()
 
 
@@ -296,6 +333,10 @@ def generar(destino=DESTINO, contar=None):
             app_module.predictor = entrenado
             app_module._cache.clear()
 
+        # Con menos de 100 primeros premios de 4 cifras la parte estadística es `{}` (y el ML puede serlo).
+        with _con_sorteos(app_module, ultimos(sorteos, 60)):
+            escritos.append(_guardar(destino, "backtesting_pocos_sorteos", _pedir(client, "/api/backtesting?last_n=500")))
+
         con_dato = [sorteos[0]["primero"], sorteos[1]["primero"]]
         escritos.append(_guardar(destino, "comparar", _pedir(client, "/api/comparar?numeros=" + ",".join(con_dato))))
         escritos.append(_guardar(destino, "simulador", _pedir(client, f"/api/simulador?numero={con_dato[0]}")))
@@ -315,6 +356,12 @@ def generar(destino=DESTINO, contar=None):
 
         with _con_sorteos(app_module, a_formatos_reales(sorteos)):
             escritos.append(_guardar(destino, "stats_formatos_reales", _pedir(client, "/api/stats")))
+
+        with _con_sorteos(app_module, solo_primeros_premios_de_4_cifras(sorteos)):
+            escritos.append(_guardar(destino, "stats_solo_primeros", _pedir(client, "/api/stats")))
+
+        with _con_modelo_sin_entrenar(app_module):
+            escritos.append(_guardar(destino, "stats_sin_modelo", _pedir(client, "/api/stats")))
 
         escritos.append(_guardar(destino, "seguimiento", _seguimiento_con_datos(app_module, client, sorteos)))
         with _seguimiento_en_memoria(app_module):

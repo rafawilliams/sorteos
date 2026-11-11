@@ -7,8 +7,13 @@
  *  2. `Cubre<Tipo, typeof fixture>`: el tipo declara todos los campos que tiene el fixture. `satisfies` no lo
  *     ve (un JSON importado no pasa por la comprobación de propiedades de más), y sin esto un campo nuevo
  *     de la API que el tipo no conoce pasaría inadvertido.
+ *
+ * Qué NO detecta: que un campo obligatorio pase a opcional, que un `number` pase a `number | null`, nada
+ * dentro de una lista vacía (por eso hay variantes con elementos) y los valores concretos. Los textos
+ * literales (`Categoria`, `Premio`, `method`…) se ensanchan a `string` aquí y los comprueba `literales.test.ts`.
  */
 import backtesting from '../../fixtures/backtesting.json'
+import backtestingPocosSorteos from '../../fixtures/backtesting_pocos_sorteos.json'
 import backtestingSinModelo from '../../fixtures/backtesting_sin_modelo.json'
 import comparar from '../../fixtures/comparar.json'
 import compararSinApariciones from '../../fixtures/comparar_sin_apariciones.json'
@@ -23,6 +28,8 @@ import stats from '../../fixtures/stats.json'
 import statsConBacktests from '../../fixtures/stats_con_backtests.json'
 import statsFormatosReales from '../../fixtures/stats_formatos_reales.json'
 import statsPocosSorteos from '../../fixtures/stats_pocos_sorteos.json'
+import statsSinModelo from '../../fixtures/stats_sin_modelo.json'
+import statsSoloPrimeros from '../../fixtures/stats_solo_primeros.json'
 import type {
   Backtesting,
   Comparacion,
@@ -72,12 +79,15 @@ export const cumplen = [
   statsPocosSorteos satisfies Ensanchar<Stats>,
   statsConBacktests satisfies Ensanchar<Stats>,
   statsFormatosReales satisfies Ensanchar<Stats>,
+  statsSinModelo satisfies Ensanchar<Stats>,
+  statsSoloPrimeros satisfies Ensanchar<Stats>,
   seguimiento satisfies Ensanchar<Seguimiento>,
   seguimientoVacio satisfies Ensanchar<Seguimiento>,
   gaps satisfies Ensanchar<Gaps>,
   gapsConNumeros satisfies Ensanchar<Gaps>,
   backtesting satisfies Ensanchar<Backtesting>,
   backtestingSinModelo satisfies Ensanchar<Backtesting>,
+  backtestingPocosSorteos satisfies Ensanchar<Backtesting>,
   comparar satisfies Ensanchar<Comparacion>,
   compararSinApariciones satisfies Ensanchar<Comparacion>,
   simulador satisfies Ensanchar<Simulacion>,
@@ -91,12 +101,15 @@ export type TiposCubren = [
   Verdadero<Cubre<Stats, typeof statsPocosSorteos>>,
   Verdadero<Cubre<Stats, typeof statsConBacktests>>,
   Verdadero<Cubre<Stats, typeof statsFormatosReales>>,
+  Verdadero<Cubre<Stats, typeof statsSinModelo>>,
+  Verdadero<Cubre<Stats, typeof statsSoloPrimeros>>,
   Verdadero<Cubre<Seguimiento, typeof seguimiento>>,
   Verdadero<Cubre<Seguimiento, typeof seguimientoVacio>>,
   Verdadero<Cubre<Gaps, typeof gaps>>,
   Verdadero<Cubre<Gaps, typeof gapsConNumeros>>,
   Verdadero<Cubre<Backtesting, typeof backtesting>>,
   Verdadero<Cubre<Backtesting, typeof backtestingSinModelo>>,
+  Verdadero<Cubre<Backtesting, typeof backtestingPocosSorteos>>,
   Verdadero<Cubre<Comparacion, typeof comparar>>,
   Verdadero<Cubre<Comparacion, typeof compararSinApariciones>>,
   Verdadero<Cubre<Simulacion, typeof simulador>>,

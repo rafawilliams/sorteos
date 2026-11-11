@@ -295,3 +295,20 @@ class TestConNumerosRepetidos:
         copia = copy.deepcopy(original)
         gen.con_numeros_repetidos(original)
         assert original == copia
+
+
+class TestSoloPrimerosPremiosDe4Cifras:
+    def test_el_segundo_y_el_tercero_quedan_de_dos_cifras_en_todas_las_categorias(self):
+        r = gen.solo_primeros_premios_de_4_cifras(SORTEOS)
+        assert [(s["segundo"], s["tercero"]) for s in r] == [("78", "12"), ("90", "57"), ("22", "44"), ("02", "03")]
+
+    def test_el_primero_y_lo_demas_no_cambian(self):
+        r = gen.solo_primeros_premios_de_4_cifras(SORTEOS)
+        for original, nuevo in zip(SORTEOS, r):
+            assert {k: v for k, v in nuevo.items() if k not in ("segundo", "tercero")} == \
+                   {k: v for k, v in original.items() if k not in ("segundo", "tercero")}
+
+    def test_no_modifica_la_lista_original(self):
+        copia = copy.deepcopy(SORTEOS)
+        gen.solo_primeros_premios_de_4_cifras(SORTEOS)
+        assert SORTEOS == copia

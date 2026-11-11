@@ -7,12 +7,17 @@
  * desde los fixtures, la comprobación pasaría siempre.
  *
  * Donde los fixtures no llegan (listas siempre vacías en la base sembrada, campos que solo faltan sin
- * modelo entrenado) el tipo sigue el código del backend, y así se indica.
+ * modelo entrenado) el tipo sigue el código del backend, y así se indica. Un campo que el backend omite o
+ * devuelve vacío según los datos es opcional o admite `ObjetoVacio`: tiparlo como siempre presente haría
+ * que el front lo diera por seguro y fallara en ejecución sin que `tsc` avisara.
+ *
+ * Límite de la comprobación contra los fixtures (`fixtures.check.ts`): detecta campos que faltan, que
+ * sobran y de distinto tipo, pero no ve si un campo obligatorio pasa a opcional, ni que un `number` pase a
+ * `number | null`, ni valores concretos: eso lo cubren la lectura del backend y `literales.test.ts`.
  */
+import type { Categoria, Formato, Metodo, MetodoDecena, Premio } from './constantes'
 
-export type Categoria = 'dominical' | 'miercolito' | 'gordito' | 'extraordinario'
-export type Premio = 'primero' | 'segundo' | 'tercero'
-export type Metodo = 'ml' | 'estadistico' | 'combinada'
+export type { Categoria, Formato, Metodo, MetodoDecena, Premio } from './constantes'
 
 /** Conteos por clave de dato: dígito (`"0"`…`"9"`), terminación (`"00"`…`"99"`), mes (`"2019-10"`, `"Oct"`). */
 export type Frecuencia = Record<string, number>
@@ -127,7 +132,7 @@ export interface DecenaCategoria {
   last_3_fechas: string[]
   lift: number
   match_count: number
-  method: 'triple' | 'pair' | 'frecuencia'
+  method: MetodoDecena
   minimo: number
   muestras: number
   recommended: string
@@ -172,7 +177,8 @@ export interface PerfilMensual {
 export interface Stats {
   /** Solo las categorías con premios de 4 cifras: sin ellos (el extraordinario) la clave no está. */
   by_category: Partial<Record<Categoria, EstadisticasCategoria>>
-  decena_recomendada: Record<Categoria, DecenaCategoria>
+  /** Solo las categorías con datos suficientes: `decena_recommendation` devuelve `None` si no los hay. */
+  decena_recomendada: Partial<Record<Categoria, DecenaCategoria>>
   digit_frequency: Frecuencia
   endings: {
     by_prize: Record<Premio, TerminacionConteo[]>
@@ -182,8 +188,9 @@ export interface Stats {
     total_endings: number
     trends: Array<{ endings: Frecuencia; month: string }>
   }
-  endings_by_category: Record<Categoria, TerminacionesCategoria>
-  formatos: Record<string, FormatoPremio>
+  /** Solo las categorías que tienen terminaciones. */
+  endings_by_category: Partial<Record<Categoria, TerminacionesCategoria>>
+  formatos: Partial<Record<Formato, FormatoPremio>>
   hot_cold: CalienteFrio<NumeroConteo>
   last_digit_pairs: Frecuencia
   last_update: string
@@ -195,8 +202,11 @@ export interface Stats {
     train_date: string | null
     train_samples: number | null
     trained: boolean
+    /** Solo si el modelo entrenado expone importancias (HistGradientBoosting hoy no): top 5 por posición. */
+    feature_importances?: Record<string, Array<{ feature: string; importance: number }>>
   }
-  ml_prizes: Record<Premio, RecomendacionNumeroMl[]>
+  /** Vacío (`{}`) con el modelo sin entrenar o con menos de 50 filas de entrenamiento. */
+  ml_prizes: Partial<Record<Premio, RecomendacionNumeroMl[]>>
   ml_recommendations: RecomendacionNumeroMl[]
   monthly_reco: {
     digit_advantage: Frecuencia[]
@@ -209,7 +219,8 @@ export interface Stats {
     target_year: number
   }
   position_frequency: Frecuencia[]
-  prizes: Record<Premio, EstadisticasPremio>
+  /** Cada premio es `{}` si no hay premios de 4 cifras de ese tipo (`_prize_stats`). */
+  prizes: Record<Premio, EstadisticasPremio | ObjetoVacio>
   reco_from: string
   reco_sorteos: number
   recommendations: RecomendacionNumero[]
@@ -366,9 +377,10 @@ export interface Backtesting {
    * conclusión que mostrar sin comprobar `ml`.
    */
   comparison: { best_method: string; ml_better: boolean; ml_lift: number; stat_lift: number }
-  /** Vacío si el modelo no está entrenado. */
+  /** Vacío si el modelo no está entrenado o hay pocos sorteos. */
   ml: BacktestMl | ObjetoVacio
-  statistical: BacktestEstadistico
+  /** Vacío con menos de 100 primeros premios de 4 cifras. */
+  statistical: BacktestEstadistico | ObjetoVacio
 }
 
 // ---------------------------------------------------------------------------
@@ -423,7 +435,7 @@ export interface ActualizarOk {
   ok: true
   output: string
   ml_retrained: boolean
-  seguimiento_registrado: string[]
+  seguimiento_registrado: Categoria[]
   last_update: string
 }
 
@@ -436,7 +448,11 @@ export interface ActualizarError {
 
 export type ActualizarRespuesta = ActualizarOk | ActualizarError
 
-/** Error de los endpoints GET (400 y 500). */
+/**
+ * Cuerpo de error en JSON. Solo lo devuelven `/api/comparar` y `/api/simulador` (400) y `/api/seguimiento` (500).
+ * Un 500 de `/api/stats`, `/api/gaps` o `/api/backtesting` y un 429 del limitador de peticiones NO son JSON
+ * (HTML de Flask): comprobar `respuesta.ok` antes de llamar a `.json()`.
+ */
 export interface ErrorApi {
   error: string
 }
