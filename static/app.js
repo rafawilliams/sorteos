@@ -128,7 +128,6 @@ function activateNavTab(tab){
   document.getElementById('sec-'+tab.dataset.tab).classList.add('active');
   _lpEmit('activeTab');
   if(tab.dataset.tab==='precision') loadBacktesting();
-  if(tab.dataset.tab==='seguimiento') loadSeguimiento();
   triggerReveals();
 }
 
