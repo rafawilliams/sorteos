@@ -25,3 +25,36 @@
 - Opciones estéticas consideradas: (1) Gala & Billete Editorial (casillas cuadradas); (2) Esferas de Sorteo / Bolillero 3D (`.lotto-ball`); (3) Terminal Analítica Quant; (4) No construirlo.
 - Decisión del dueño: Opción 2 (Esferas de Sorteo / Bolillero 3D) y ejecución en autopilot en la rama `feat/mejoras-ui-esferas`.
 - 2026-11-02 — ship: elegida la Opción 2 (Pull Request) por el dueño; rama `feat/mejoras-ui-esferas` subida y PR #21 abierto (`https://github.com/rafawilliams/sorteos/pull/21`).
+
+## 2026-11-11 — frontend-react: alcance y modo
+- Objeción planteada: el usuario final no ve ningún cambio; React exige build con Node, la constitución v1.0.0 (principio 1) prohíbe bundlers y frameworks JS, y el 2026-11-02 se había descartado modularizar el frontend.
+- Opciones consideradas: (a) no hacerlo; (b) módulos ES nativos sin framework; (c) React con migración total de una vez; (d) React pestaña a pestaña.
+- Decisión del dueño: enmendar la constitución (MAJOR, v2.0.0), React con TypeScript, migración pestaña a pestaña, flujo con parada de aprobación en cada fase (sin autopilot). Rama `feat/react-frontend`.
+
+## 2026-11-11 — frontend-react: decisiones del plan
+- Convivencia: islas React sobre el armazón legacy con una interfaz `Store` como costura (`LegacyStore` sobre un puente `window.LP`); descartado «React dueño del armazón desde el primer día» (primera etapa enorme y puente inverso frágil).
+- Build: Vite + TypeScript, salida con nombre fijo en `static/dist/` (no se commitea); Flask muestra un aviso si falta. Bucle de desarrollo: `build --watch`; servidor con recarga diferido a la etapa final.
+- Chart.js: se empaqueta con el build (resuelve la decisión diferida de la spec); la CDN se quita en la etapa final.
+- Contrato de la API: fixtures reales por endpoint (incluye variantes con nulos) + test pytest de estructura + `satisfies` en TypeScript.
+- Pruebas: Vitest + Testing Library con doble de `Chart`; capturas con Playwright solo en local.
+- Orden: Gaps → Seguimiento → Mis Números/Comparador → Simulador/Mensual → Precisión → Resultados → Decenas/Terminaciones → Predicciones → Estadísticas/Tendencias/Análisis → armazón. Etapas en serie porque todas editan `app.js` e `index.html`.
+- Riesgo: la etapa 0 toca el workflow de CI (tier 2): panel de revisores y aprobación humana.
+
+## 2026-11-11 — frontend-react: correcciones tras el análisis
+- Primer `analyze`: BLOCKED (3 HIGH, 9 MEDIUM, 4 LOW). Corregidos los 16 en plan, tareas, constitución (alcance de T001) y spec; segunda pasada: PASS con 2 LOW.
+- Decisión: la etapa 0 se hace en `feat/react-frontend` (spec vinculada a esa rama por el requisito tier 2 de `rsc`); su PR lleva también spec, plan y análisis (T059).
+- Decisión: capturas contra una base sembrada aparte (`sorteos_capturas`) para no tocar datos reales ni la tabla `predicciones`.
+- Decisión: relleno con ceros prohibido solo sobre premios; excepción acotada al número que teclea el usuario en el Simulador.
+- Decisión: descubrimiento automático de islas (`import.meta.glob`); se quitan los `[P]` que compartían archivos.
+- Cambio de spec (validado por el dueño al pedir la corrección): el armazón migra al final, no al principio.
+
+## 2026-11-11 — sdd-init: calibración del runtime SDD
+- Creado `02-DOCS/wiki/sdd/config.yaml`: strict TDD con pytest, modo interactivo, enrutado de modelos apagado.
+- Presupuesto de revisión: el dueño eligió 900 líneas por PR (opciones: 400 por defecto o 900); el presupuesto de archivos sube de 12 a 25 por coherencia. Entrega `ask-on-risk`.
+- Los comandos de front (tipos, pruebas, build) se añadirán a `testing.commands` con la tarea T002.
+
+## 2026-11-11 — T004: comprobación de la API sin build  (feature: frontend-react, task: T004)
+Context   — el done-check pedía que `/api/stats` siga respondiendo 200 sin el build.
+Options    — (1) `/api/stats`; (2) `/api/sorteos?page=1&per_page=1`.
+Decision   — se usa `/api/sorteos`.
+Why        — `/api/stats` entrena el modelo (50-100 s) y registra filas en `predicciones` de la base real al correr en local; `/api/sorteos` demuestra igual que `/api/*` no depende del build y no escribe.

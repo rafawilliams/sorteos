@@ -57,3 +57,5 @@ models/
 .claude/commands/resume-session.md
 .claude/commands/save-session.md
 .claude/skills/security-audit
+static/dist/
+frontend/node_modules/

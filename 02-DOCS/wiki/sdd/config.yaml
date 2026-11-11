@@ -1,0 +1,66 @@
+# Calibración del runtime SDD — escrita por sdd-init el 2026-11-11.
+# Las fases posteriores leen este archivo antes de elegir comandos, presupuesto de revisión o rigor TDD.
+version: 1
+project:
+  root: .
+  stacks: [python, flask, mariadb, vanilla-js]   # el front pasa a react + typescript con la spec frontend-react
+  package_managers: [pip, npm]                     # npm para la carpeta frontend/
+  monorepo: false
+  signals:
+    - ci:github-actions (.github/workflows/tests.yml, MariaDB 11 como servicio)
+    - python:3.13 (requirements.txt y requirements-dev.txt con versiones exactas)
+    - frontend:static/app.js + templates/index.html (migración a React en curso)
+sdd:
+  artifact_store: 02-DOCS/wiki/sdd
+  execution_mode: interactive
+  registry_path: .rsc/skill-registry.json
+  review_budget:
+    line_budget: 900     # decidido por el dueño el 2026-11-11: encaja con 300-900 líneas por etapa de frontend-react
+    file_budget: 25      # coherente con el presupuesto de líneas; el valor por defecto era 12
+  delivery_strategy:
+    default: ask-on-risk
+testing:
+  strict_tdd: true
+  runners: [pytest, vitest]
+  commands:
+    apply:
+      - pytest -q -W error::SyntaxWarning
+      - npm --prefix frontend test -- --run
+    verify:
+      - pytest -q -W error::SyntaxWarning
+      - pip-audit -r requirements.txt --ignore-vuln PYSEC-2026-217
+      - npm --prefix frontend run typecheck
+      - npm --prefix frontend test -- --run
+      - npm --prefix frontend run build
+      - npm --prefix frontend audit --audit-level=high
+phase_rules:
+  proposal: optional-on-ambiguity
+  specify: requires intent or proposal
+  plan: requires spec
+  tasks: requires plan and spec
+  analyze: requires spec plan tasks
+  implement: requires analyze pass, strict_tdd when testing.strict_tdd is true
+  verify: requires spec tasks evidence
+  archive: requires verify record and review/ship outcome
+models:
+  enabled: false              # opt-in master switch; false = honor session model, announce nothing
+  provider: anthropic         # which provider the tiers below resolve to
+  tiers:
+    heavy: claude-opus-4-8
+    balanced: claude-sonnet-4-6
+    light: claude-haiku-4-5-20251001
+  phases:
+    constitution: heavy
+    specify: balanced
+    clarify: balanced
+    plan: heavy
+    tasks: balanced
+    analyze: heavy
+    implement: balanced
+    verify: balanced
+    review: heavy
+    ship: light
+    debug: heavy
+    worktrees: light
+    sdd-init: light
+  overrides: {}               # per-phase tier overrides set by the user

@@ -57,3 +57,35 @@ jobs:
         # PYSEC-2026-217 (mariadb): no fixed release exists; only exploitable with manual
         # escape_string() + big5 charset. The app uses SQLAlchemy parameterized queries.
         run: pip-audit -r requirements.txt --ignore-vuln PYSEC-2026-217
+
+  frontend:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Run tests
+        run: npm test -- --run
+
+      - name: Build
+        run: npm run build
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
