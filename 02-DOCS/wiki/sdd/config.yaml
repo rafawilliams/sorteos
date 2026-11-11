@@ -4,7 +4,7 @@ version: 1
 project:
   root: .
   stacks: [python, flask, mariadb, vanilla-js]   # el front pasa a react + typescript con la spec frontend-react
-  package_managers: [pip]                          # se añade npm (carpeta frontend/) en la tarea T002
+  package_managers: [pip, npm]                     # npm para la carpeta frontend/
   monorepo: false
   signals:
     - ci:github-actions (.github/workflows/tests.yml, MariaDB 11 como servicio)
@@ -21,15 +21,18 @@ sdd:
     default: ask-on-risk
 testing:
   strict_tdd: true
-  runners: [pytest]      # Vitest se añade con la tarea T002 de frontend-react
+  runners: [pytest, vitest]
   commands:
-    # Solo comandos que existen hoy. Con T002 se añaden:
-    #   npm --prefix frontend run typecheck | npm --prefix frontend test -- --run | npm --prefix frontend run build
     apply:
       - pytest -q -W error::SyntaxWarning
+      - npm --prefix frontend test -- --run
     verify:
       - pytest -q -W error::SyntaxWarning
       - pip-audit -r requirements.txt --ignore-vuln PYSEC-2026-217
+      - npm --prefix frontend run typecheck
+      - npm --prefix frontend test -- --run
+      - npm --prefix frontend run build
+      - npm --prefix frontend audit --audit-level=high
 phase_rules:
   proposal: optional-on-ambiguity
   specify: requires intent or proposal
