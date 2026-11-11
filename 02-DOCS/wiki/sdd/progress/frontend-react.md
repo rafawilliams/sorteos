@@ -135,3 +135,14 @@ Spec: [frontend-react](../specs/frontend-react.md) · Plan y tareas: [plan](../p
 - CI: el job nuevo **`frontend` pasa** (12 s: ci, typecheck, test, build, audit). El job `test` (Python) **falló dos veces** en el paso ya existente «Install MariaDB Connector/C»: `apt-get` no resuelve `azure.archive.ubuntu.com` (`Temporary failure resolving`, salida 100) antes de ejecutar ninguna prueba; tarda 6 min 30 s en agotar reintentos. No es del cambio (el paso no se tocó; las ejecuciones de `main` de los últimos días pasaron). Se relanzó una vez con `gh run rerun --failed` y falló igual. Se vuelve a lanzar con un commit nuevo.
 - mergeable: `MERGEABLE` sin conflictos (main avanzó 3 commits que solo tocan `.rsc.json` y `02-DOCS/wiki/ftd/pool-conexiones.md`).
 - no se modifica el workflow para sortear el fallo de `apt`: sería otro cambio de tier 2 fuera de alcance; si persiste, decisión del dueño.
+
+# Etapa 1 — contrato, puente, cimientos y primera isla (Gaps)
+Rama `feat/react-etapa-1-contrato`, apilada sobre `feat/react-frontend` (PR #37 aún sin fusionar; cuando se fusione se redirige a `main`). Worktree `.worktrees/react-etapa-1`.
+
+## T008 — 2026-11-11
+- status: complete (en revisión)
+- qué: `tests/gen_fixtures_front.py` guarda en `frontend/fixtures/` la respuesta real de cada endpoint GET (recortada a 25 elementos por lista) y variantes con nulos obtenidas llamando al mismo código con otros datos: `stats_pocos_sorteos` (150 sorteos → sin backtests), `stats_con_backtests` (sorteos duplicados 7 años atrás, 1200 → backtests con valores), `stats_formatos_reales` (extraordinario de 5 cifras y gordito de 2), `seguimiento_vacio` (base en memoria sin registros), `comparar_sin_apariciones` y `simulador_sin_aciertos` (un número que nunca salió). Se niega a correr si la base no tiene exactamente 600 sorteos.
+- red: 8 de 14 pruebas fallaron contra el esqueleto; después, 7 pruebas nuevas de `duplicar_hacia_atras` (3 fallaron antes de implementarla). green: 21 pruebas. Mutación comprobada: recortar sin recortar hace fallar 3.
+- hallazgo propio durante la tarea: con 600 sorteos sembrados los tres fixtures de estadísticas salían con **todos** los backtests en `null` (cada categoría tiene ~150 sorteos y el backtest necesita 230), lo que habría dado un falso verde al contrato. Se añadió la variante `stats_con_backtests`.
+- done-check: `gen_fixtures_front.py` crea 13 JSON válidos (271 KB). Se ejecutó contra la base sembrada `sorteos_capturas` mediante un envoltorio que comprueba los 600 sorteos antes de lanzar.
+- no cubierto por fixtures (se tipa leyendo el código): `POST /api/actualizar` (401, 502, 503, 504 y éxito), porque generarlo ejecutaría la sincronización externa.
