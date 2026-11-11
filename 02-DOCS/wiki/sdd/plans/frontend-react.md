@@ -75,7 +75,7 @@ Componentes (responsabilidad única):
 | `frontend/src/api/` | Cliente tipado por endpoint, errores opacos (`'Error de conexión'`), tipos de las respuestas | interno, toca la API |
 | `frontend/src/components/` | Piezas compartidas: `Balls`, `Chart` (envoltorio de Chart.js con tema), `Skeleton`, `PrizeTabs`, `CategoryTabs`, `Toast` vía puente | interno |
 | `frontend/src/tabs/*` | Una isla por pestaña (14) | interno |
-| `frontend/src/main.tsx` | Busca `[data-react-root]` y monta la isla registrada | interno |
+| `frontend/src/main.tsx` | Busca `[data-react-root]` y monta la isla descubierta por nombre | interno |
 | Build (Vite + TypeScript) | Genera `static/dist/app.js` (nombre fijo, sin hash) y su CSS si lo hubiera | herramienta |
 | `app.py` `index()` | Entrega la plantilla; si falta `static/dist/app.js`, la plantilla muestra el aviso de cómo construir | externo (Flask) |
 | CI | Job de front (instalar, tipos, pruebas, build) además del de Python | externo |
