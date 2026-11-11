@@ -35,14 +35,15 @@ function _lpEmit(...campos){
   }
   if(!cambio)return;
   _lpListeners.forEach(fn=>{try{fn()}catch(e){console.error(e)}});
-  document.dispatchEvent(new CustomEvent('lp:change',{detail:{campos}}));
+  campos.forEach(c=>document.dispatchEvent(new CustomEvent('lp:change',{detail:c})));
 }
+function _lpTabPremio(contenedor,p){return Array.from(document.querySelectorAll(contenedor+' .prize-tab')).find(t=>t.dataset.prize===p)}
 window.LP={
   getSnapshot:_lpSnapshot,
   subscribe(fn){_lpListeners.add(fn);return()=>{_lpListeners.delete(fn)}},
   setUseML(v){setUseMLLP(!!v)},
-  setPrize(p){const tab=document.querySelector('#prizeTabs .prize-tab[data-prize="'+p+'"]');if(tab)selectPrize(tab)},
-  setStatsPrize(p){const tab=document.querySelector('#statsPrizeTabs .prize-tab[data-prize="'+p+'"]');if(tab)selectStatsPrize(tab)},
+  setPrize(p){const tab=_lpTabPremio('#prizeTabs',p);if(tab)selectPrize(tab)},
+  setStatsPrize(p){const tab=_lpTabPremio('#statsPrizeTabs',p);if(tab)selectStatsPrize(tab)},
   toast(msg,ms){showToast(msg,ms)},
   reload(){return loadData().catch(e=>{console.error('Error reloading:',e)})}
 };

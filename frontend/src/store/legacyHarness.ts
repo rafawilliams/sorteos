@@ -64,7 +64,7 @@ export function levantarLegacy(): Legacy {
     if (url.startsWith('/api/stats')) {
       if (fallos.stats > 0) {
         fallos.stats -= 1
-        return respuesta({ error: 'Error interno' }, 500)
+        return respuesta({ error: 'Error interno', total_sorteos: 1 }, 500) // con la forma de unas estadísticas: solo el estado HTTP lo delata
       }
       return respuesta(fixture('stats'))
     }

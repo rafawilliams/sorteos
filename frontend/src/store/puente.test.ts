@@ -70,9 +70,11 @@ describe('de app.js a React', () => {
   })
 
   it('al elegir otra pestaña de estadísticas, la zona de estadísticas se repinta con ese premio', () => {
+    const antes = document.getElementById('digitChart')!.innerHTML
+    expect(antes).not.toBe('')
     clic('#statsPrizeTabs .prize-tab[data-prize="segundo"]')
     expect(document.querySelector('#statsPrizeTabs .prize-tab[data-prize="segundo"]')?.getAttribute('aria-selected')).toBe('true')
-    expect(document.getElementById('digitChart')?.innerHTML).not.toBe('')
+    expect(document.getElementById('digitChart')!.innerHTML, 'las barras no cambiaron al elegir otro premio').not.toBe(antes)
   })
 })
 
@@ -159,10 +161,15 @@ describe('referencias y datos', () => {
     expect(Array.isArray(store.getSnapshot().sorteos)).toBe(true)
   })
 
-  it('un 500 con cuerpo JSON en /api/stats no ocupa el lugar de las estadísticas', async () => {
+  it('un 500 con cuerpo JSON en /api/stats no llega a app.js: reintenta y deja intacta la parte antigua', async () => {
+    const pedidas = () => legacy.peticiones.filter((u) => u.startsWith('/api/stats')).length
+    const antes = pedidas()
     legacy.fallarSiguienteRecarga()
     await store.actions.reload()
+    expect(pedidas() - antes, 'app.js debe tratar el 500 como fallo y reintentar 3 veces').toBe(3)
     expect(store.getSnapshot().stats?.total_sorteos).toBe(600)
+    // El cuerpo del 500 lleva un `total_sorteos` numérico: solo el estado HTTP impide que se tome por estadísticas.
+    expect(store.getSnapshot().stats?.total_sorteos).not.toBe(1)
   })
 
   it('app.js emite lp:change en el documento', () => {
@@ -171,7 +178,7 @@ describe('referencias y datos', () => {
     store.actions.setUseML(true)
     document.removeEventListener('lp:change', oyente)
     expect(oyente).toHaveBeenCalled()
-    expect((oyente.mock.calls[0]![0] as CustomEvent).detail.campos).toContain('useML')
+    expect(oyente.mock.calls.map((c) => (c[0] as CustomEvent).detail)).toEqual(['useML'])
   })
 
   it('crear el almacén y leerlo no pide datos: solo app.js llama a /api/sorteos y /api/stats', () => {
