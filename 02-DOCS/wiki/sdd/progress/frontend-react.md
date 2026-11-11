@@ -47,7 +47,20 @@ Spec: [frontend-react](../specs/frontend-react.md) · Plan y tareas: [plan](../p
 - desviación del done-check de T004: la comprobación «la API sigue respondiendo» usa `/api/sorteos` y no `/api/stats`, porque `/api/stats` tarda en entrenar el modelo y escribe recomendaciones en la tabla `predicciones` de la base real al ejecutarse en local. Ver decisions.md.
 
 ## T005 — 2026-11-11
-- status: en revisión (tier 2)
+- status: complete (commit 365f9a2; panel de tres lentes en `pass`)
 - qué: job `frontend` en `.github/workflows/tests.yml` (Node de `.nvmrc`, caché de npm sobre `frontend/package-lock.json`, `npm ci`, typecheck, tests, build y `npm audit --audit-level=high`), sin servicio de MariaDB; el job de Python no cambia.
 - done-check: el YAML se carga con PyYAML y declara los jobs `test` y `frontend`; el verde del job en el PR se comprueba en T059.
 - risk: tier 2 (`rsc risk`: clase `ci`, 3 revisores, aprobación humana) — panel de refutadores.
+
+### Revisión de T003 + T004 — 2026-11-11
+- ronda 1 → 0 hallazgos, `VERDICT: pass`.
+
+### Revisión de T005 — panel de tres refutadores
+- seguridad: `VERDICT: pass`, 1 nit (acciones fijadas por etiqueta mayor, no por SHA) → cerrado `intentional`: es la convención del job de Python y son acciones de primera parte.
+- pruebas: `VERDICT: pass`, 1 question (`passWithNoTests` deja el job verde sin ninguna prueba) → cerrado `intentional` para T002, con seguimiento: ver cola de decisiones (Q2).
+- corrección: `VERDICT: pass`, 0 hallazgos (ejecutó `npm ci`, typecheck, test, build y audit en `frontend/`, todo en verde).
+- panel registrado con `rsc review ledger panel frontend-react/T005 --lenses correctness,security,tests`.
+
+## Decision queue (adiciones)
+- [review-after] Q2 — Quitar `passWithNoTests` de `frontend/vite.config.ts` cuando exista la primera prueba de componente (T010–T012), para que el job de front no pueda dar verde sin ejecutar pruebas, evidencia: hallazgo L2 del panel de T005, T005
+- controls T005: tests ✅ (los comandos del job corren en local) · build ✅ · security ✅ (panel + `npm audit` 0) · traceability ✅ (AC9). El verde del job en el PR queda para T059.
