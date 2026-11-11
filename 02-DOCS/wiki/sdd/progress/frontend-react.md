@@ -80,3 +80,17 @@ Spec: [frontend-react](../specs/frontend-react.md) · Plan y tareas: [plan](../p
 - lección: README de capturas actualizado: servidor de capturas siempre en el puerto 5001 y comprobar que `total` es 600 antes de capturar.
 - bloqueo: el servidor de capturas propio (árbol de procesos 52204, arrancado a las 09:47) sigue vivo y orphan; detenerlo por PID fue rechazado por el sistema de permisos y no se intentó otra vía. Lo debe cerrar el dueño o autorizar el cierre.
 - pendiente: capturas de T006 y T007 (28 PNG de referencia) y su aprobación, más la revisión de T006 y T059.
+
+## T006 — cierre — 2026-11-11
+- status: complete (pendiente de revisión)
+- done-check cumplido: con el servidor de capturas en el puerto 5001 (comprobado antes: `total` = 600, mientras el servidor del dueño en el 5000 servía 9296), `node frontend/scripts/capturas.mjs --salida 02-DOCS/attachments/react-baseline --url http://127.0.0.1:5001` deja 28 PNG (14 pestañas × oscuro y claro), exit 0, 4,9 MB en total, sin archivos vacíos.
+- fallo encontrado y corregido: la primera ejecución se quedó 300 s en `precision` porque su cargador (`#precisionLoader`) se queda en el DOM con `display:none`; ahora la espera solo cuenta elementos visibles (`offsetParent !== null`). `/api/backtesting` respondía en 1,4 s.
+- reproducibilidad: una segunda captura de Gaps, Seguimiento y Mensual no coincide byte a byte con la primera, pero Gaps es visualmente idéntica (comprobada con las dos imágenes). La diferencia viene del fondo difuminado de la página. La comparación sigue siendo a ojo, como decide el plan.
+- observación: una pastilla vacía abajo al centro aparece en todas las capturas (el `#toast` de la interfaz actual, sin texto). Saldrá igual en las de «después» mientras ese elemento siga igual.
+- servidor de capturas: ahora `servidor_capturas.py` (en el scratchpad, fuera del repo) con apagado por archivo centinela y tope de 30 min; se apagó solo y no dejó procesos.
+
+## T007 — 2026-11-11
+- status: capturas hechas; **a la espera de la aprobación del dueño** (puerta humana)
+- 28 PNG en `02-DOCS/attachments/react-baseline/`, sacadas con la interfaz actual (sin cambios todavía) sobre la base sembrada `sorteos_capturas`.
+- la tabla `sorteos` real no se tocó (el servidor de capturas usó otra base).
+- verificadas a ojo por el agente: `gaps-oscuro`, `predicciones-oscuro` y `precision-claro` muestran datos reales, no esqueletos.
