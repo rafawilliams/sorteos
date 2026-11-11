@@ -33,8 +33,13 @@ export interface Snapshot {
   sorteos: Sorteo[]
   /**
    * `null` mientras no llegó `/api/stats` (puede tardar minutos la primera vez): toda isla muestra su esqueleto.
-   * Si la carga falla tras sus reintentos se queda en `null`, como hoy; un estado de error explícito (campo
-   * nuevo, sin romper esta interfaz) se decide en T052, junto con el armazón en React.
+   *
+   * Ojo con el código heredado: en `static/app.js` la variable `stats` empieza como `{}` (no `null`) y se asigna
+   * sin comprobar la respuesta HTTP, así que un cuerpo de error en JSON también quedaría ahí. `LegacyStore` debe
+   * traducir `{}` y cualquier cuerpo sin `total_sorteos` numérico a `null`.
+   *
+   * Si la carga falla tras sus reintentos, `stats` conserva lo que tuviera (`null` la primera vez, como hoy); un
+   * estado de error explícito (campo nuevo, sin romper esta interfaz) se decide en T052 con el armazón en React.
    */
   stats: Stats | null
   /** Modo de predicción: `true` = aprendizaje automático, `false` = estadístico. */
@@ -59,7 +64,8 @@ export interface AccionesStore {
    * Vuelve a cargar sorteos y estadísticas (tras actualizar los datos). Mientras dura se conservan los datos viejos
    * (`stats` y `ready` no vuelven a `null` ni a `false`) hasta que llegan los nuevos. La promesa se resuelve cuando la
    * carga termina, con éxito o sin él, y nunca rechaza: un fallo se registra y los datos viejos se quedan, como en
-   * `static/app.js`.
+   * `static/app.js`. Diferencia aceptada: `app.js` además repinta sus propios contenedores como esqueletos mientras
+   * recarga (`showSkeletons`); las islas conservan los datos a la vista.
    */
   reload(): Promise<void>
 }

@@ -1,21 +1,33 @@
 import { describe, expect, it } from 'vitest'
-import { comprobaciones, describirContratoDeStore } from './contratoStore'
-import { crearStoreFalso } from './storeFalso'
+import type { Sorteo, Stats } from '../api/types'
+import { comprobaciones, describirContratoDeStore, type ControlDeCarga } from './contratoStore'
+import { crearStoreFalso, type StoreFalso } from './storeFalso'
 import type { Snapshot, Store } from './tipos'
 
+const SORTEO = { id: '1', fecha: '2019-10-02', cat: 'gordito', primero: '9614', segundo: '20', tercero: '72', letra: 'A', serie: '2', folio: '5' } as Sorteo
+const STATS = { total_sorteos: 1 } as unknown as Stats
+
+/** Cómo llevar al doble (y a los almacenes derivados de él) a un estado cargado y hacer que falle la recarga. */
+const control: ControlDeCarga = {
+  cargar: (s) => (s as StoreFalso).cambiar({ sorteos: [SORTEO], stats: STATS, ready: true }),
+  fallarSiguienteRecarga: (s) => (s as StoreFalso).fallarSiguienteRecarga(),
+}
+
 // La suite de contrato es lo que toda implementación de `Store` (el doble, `LegacyStore`, `ReactStore`) tiene que pasar.
-describirContratoDeStore('doble de pruebas (crearStoreFalso)', () => crearStoreFalso())
+describirContratoDeStore('doble de pruebas (crearStoreFalso)', () => crearStoreFalso(), control)
 
 // ---------------------------------------------------------------------------
-// Almacenes correctos y rotos a propósito: demuestran que la suite DETECTA cada defecto (no pasa en vacío).
+// Almacenes correctos y rotos a propósito, cada uno con UN solo defecto: la suite tiene que rechazarlos
+// por esa causa (se comprueba el mensaje), no por casualidad.
 // ---------------------------------------------------------------------------
 
 /** Almacén correcto escrito como clase: usa `this`, pero con flechas, así que sus piezas funcionan sueltas. */
 class StoreClaseConFlechas implements Store {
   private snapshot: Snapshot = crearStoreFalso().getSnapshot()
   private escuchas = new Set<() => void>()
+  private fallaLaRecarga = false
   getSnapshot() {
-    return this.snapshot // se llama siempre como método del almacén: no hace falta que sea una flecha
+    return this.snapshot // se llama siempre como método del almacén
   }
   subscribe = (escucha: () => void) => {
     this.escuchas.add(escucha)
@@ -27,73 +39,174 @@ class StoreClaseConFlechas implements Store {
     this.snapshot = { ...this.snapshot, ...parcial }
     this.escuchas.forEach((e) => e())
   }
+  cargar() {
+    this.poner({ sorteos: [SORTEO], stats: STATS, ready: true })
+  }
+  fallarSiguienteRecarga() {
+    this.fallaLaRecarga = true
+  }
   actions = {
     setUseML: (v: boolean) => this.poner({ useML: v }),
     setPrize: (p: Snapshot['prize']) => this.poner({ prize: p }),
     setStatsPrize: (p: Snapshot['statsPrize']) => this.poner({ statsPrize: p }),
     toast: () => {},
-    reload: async () => {},
+    reload: async () => {
+      this.fallaLaRecarga = false // un fallo se registra y se traga; los datos viejos se quedan
+    },
   }
 }
 
-/** Defecto: `subscribe` y una acción son métodos normales que usan `this`, y lo pierden al usarse sueltos. */
-class StoreClaseConMetodos implements Store {
-  private snapshot: Snapshot = crearStoreFalso().getSnapshot()
-  private escuchas = new Set<() => void>()
-  getSnapshot() {
-    return this.snapshot
-  }
-  subscribe(escucha: () => void) {
-    this.escuchas.add(escucha)
-    return () => {
-      this.escuchas.delete(escucha)
+const controlDeClase: ControlDeCarga = {
+  cargar: (s) => (s as StoreClaseConFlechas).cargar(),
+  fallarSiguienteRecarga: (s) => (s as StoreClaseConFlechas).fallarSiguienteRecarga(),
+}
+
+function conSubscribeConThis(): Store {
+  const base = new StoreClaseConFlechas()
+  class Roto {
+    private escuchas = new Set<() => void>()
+    subscribe(escucha: () => void) {
+      this.escuchas.add(escucha)
+      base.subscribe(escucha)
+      return () => {
+        this.escuchas.delete(escucha)
+      }
     }
   }
-  actions = {
-    setUseML: (v: boolean) => {
-      this.snapshot = { ...this.snapshot, useML: v }
-      this.escuchas.forEach((e) => e())
-    },
-    setPrize: () => {},
-    setStatsPrize: () => {},
-    toast: () => {},
-    reload: async () => {},
-  }
+  const roto = new Roto()
+  return Object.assign(Object.create(base), { subscribe: roto.subscribe }) as Store
 }
 
-/** Defecto: la instantánea es estable pero el campo `sorteos` devuelve un array nuevo en cada lectura. */
-function conCampoInestable(): Store {
+/** Defecto único: `setUseML` es un método que usa `this` (`subscribe` y el resto están bien). */
+function conAccionConThis(): Store {
+  const base = new StoreClaseConFlechas()
+  const roto = {
+    escalar: 1,
+    setUseML(this: { escalar: number }, v: boolean) {
+      base.actions.setUseML(v && this.escalar === 1) // `this` indefinido si se usa suelta
+    },
+  }
+  return Object.assign(Object.create(base), { actions: { ...base.actions, setUseML: roto.setUseML } }) as Store
+}
+
+/** Defecto único: la instantánea es estable pero `sorteos` devuelve un array nuevo en cada lectura. */
+function conCampoInestableDesdeElPrincipio(): Store {
   const base = crearStoreFalso()
   const instantanea = { ...base.getSnapshot() }
   Object.defineProperty(instantanea, 'sorteos', { enumerable: true, get: () => [] as Snapshot['sorteos'] })
-  return { ...base, getSnapshot: () => instantanea }
+  return { ...base, getSnapshot: () => instantanea } as Store
+}
+
+/** Defecto único: con el estado vacío es estable, pero tras cargar `stats` es una copia nueva en cada lectura. */
+function conStatsInestableTrasCargar(): Store {
+  const base = crearStoreFalso()
+  const porInstantanea = new WeakMap<Snapshot, Snapshot>()
+  return {
+    ...base,
+    getSnapshot() {
+      const real = base.getSnapshot()
+      if (real.stats === null) return real
+      let derivada = porInstantanea.get(real)
+      if (!derivada) {
+        derivada = { ...real }
+        Object.defineProperty(derivada, 'stats', { enumerable: true, get: () => ({ ...real.stats }) })
+        porInstantanea.set(real, derivada)
+      }
+      return derivada
+    },
+  } as Store
 }
 
 function conSnapshotNuevoEnCadaLectura(): Store {
   const base = crearStoreFalso()
-  return { ...base, getSnapshot: () => ({ ...base.getSnapshot() }) }
+  return { ...base, getSnapshot: () => ({ ...base.getSnapshot() }) } as Store
+}
+
+/** Copia de las acciones con funciones NUEVAS (no las mismas referencias): cambian de identidad de verdad. */
+function accionesRenovadas(actions: Store['actions']): Store['actions'] {
+  return Object.fromEntries(
+    Object.entries(actions).map(([nombre, funcion]) => [nombre, (...args: unknown[]) => (funcion as (...a: unknown[]) => unknown)(...args)]),
+  ) as unknown as Store['actions']
+}
+
+/** Defecto único: las acciones se reconstruyen cada vez que cambia el estado (como un `useMemo` sobre el snapshot). */
+function conAccionesQueCambianTrasUnCambio(): Store {
+  const base = crearStoreFalso()
+  let para: Snapshot | null = null
+  let actions = base.actions
+  return {
+    ...base,
+    get actions() {
+      const ahora = base.getSnapshot()
+      if (para !== ahora) {
+        para = ahora
+        actions = accionesRenovadas(base.actions)
+      }
+      return actions
+    },
+  } as Store
+}
+
+/** Defecto único: `subscribe` es otra función después del primer cambio de estado. */
+function conSubscribeInestableTrasUnCambio(): Store {
+  const base = crearStoreFalso()
+  let version = 0
+  let subscribe = (escucha: () => void) => base.subscribe(escucha)
+  base.subscribe(() => {
+    version += 1
+    subscribe = (escucha: () => void) => base.subscribe(escucha)
+    void version
+  })
+  return {
+    ...base,
+    get subscribe() {
+      return subscribe
+    },
+  } as Store
+}
+
+/** Defecto único: las acciones se renuevan solo al terminar una recarga. */
+function conAccionesQueCambianTrasUnReload(): Store {
+  const base = crearStoreFalso()
+  let actions: Store['actions'] = {
+    ...base.actions,
+    reload: async () => {
+      await base.actions.reload()
+      actions = accionesRenovadas(actions)
+    },
+  }
+  return {
+    ...base,
+    get actions() {
+      return actions
+    },
+  } as Store
 }
 
 function conAccionesNuevasEnCadaLectura(): Store {
   const base = crearStoreFalso()
   return {
-    getSnapshot: base.getSnapshot,
-    subscribe: base.subscribe,
+    ...base,
     get actions() {
-      return { ...base.actions, setUseML: (v: boolean) => base.actions.setUseML(v) }
+      return accionesRenovadas(base.actions)
     },
-  }
+  } as Store
 }
 
 function sinCancelarSuscripcion(): Store {
   const base = crearStoreFalso()
   return {
     ...base,
-    subscribe: (escucha) => {
+    subscribe: (escucha: () => void) => {
       base.subscribe(escucha)
       return () => {}
     },
-  }
+  } as Store
+}
+
+function sinAvisarTrasUnCambio(): Store {
+  const base = crearStoreFalso()
+  return { ...base, subscribe: () => () => {} } as Store
 }
 
 function queCambiaOtrosCamposSinMotivo(): Store {
@@ -102,49 +215,164 @@ function queCambiaOtrosCamposSinMotivo(): Store {
     ...base,
     actions: {
       ...base.actions,
-      setUseML: (v) => {
+      setUseML: (v: boolean) => {
         base.actions.setUseML(v)
         base.cambiar({ sorteos: [...base.getSnapshot().sorteos], theme: 'light' })
       },
     },
-  }
+  } as Store
 }
 
-function sinAvisarTrasUnCambio(): Store {
+/** Defecto único: la recarga rechaza cuando falla la carga, en vez de tragarse el fallo. */
+function conReloadQueRechaza(): Store {
   const base = crearStoreFalso()
-  return { ...base, subscribe: () => () => {} }
+  let falla = false
+  return {
+    ...base,
+    fallarSiguienteRecarga: () => {
+      falla = true
+    },
+    actions: {
+      ...base.actions,
+      reload: async () => {
+        if (falla) {
+          falla = false
+          throw new Error('fallo de red')
+        }
+      },
+    },
+  } as Store
 }
 
-describe('la suite de contrato detecta los almacenes defectuosos', () => {
-  it('acepta un almacén correcto escrito como clase con flechas', () => {
-    for (const comprobar of Object.values(comprobaciones)) expect(() => comprobar(() => new StoreClaseConFlechas())).not.toThrow()
+/** Defecto único: durante la recarga se vacían `stats` y `ready` (no se conservan los datos viejos). */
+function conReloadQuePierdeLosDatos(): Store {
+  const base = crearStoreFalso()
+  return {
+    ...base,
+    actions: {
+      ...base.actions,
+      reload: async () => {
+        const viejo = base.getSnapshot()
+        base.cambiar({ stats: null, ready: false })
+        await Promise.resolve()
+        base.cambiar({ stats: viejo.stats, ready: viejo.ready })
+      },
+    },
+  } as Store
+}
+
+/** Defecto único: durante la recarga se vacía solo `stats` (`ready` y `sorteos` se conservan). */
+function conReloadQueVaciaSoloStats(): Store {
+  const base = crearStoreFalso()
+  return {
+    ...base,
+    actions: {
+      ...base.actions,
+      reload: async () => {
+        const viejo = base.getSnapshot().stats
+        base.cambiar({ stats: null })
+        await Promise.resolve()
+        base.cambiar({ stats: viejo })
+      },
+    },
+  } as Store
+}
+
+/** Defecto único: la recarga correcta conserva los datos, pero una recarga FALLIDA los pierde. */
+function conReloadFallidoQuePierdeLosDatos(): Store {
+  const base = crearStoreFalso()
+  let falla = false
+  return {
+    ...base,
+    fallarSiguienteRecarga: () => {
+      falla = true
+    },
+    actions: {
+      ...base.actions,
+      reload: async () => {
+        if (falla) {
+          falla = false
+          base.cambiar({ stats: null, ready: false })
+        }
+      },
+    },
+  } as Store
+}
+
+const rechaza = async (comprobar: () => Promise<void> | void, mensaje: RegExp) => {
+  await expect(Promise.resolve().then(comprobar)).rejects.toThrow(mensaje)
+}
+
+describe('la suite de contrato acepta un almacén correcto escrito como clase con flechas', () => {
+  for (const [nombre, comprobar] of Object.entries(comprobaciones)) {
+    it(`pasa «${nombre}»`, async () => {
+      await comprobar(() => new StoreClaseConFlechas(), controlDeClase)
+    })
+  }
+})
+
+describe('la suite de contrato detecta cada defecto por su causa', () => {
+  it('subscribe que depende de this: lo dice por su nombre', async () => {
+    await rechaza(() => comprobaciones.sinDependerDeThis!(conSubscribeConThis, controlDeClase), /subscribe.*suelt/i)
   })
 
-  it('rechaza un almacén cuyos métodos pierden `this` al usarse sueltos', () => {
-    expect(() => comprobaciones.sinDependerDeThis!(() => new StoreClaseConMetodos())).toThrow()
+  it('una acción que depende de this: lo dice por su nombre', async () => {
+    await rechaza(() => comprobaciones.sinDependerDeThis!(conAccionConThis, controlDeClase), /setUseML.*suelt/i)
   })
 
-  it('rechaza una instantánea que cambia de referencia en cada lectura', () => {
-    expect(() => comprobaciones.referenciaEstable!(conSnapshotNuevoEnCadaLectura)).toThrow()
+  it('una instantánea que cambia de referencia en cada lectura', async () => {
+    await rechaza(() => comprobaciones.referenciaEstable!(conSnapshotNuevoEnCadaLectura, control), /misma referencia|cambia de referencia/i)
   })
 
-  it('rechaza un campo (sorteos) que cambia de referencia en cada lectura aunque la instantánea sea estable', () => {
-    expect(() => comprobaciones.referenciaEstable!(conCampoInestable)).toThrow()
+  it('un campo (sorteos) inestable aunque la instantánea sea estable', async () => {
+    await rechaza(() => comprobaciones.referenciaEstable!(conCampoInestableDesdeElPrincipio, control), /sorteos/)
   })
 
-  it('rechaza un almacén que cambia otros campos cuando cambia solo uno', () => {
-    expect(() => comprobaciones.camposIndependientes!(queCambiaOtrosCamposSinMotivo)).toThrow()
+  it('un campo (stats) que solo es inestable cuando ya hay datos cargados', async () => {
+    await rechaza(() => comprobaciones.referenciaEstable!(conStatsInestableTrasCargar, control), /stats.*cargad|cargad.*stats/i)
   })
 
-  it('rechaza una suscripción que no se puede cancelar', () => {
-    expect(() => comprobaciones.suscripcion!(sinCancelarSuscripcion)).toThrow()
+  it('un almacén que cambia otros campos cuando cambia solo uno', async () => {
+    await rechaza(() => comprobaciones.camposIndependientes!(queCambiaOtrosCamposSinMotivo, control), /tocó la referencia/)
   })
 
-  it('rechaza un almacén que no avisa tras un cambio', () => {
-    expect(() => comprobaciones.suscripcion!(sinAvisarTrasUnCambio)).toThrow()
+  it('una suscripción que no se puede cancelar', async () => {
+    await rechaza(() => comprobaciones.suscripcion!(sinCancelarSuscripcion, control), /siguió avisando/)
   })
 
-  it('rechaza acciones que cambian de identidad entre lecturas', () => {
-    expect(() => comprobaciones.identidadDeAcciones!(conAccionesNuevasEnCadaLectura)).toThrow()
+  it('un almacén que no avisa tras un cambio', async () => {
+    await rechaza(() => comprobaciones.suscripcion!(sinAvisarTrasUnCambio, control), /no avisó/)
+  })
+
+  it('acciones que cambian de identidad entre lecturas', async () => {
+    await rechaza(() => comprobaciones.identidadDeAcciones!(conAccionesNuevasEnCadaLectura, control), /cambia de identidad/)
+  })
+
+  it('acciones que solo cambian de identidad después de un cambio de estado', async () => {
+    await rechaza(() => comprobaciones.identidadDeAcciones!(conAccionesQueCambianTrasUnCambio, control), /tras (un cambio|cambiar)/i)
+  })
+
+  it('acciones que solo cambian de identidad después de una recarga', async () => {
+    await rechaza(() => comprobaciones.identidadDeAcciones!(conAccionesQueCambianTrasUnReload, control), /cambia de identidad tras un cambio de estado/)
+  })
+
+  it('subscribe que cambia de identidad después de un cambio de estado', async () => {
+    await rechaza(() => comprobaciones.identidadDeAcciones!(conSubscribeInestableTrasUnCambio, control), /subscribe.*tras un cambio/i)
+  })
+
+  it('una recarga que vacía solo `stats` mientras dura', async () => {
+    await rechaza(() => comprobaciones.recarga!(conReloadQueVaciaSoloStats, control), /durante la recarga se vació `stats`/)
+  })
+
+  it('una recarga fallida que pierde los datos', async () => {
+    await rechaza(() => comprobaciones.recarga!(conReloadFallidoQuePierdeLosDatos, control), /tras una recarga fallida/)
+  })
+
+  it('una recarga que rechaza cuando falla la carga', async () => {
+    await rechaza(() => comprobaciones.recarga!(conReloadQueRechaza, control), /reload rechaz|no debe rechazar/i)
+  })
+
+  it('una recarga que vacía los datos mientras dura', async () => {
+    await rechaza(() => comprobaciones.recarga!(conReloadQuePierdeLosDatos, control), /durante la recarga/i)
   })
 })

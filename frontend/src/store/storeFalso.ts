@@ -8,6 +8,8 @@ export interface StoreFalso extends Store {
    * que un almacén real, que podría no avisar. Las pruebas que dependan de eso no deben apoyarse en este doble.
    */
   cambiar(parcial: Partial<Snapshot>): void
+  /** Hace que la siguiente recarga "falle": como un almacén real, se traga el fallo y conserva los datos viejos. */
+  fallarSiguienteRecarga(): void
   /** Llamadas recibidas por las acciones, en orden. */
   llamadas: Array<{ accion: string; args: unknown[] }>
 }
@@ -34,6 +36,7 @@ export function crearStoreFalso(inicial: Partial<Snapshot> = {}): StoreFalso {
     escuchas.forEach((escucha) => escucha())
   }
   const registrar = (accion: string, ...args: unknown[]) => llamadas.push({ accion, args })
+  let fallaLaRecarga = false
 
   return {
     getSnapshot: () => snapshot,
@@ -61,9 +64,13 @@ export function crearStoreFalso(inicial: Partial<Snapshot> = {}): StoreFalso {
       },
       async reload() {
         registrar('reload')
+        fallaLaRecarga = false // un fallo se registraría y se tragaría: los datos viejos se quedan
       },
     },
     cambiar,
+    fallarSiguienteRecarga: () => {
+      fallaLaRecarga = true
+    },
     llamadas,
   }
 }
