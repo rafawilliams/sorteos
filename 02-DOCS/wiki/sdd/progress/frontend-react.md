@@ -82,7 +82,7 @@ Spec: [frontend-react](../specs/frontend-react.md) · Plan y tareas: [plan](../p
 - pendiente: capturas de T006 y T007 (28 PNG de referencia) y su aprobación, más la revisión de T006 y T059.
 
 ## T006 — cierre — 2026-11-11
-- status: complete (pendiente de revisión)
+- status: complete (revisada en 3 rondas, ver abajo)
 - done-check cumplido: con el servidor de capturas en el puerto 5001 (comprobado antes: `total` = 600, mientras el servidor del dueño en el 5000 servía 9296), `node frontend/scripts/capturas.mjs --salida 02-DOCS/attachments/react-baseline --url http://127.0.0.1:5001` deja 28 PNG (14 pestañas × oscuro y claro), exit 0, 4,9 MB en total, sin archivos vacíos.
 - fallo encontrado y corregido: la primera ejecución se quedó 300 s en `precision` porque su cargador (`#precisionLoader`) se queda en el DOM con `display:none`; ahora la espera solo cuenta elementos visibles (`offsetParent !== null`). `/api/backtesting` respondía en 1,4 s.
 - reproducibilidad: una segunda captura de Gaps, Seguimiento y Mensual no coincide byte a byte con la primera, pero Gaps es visualmente idéntica (comprobada con las dos imágenes). La diferencia viene del fondo difuminado de la página. La comparación sigue siendo a ojo, como decide el plan.
@@ -111,3 +111,9 @@ Spec: [frontend-react](../specs/frontend-react.md) · Plan y tareas: [plan](../p
 - nit L9 (arreglado): la guarda usa un tiempo límite de 10 s.
 - question L10 (arreglado): una respuesta sin `total` da «respuesta inesperada» en vez de «sirve undefined sorteos».
 - red: 5 pruebas fallaron antes (con URL a la que nadie escucha, sin tocar el servidor real); green: 22 pruebas; typecheck 0; build 0.
+
+### Revisión de T006 — ronda 3 (0 blockers, 2 nits) — 2026-11-11
+- `VERDICT: pass`. Dos nits de pruebas débiles (L11 duración del tiempo límite, L12 totales no enteros), cerrados `fixed` sin abrir otra ronda (el ledger permite 3): `TIEMPO_GUARDA_MS` exportado y comprobado entre 1 y 30 s, y 5 casos de total no entero (`null`, `'600'`, `600.5`, `NaN`, ausente) con «respuesta inesperada».
+- evidencia final de T006: 28 pruebas en verde, typecheck 0, build 0, `npm audit` 0; la guarda contra el puerto 5000 sigue rechazando con `sirve 9296 sorteos` y exit 1.
+- controls T006: tests ✅ build ✅ security ✅ (la guarda y `npm audit`) traceability ✅ (AC1) — 3 rondas de revisión, 9 hallazgos cerrados (7 fixed, 2 intentional).
+- status T006: **complete**.
