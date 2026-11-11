@@ -191,3 +191,8 @@ Rama `feat/react-etapa-1-contrato`, apilada sobre `feat/react-frontend` (PR #37 
 - nit L20 (arreglado): el cliente de las pruebas en vivo corre dentro de `_reloj_fijo` (mismo reloj que el generador).
 - documentado el límite del modo tolerante (un campo puede pasar de objeto a `null` o de lista con elementos a vacía sin que se note).
 - red: 4 pruebas de estructura fallaron antes (más 3 de `estado_base`); green: 56 + resto. Contra la base sembrada: 10 passed + 1 skipped (la de CI).
+
+### Revisión de T009 — ronda 2 (0 blockers, 0 should-fix, 1 nit) — 2026-11-11
+- `VERDICT: pass`. Nit L21 (arreglado): la prueba de CI leía un estado recalculado, que podía discrepar del usado por el `skipif`, y `CI=false` contaba como activo. Ahora lee `test_contrato_front._ESTADO` (el mismo valor) y solo acepta `1`, `true` o `yes`. Comprobado: con `CI=true` y la base sembrada pasan 11; con `CI=true` contra la base real **falla** con un mensaje claro; con `CI=false` se salta.
+- controls T009: tests ✅ (contra la sembrada 11 passed con CI=true) build n/a security ✅ (no escribe en bases reales: solo corre con 600 sorteos, Seguimiento en memoria) traceability ✅ (AC6) — 2 rondas, 8 hallazgos cerrados.
+- status T009: **complete**.
