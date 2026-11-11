@@ -184,15 +184,6 @@ class TestRelojFijo:
         al_reves = list(reversed(SORTEOS))
         assert max(s["fecha"] for s in gen.llevar_al_presente(al_reves)) == (gen.HOY_FIJO - timedelta(days=3)).isoformat()
 
-    def test_no_depende_del_dia_en_que_se_ejecuta(self, monkeypatch):
-        antes = gen.llevar_al_presente(SORTEOS)
-        class FechaFalsa(date):
-            @classmethod
-            def today(cls):
-                return date(2031, 7, 7)
-        monkeypatch.setattr(gen, "date", FechaFalsa)
-        assert gen.llevar_al_presente(SORTEOS) == antes
-
     def test_reloj_fijo_pasa_hoy_y_ahora_fijos_a_registrar_y_lo_restaura(self, monkeypatch):
         import seguimiento
         llamadas = []
@@ -233,3 +224,45 @@ class TestFijarValoresVolatiles:
         original = {"ml_info": {"train_date": "2026-11-11 11:52"}}
         gen.fijar_valores_volatiles(original)
         assert original["ml_info"]["train_date"] == "2026-11-11 11:52"
+
+
+class TestRelojFijoCompleto:
+    def test_fija_el_hoy_de_estadisticas_que_decide_el_mes_objetivo(self):
+        import estadisticas
+        with gen._reloj_fijo():
+            assert estadisticas._dt.date.today() == gen.HOY_FIJO
+            hoy = estadisticas._dt.date.today()
+            assert (hoy.year, hoy.month, hoy.day) == (2026, 1, 15)
+
+    def test_restaura_estadisticas_y_seguimiento_aunque_falle_el_cuerpo(self, monkeypatch):
+        import estadisticas
+        import seguimiento
+        dt_original, registrar_original = estadisticas._dt, seguimiento.registrar
+        with pytest.raises(RuntimeError):
+            with gen._reloj_fijo():
+                assert estadisticas._dt is not dt_original and seguimiento.registrar is not registrar_original
+                raise RuntimeError("fallo en el cuerpo")
+        assert estadisticas._dt is dt_original
+        assert seguimiento.registrar is registrar_original
+
+    def test_la_fecha_falsa_de_estadisticas_sigue_comportandose_como_date(self):
+        import estadisticas
+        with gen._reloj_fijo():
+            assert estadisticas._dt.date(2026, 3, 4).month == 3
+            assert estadisticas._dt.date.fromisoformat("2019-10-02").year == 2019
+
+
+class TestFijarValoresVolatilesSoloTextos:
+    @pytest.mark.parametrize("valor", [None, 5, {"x": 1}, ["a"]])
+    def test_si_la_fecha_ya_no_es_un_texto_se_deja_a_la_vista(self, valor):
+        r = gen.fijar_valores_volatiles({"ml_info": {"train_date": valor}})
+        assert r["ml_info"]["train_date"] == valor
+
+
+class TestGuardarAplicaLaNormalizacion:
+    def test_el_archivo_escrito_lleva_la_fecha_de_entrenamiento_fija(self, tmp_path):
+        import json
+        ruta = gen._guardar(str(tmp_path), "x", {"ml_info": {"train_date": "2031-07-07 09:09"}, "lista": list(range(40))})
+        guardado = json.load(open(ruta, encoding="utf-8"))
+        assert guardado["ml_info"]["train_date"] == "2026-01-15 12:00"
+        assert len(guardado["lista"]) == gen.MAX_ELEMENTOS

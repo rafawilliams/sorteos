@@ -60,3 +60,18 @@ def test_el_fixture_de_seguimiento_trae_comparados_y_pendientes_con_datos():
 def test_el_fixture_de_backtesting_sin_modelo_trae_ml_vacio_y_el_principal_no():
     assert _fixture("backtesting_sin_modelo")["ml"] == {}
     assert len(_fixture("backtesting")["ml"]) > 0
+
+
+def test_los_fixtures_no_dependen_del_dia_en_que_se_generaron():
+    """Valores que antes salían del reloj del sistema; si cambian, regenerar daría un diff distinto cada día."""
+    from gen_fixtures_front import AHORA_FIJO, HOY_FIJO
+
+    registros = _fixture("seguimiento")["comparados"] + _fixture("seguimiento")["pendientes"]
+    registrados = {r["registrado_en"] for r in registros}
+    assert registrados == {AHORA_FIJO.strftime("%Y-%m-%dT%H:%M")}, registrados
+    for nombre in ("stats", "stats_pocos_sorteos", "stats_con_backtests", "stats_formatos_reales"):
+        stats = _fixture(nombre)
+        assert stats["ml_info"]["train_date"] == AHORA_FIJO.strftime("%Y-%m-%d %H:%M")
+        mes = stats["monthly_reco"]
+        siguiente = HOY_FIJO.month % 12 + 1          # el día 15 > 10: el mes objetivo es el siguiente
+        assert (mes["target_month"], mes["target_year"]) == (siguiente, HOY_FIJO.year), nombre

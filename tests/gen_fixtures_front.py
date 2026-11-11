@@ -97,28 +97,52 @@ def llevar_al_presente(sorteos):
     return desplazar_fechas(sorteos, (HOY_FIJO - reciente).days - 3)
 
 
+class _FechaFija(date):
+    """`date` cuyo `today()` devuelve siempre `HOY_FIJO`; el resto se comporta como `date`."""
+
+    @classmethod
+    def today(cls):
+        return HOY_FIJO
+
+
 @contextmanager
 def _reloj_fijo():
-    """Hace que `seguimiento.registrar` use `HOY_FIJO` y `AHORA_FIJO` (el endpoint no se los pasa)."""
+    """Congela el reloj de la aplicación: `HOY_FIJO` y `AHORA_FIJO` en lugar de la fecha del sistema.
+
+    Dos sitios dependen del día: `seguimiento.registrar` (fecha y hora del registro; el endpoint no se las
+    pasa) y `estadisticas.monthly_recommendation` (mes objetivo, vía `_dt.date.today()`). Se restauran siempre.
+    """
+    import datetime as modulo_datetime
+
+    import estadisticas
     import seguimiento
 
-    original = seguimiento.registrar
+    registrar_original, dt_original = seguimiento.registrar, estadisticas._dt
 
     def con_reloj(session, sorteos, recos, hoy=None, ahora=None):
-        return original(session, sorteos, recos, hoy=HOY_FIJO, ahora=AHORA_FIJO)
+        return registrar_original(session, sorteos, recos, hoy=HOY_FIJO, ahora=AHORA_FIJO)
 
     seguimiento.registrar = con_reloj
+    estadisticas._dt = _modulo_con_fecha_fija(modulo_datetime)
     try:
         yield
     finally:
-        seguimiento.registrar = original
+        seguimiento.registrar = registrar_original
+        estadisticas._dt = dt_original
+
+
+def _modulo_con_fecha_fija(modulo_datetime):
+    publicos = {k: v for k, v in vars(modulo_datetime).items() if not k.startswith("__")}
+    publicos["date"] = _FechaFija
+    return SimpleNamespace(**publicos)
 
 
 def fijar_valores_volatiles(cuerpo):
     """Copia con los valores que cambian con la ejecución (no con la forma) fijados al reloj de referencia."""
     resultado = copy.deepcopy(cuerpo)
     ml_info = resultado.get("ml_info") if isinstance(resultado, dict) else None
-    if isinstance(ml_info, dict) and "train_date" in ml_info:
+    # Solo si es un texto: si el backend cambiara el tipo del campo, el fixture debe seguir mostrándolo.
+    if isinstance(ml_info, dict) and isinstance(ml_info.get("train_date"), str):
         ml_info["train_date"] = AHORA_FIJO.strftime("%Y-%m-%d %H:%M")
     return resultado
 
@@ -237,7 +261,8 @@ def generar(destino=DESTINO, contar=None):
     sorteos = app_module.get_sorteos()
     escritos = []
 
-    with app_module.app.test_client() as client:
+    # Todo con el reloj congelado y Seguimiento en memoria: nada depende del día ni toca la tabla real.
+    with app_module.app.test_client() as client, _reloj_fijo(), _seguimiento_en_memoria(app_module):
         print("Generando fixtures en", os.path.abspath(destino))
         escritos.append(_guardar(destino, "sorteos", _pedir(client, "/api/sorteos?all=true")))
 
