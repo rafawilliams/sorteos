@@ -62,5 +62,14 @@ Spec: [frontend-react](../specs/frontend-react.md) · Plan y tareas: [plan](../p
 - panel registrado con `rsc review ledger panel frontend-react/T005 --lenses correctness,security,tests`.
 
 ## Decision queue (adiciones)
-- [review-after] Q2 — Quitar `passWithNoTests` de `frontend/vite.config.ts` cuando exista la primera prueba de componente (T010–T012), para que el job de front no pueda dar verde sin ejecutar pruebas, evidencia: hallazgo L2 del panel de T005, T005
+- [resuelto en T006] Q2 — Quitar `passWithNoTests` de `frontend/vite.config.ts` cuando exista la primera prueba de componente (T010–T012), para que el job de front no pueda dar verde sin ejecutar pruebas, evidencia: hallazgo L2 del panel de T005, T005
 - controls T005: tests ✅ (los comandos del job corren en local) · build ✅ · security ✅ (panel + `npm audit` 0) · traceability ✅ (AC9). El verde del job en el PR queda para T059.
+
+## T006 — 2026-11-11
+- status: parcial (código y pruebas listos; el done-check completo espera la base sembrada)
+- qué: `frontend/scripts/capturas.mjs` (14 pestañas × tema oscuro y claro, ventana 1280×800, animaciones CSS y de Chart.js desactivadas, espera a que desaparezcan esqueletos y cargadores, captura solo la sección activa), `frontend/scripts/README.md` (cómo crear y sembrar `sorteos_capturas`, y por qué nunca contra la base real) y Playwright 1.65.0 como dependencia de desarrollo con versión exacta.
+- red/green: `frontend/scripts/capturas.test.mjs` (8 pruebas del análisis de argumentos y de las listas de pestañas y temas) en verde; al quitar `seguimiento` de la lista fallan 3 (mutación comprobada y revertida). Nota honesta: el script se escribió antes que su prueba; la prueba se escribió después y se validó con la mutación.
+- `passWithNoTests` retirado de `frontend/vite.config.ts` ahora que existe una prueba: cierra la Q2 de la cola (el job de front ya no puede dar verde sin ejecutar pruebas).
+- comprobado: typecheck 0 · test 0 (8 passed) · build 0 · `npm audit` 0 · el script sale con código 1 y mensaje claro sin `--salida` o con una pestaña desconocida.
+- pendiente: «con el servidor arrancado, el script deja 28 PNG». Necesita la base `sorteos_capturas` sembrada y el navegador de Playwright (`npx playwright install chromium`).
+- risk: tier 1 — la revisión de un revisor se hace al completar el done-check, para no gastar rondas sobre código aún sin ejecutar de punta a punta.
