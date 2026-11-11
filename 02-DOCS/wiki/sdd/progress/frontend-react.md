@@ -248,3 +248,15 @@ Verificadas una a una en el backend antes de aceptarlas: todas ciertas.
 
 ## Decision queue (adiciones — etapa 1)
 - [review-after] Q4 — Las esferas (`Balls`) llevan `aria-label` en un `span` sin rol, igual que el código viejo; con `role="img"` los lectores de pantalla anunciarían el premio, pero cambia el marcado que la spec manda conservar. Decidir si se mejora la accesibilidad en una etapa posterior, evidencia: pregunta L36 de la revisión de T013, T013
+
+### Revisión de T012 — ronda 2 (`pass`; 1 nit) — 2026-11-11
+- nit L39 (arreglado): con la zona fija en Panamá solo se probaba un offset negativo. Nueva prueba parametrizada con `vi.stubEnv('TZ', …)` en Tokio (+9), Honolulu (−10), Panamá (−5), UTC y Kiritimati (+14), que comprueba antes el offset real para no probar en vacío, y que el 31 de diciembre sigue siendo 31 y el 1 de enero, 1. Mutantes comprobados: `-05:00` escrito a mano, lectura en UTC y mediodía UTC, los tres detectados.
+- controls T012: tests ✅ (21) build n/a security ✅ traceability ✅ (AC4, AC10) — 2 rondas, 2 hallazgos cerrados. status T012: **complete**.
+- controls T013: tests ✅ (20 más 3 de la guardia) security ✅ (sin `dangerouslySetInnerHTML`; el texto se escapa) traceability ✅ (AC4) — 1 ronda `pass`, 5 hallazgos cerrados (3 fixed, 1 intentional, 1 parked). status T013: **complete**.
+- controls T010: tests ✅ (pytest 129 y front 111 de `api`) build ✅ (`tsc` 0) security n/a traceability ✅ (AC6) — 2 rondas, 20 hallazgos cerrados. status T010: **complete**.
+
+## T014 — 2026-11-11
+- status: complete (en revisión)
+- qué: `frontend/src/store/` con el contrato (`tipos.ts`: `Store`, `Snapshot`, las 14 pestañas `TABS`), `StoreProvider` + `useStore` (contexto con error claro fuera del proveedor), los hooks `useSorteos`, `useStats` (`null` mientras carga), `useReady`, `useML`, `usePrize`, `useStatsPrize` (devuelven `[valor, cambiar]`), `useTheme`, `useActiveTab`, `useToast` y `useReload`, y `storeFalso.ts`, el doble de pruebas para todas las islas. Cada hook se suscribe a su campo con `useSyncExternalStore`: un componente no se repinta porque cambie otro.
+- red/green: 22 pruebas fallaron con el esqueleto; green: 22. Mutaciones comprobadas (7 de 7): sin suscripción, `useML` con la acción equivocada, `useStatsPrize` leyendo el premio de Predicciones, suscribirse a todo el estado (6 fallos), `useStore` sin comprobar el proveedor, el doble sin referencia nueva y sin cancelar suscripción.
+- done-check: `FE test store` en verde.

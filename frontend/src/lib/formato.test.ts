@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { CAT_LABELS, catClase, catLabel, fmtLift, formatDate, liftBar } from './formato'
 
 // Reglas copiadas de static/app.js (plan §0 «Global constraints»): la migración no cambia lo que se ve.
@@ -69,6 +69,22 @@ describe('formatDate', () => {
     expect(formatDate(undefined)).toBe('—')
     expect(formatDate('')).toBe('—')
   })
+})
+
+describe('formatDate: el día no cambia en ninguna zona horaria', () => {
+  // La interfaz corre en el navegador de cada usuario, no solo en Panamá: la lectura local de la fecha debe ser
+  // correcta con offsets negativos, positivos y cero. Sin esto una fecha escrita para Panamá (-05:00) pasaría.
+  afterEach(() => vi.unstubAllEnvs())
+
+  it.each([['Asia/Tokyo', -540], ['Pacific/Honolulu', 600], ['America/Panama', 300], ['UTC', 0], ['Pacific/Kiritimati', -840]])(
+    'en %s (offset %i min) el 31 de diciembre sigue siendo 31 y el 1 de enero, 1',
+    (zona, offset) => {
+      vi.stubEnv('TZ', zona)
+      expect(new Date(2019, 11, 31).getTimezoneOffset(), 'la zona no se aplicó: la prueba no probaría nada').toBe(offset)
+      expect(formatDate('2019-12-31')).toMatch(/^31 dic\.? 2019$/)
+      expect(formatDate('2020-01-01')).toMatch(/^1 ene\.? 2020$/)
+    },
+  )
 })
 
 describe('fmtLift', () => {
