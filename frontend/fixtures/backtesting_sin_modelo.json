@@ -1,0 +1,53 @@
+{
+ "comparison": {
+  "best_method": "ML",
+  "ml_better": true,
+  "ml_lift": 1.0,
+  "stat_lift": 0.97
+ },
+ "ml": {},
+ "statistical": {
+  "avg_lift_top1": 0.97,
+  "avg_top1_accuracy": 9.7,
+  "avg_top3_accuracy": 30.2,
+  "per_position": [
+   {
+    "avg_prob_actual": 9.9,
+    "lift_top1": 0.9,
+    "position": 0,
+    "random_baseline_top1": 10.0,
+    "random_baseline_top3": 30.0,
+    "top1_accuracy": 9.0,
+    "top3_accuracy": 29.6
+   },
+   {
+    "avg_prob_actual": 10.1,
+    "lift_top1": 0.92,
+    "position": 1,
+    "random_baseline_top1": 10.0,
+    "random_baseline_top3": 30.0,
+    "top1_accuracy": 9.2,
+    "top3_accuracy": 33.4
+   },
+   {
+    "avg_prob_actual": 9.9,
+    "lift_top1": 1.04,
+    "position": 2,
+    "random_baseline_top1": 10.0,
+    "random_baseline_top3": 30.0,
+    "top1_accuracy": 10.4,
+    "top3_accuracy": 29.2
+   },
+   {
+    "avg_prob_actual": 9.9,
+    "lift_top1": 1.0,
+    "position": 3,
+    "random_baseline_top1": 10.0,
+    "random_baseline_top3": 30.0,
+    "top1_accuracy": 10.0,
+    "top3_accuracy": 28.6
+   }
+  ],
+  "total_evaluated": 500
+ }
+}

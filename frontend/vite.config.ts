@@ -22,5 +22,7 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['src/test/setup.ts'],
+    // Zona horaria fija: la lotería es de Panamá (UTC-5). Sin esto las pruebas de fechas dependen de la zona del CI.
+    env: { TZ: 'America/Panama' },
   },
 })

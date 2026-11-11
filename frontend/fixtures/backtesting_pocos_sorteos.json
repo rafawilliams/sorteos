@@ -1,0 +1,10 @@
+{
+ "comparison": {
+  "best_method": "Estadístico",
+  "ml_better": false,
+  "ml_lift": 1.0,
+  "stat_lift": 1.0
+ },
+ "ml": {},
+ "statistical": {}
+}

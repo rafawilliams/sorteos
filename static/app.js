@@ -1,9 +1,60 @@
+// PUENTE PARA LAS ISLAS REACT (frontend/src/store/legacyStore.ts)
+// Va el primero: applyTheme corre antes de las declaraciones `let` de abajo, así que _lpEmit no puede leer el estado
+// mientras no exista la caché (nadie ha pedido aún una instantánea).
+var _lpListeners=new Set(), _lpCache=null, _lpStatsBueno=null;
+function _lpStatsOk(x){return !!x&&typeof x==='object'&&typeof x.total_sorteos==='number'}
+function _lpLeer(campo){
+  switch(campo){
+    case 'sorteos': return allSorteos;
+    case 'ready': return allSorteos.length>0;
+    case 'stats': if(_lpStatsOk(stats))_lpStatsBueno=stats;return _lpStatsBueno;
+    case 'useML': return useML;
+    case 'prize': return currentPrize;
+    case 'statsPrize': return currentStatsPrize;
+    case 'theme': return document.documentElement.getAttribute('data-theme')==='light'?'light':'dark';
+    case 'activeTab': {const t=document.querySelector('#navTabs .nav-tab.active');return t&&t.dataset.tab?t.dataset.tab:'predicciones'}
+  }
+}
+function _lpSnapshot(){
+  if(!_lpCache){
+    _lpCache={};
+    ['sorteos','ready','stats','useML','prize','statsPrize','theme','activeTab'].forEach(c=>{_lpCache[c]=_lpLeer(c)});
+  }
+  return _lpCache;
+}
+function _lpEmit(...campos){
+  let cambio=true;
+  if(_lpCache){
+    const sig={..._lpCache};
+    campos.forEach(c=>{
+      if(c==='sorteos'){sig.sorteos=_lpLeer('sorteos');sig.ready=_lpLeer('ready')}
+      else sig[c]=_lpLeer(c);
+    });
+    cambio=Object.keys(sig).some(k=>sig[k]!==_lpCache[k]);
+    if(cambio)_lpCache=sig;
+  }
+  if(!cambio)return;
+  _lpListeners.forEach(fn=>{try{fn()}catch(e){console.error(e)}});
+  campos.forEach(c=>document.dispatchEvent(new CustomEvent('lp:change',{detail:c})));
+}
+function _lpTabPremio(contenedor,p){return Array.from(document.querySelectorAll(contenedor+' .prize-tab')).find(t=>t.dataset.prize===p)}
+window.LP={
+  getSnapshot:_lpSnapshot,
+  subscribe(fn){_lpListeners.add(fn);return()=>{_lpListeners.delete(fn)}},
+  setUseML(v){setUseMLLP(!!v)},
+  setPrize(p){const tab=_lpTabPremio('#prizeTabs',p);if(tab)selectPrize(tab)},
+  setStatsPrize(p){const tab=_lpTabPremio('#statsPrizeTabs',p);if(tab)selectStatsPrize(tab)},
+  toast(msg,ms){showToast(msg,ms)},
+  reload(){return loadData().catch(e=>{console.error('Error reloading:',e)})}
+};
+
 // THEME
 function applyTheme(theme){
   document.documentElement.setAttribute('data-theme',theme);
   document.getElementById('themeIcon').textContent=theme==='light'?'🌙':'☀️';
   document.getElementById('themeLabel').textContent=theme==='light'?'Oscuro':'Claro';
   localStorage.setItem('theme',theme);
+  _lpEmit('theme');
 }
 function toggleTheme(){
   const current=document.documentElement.getAttribute('data-theme')||'dark';
@@ -75,9 +126,9 @@ function activateNavTab(tab){
   tab.setAttribute('tabindex','0');
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.getElementById('sec-'+tab.dataset.tab).classList.add('active');
+  _lpEmit('activeTab');
   if(tab.dataset.tab==='precision') loadBacktesting();
   if(tab.dataset.tab==='seguimiento') loadSeguimiento();
-  if(tab.dataset.tab==='gaps') loadGaps();
   triggerReveals();
 }
 
@@ -118,14 +169,21 @@ async function loadData(){
   try{
     const sRes=await fetch('/api/sorteos?all=true');
     const sData=await sRes.json();
-    allSorteos=sData.data||sData;
+    const lista=sData.data||sData;
+    if(!sRes.ok||!Array.isArray(lista))throw new Error('Respuesta inválida de /api/sorteos');
+    allSorteos=lista;
+    _lpEmit('sorteos');
     renderQuick();
   }catch(e){console.error('Error loading sorteos:',e)}
   // Phase 2: Load stats (heavy ML computation — may take >60s on first load)
   const loadStats=async(attempt=1)=>{
     try{
       const stRes=await fetch('/api/stats',{signal:AbortSignal.timeout(180000)});
-      stats=await stRes.json();
+      const cuerpo=await stRes.json();
+      // Un 500 con cuerpo JSON (o {}) no puede ocupar el lugar de las estadísticas: cuenta como fallo y reintenta.
+      if(!stRes.ok||!_lpStatsOk(cuerpo))throw new Error('Respuesta inválida de /api/stats');
+      stats=cuerpo;
+      _lpEmit('stats');
       renderFull();
     }catch(e){
       if(attempt<3){console.warn(`Stats attempt ${attempt} failed, retrying...`);return loadStats(attempt+1);}
@@ -145,7 +203,7 @@ function renderQuick(){
 function renderFull(){
   // Full renders once stats are available
   renderLastUpdate();buildCategoryUI();renderStatCounters();
-  renderRecommendations('all');renderDecenas();renderStatsForPrize('primero');renderSeriesLetras();renderFormatos();
+  renderRecommendations('all');renderDecenas();renderStatsForPrize(currentStatsPrize);renderSeriesLetras();renderFormatos();
   renderRadarChart();renderScatterChart();
   renderPositionGrids();renderHeatmap();renderTrendChart();renderVolumeChart();
   renderEndingsSection();renderMonthlySection();renderFavorites();initSimCats();renderDashboard();
@@ -260,21 +318,26 @@ function _setAriaTab(container,active){
   active.setAttribute('aria-selected','true');
   active.setAttribute('tabindex','0');
 }
+function _statsListas(){return _lpStatsOk(stats)}
+function selectPrize(tab){
+  _setAriaTab(document.getElementById('prizeTabs'),tab);currentPrize=tab.dataset.prize;
+  _lpEmit('prize');
+  const cat=document.querySelector('#recoCatTabs .cat-tab.active');
+  if(_statsListas()&&cat)renderRecommendations(cat.dataset.cat);
+}
+function selectStatsPrize(tab){
+  _setAriaTab(document.getElementById('statsPrizeTabs'),tab);currentStatsPrize=tab.dataset.prize;
+  _lpEmit('statsPrize');
+  if(_statsListas()){renderStatsForPrize(currentStatsPrize);triggerReveals()}
+}
 function initPrizeTabs(){
-  const wrap=document.getElementById('prizeTabs');
-  wrap.querySelectorAll('.prize-tab').forEach(tab=>{
-    tab.addEventListener('click',()=>{
-      _setAriaTab(wrap,tab);currentPrize=tab.dataset.prize;
-      renderRecommendations(document.querySelector('#recoCatTabs .cat-tab.active').dataset.cat);
-    });
+  document.getElementById('prizeTabs').querySelectorAll('.prize-tab').forEach(tab=>{
+    tab.addEventListener('click',()=>selectPrize(tab));
   });
 }
 function initStatsPrizeTabs(){
-  const wrap=document.getElementById('statsPrizeTabs');
-  wrap.querySelectorAll('.prize-tab').forEach(tab=>{
-    tab.addEventListener('click',()=>{
-      _setAriaTab(wrap,tab);renderStatsForPrize(tab.dataset.prize);triggerReveals();
-    });
+  document.getElementById('statsPrizeTabs').querySelectorAll('.prize-tab').forEach(tab=>{
+    tab.addEventListener('click',()=>selectStatsPrize(tab));
   });
 }
 function initEndCatTabs(){
@@ -295,14 +358,19 @@ function initRecoCatTabs(){
 }
 
 // ML TOGGLE
-function toggleML(){
-  useML=!useML;
+function toggleML(){setUseMLLP(!useML)}
+function setUseMLLP(valor){
+  if(valor===useML)return;
+  useML=valor;
   document.querySelectorAll('.ml-toggle').forEach(b=>{
     b.classList.toggle('active',useML);
     b.textContent=useML?'🤖 ML Activo':'📊 Estadístico';
     b.setAttribute('aria-pressed',String(useML));
   });
-  renderRecommendations(document.querySelector('#recoCatTabs .cat-tab.active').dataset.cat);
+  _lpEmit('useML');
+  const cat=document.querySelector('#recoCatTabs .cat-tab.active');
+  if(!_statsListas()||!cat)return; // aún no hay estadísticas: solo cambia el modo; renderFull lo usará al llegar
+  renderRecommendations(cat.dataset.cat);
   renderEndingsSection();
   // Show ML info badge
   const info=stats.ml_info||{};
@@ -835,80 +903,6 @@ function renderCompResults(d){
     if(compChartInstance)compChartInstance.destroy();
     compChartInstance=new Chart(ctx.getContext('2d'),{type:'bar',data:{labels:MONTHS,datasets},options:chartOpts()});
   }
-}
-
-// GAPS ANALYSIS
-async function loadGaps(){
-  const container=document.getElementById('gapsContent');
-  if(!container)return;
-  if(container.dataset.loaded==='1'){return;}
-  container.innerHTML='<div class="loader-wrap" style="padding:40px;"><div class="spinner"></div><p>Calculando gaps...</p></div>';
-  try{
-    const res=await fetch('/api/gaps');
-    const d=await res.json();
-    renderGaps(d);
-    container.dataset.loaded='1';
-  }catch(e){container.innerHTML='<p style="color:#f87171;">Error cargando gaps</p>';}
-}
-function renderGaps(d){
-  const ov=d.overdue_numbers||[];
-  const ot=d.ontime_numbers||[];
-  const ovEnd=d.overdue_endings||[];
-
-  let h=`<div class="grid-2" style="margin-bottom:20px;">
-    <div class="stat-card"><div class="stat-value">${d.total_sorteos?.toLocaleString()}</div><div class="stat-label">Sorteos Analizados</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:#f87171;">${ov.length}</div><div class="stat-label">Números "Vencidos"</div></div>
-  </div>`;
-
-  // Overdue numbers
-  h+=`<div class="card reveal">
-    <div class="card-header"><h3 class="card-title">Números Vencidos</h3><span class="card-badge badge-hot">Ratio > 1</span></div>
-    <p style="color:var(--text-muted);font-size:0.8rem;margin-bottom:12px;">Números frecuentes (5+ apariciones) cuyo gap actual supera su promedio histórico. <strong>Ratio</strong> = gap actual ÷ gap promedio.</p>
-    <div style="overflow-x:auto;">
-    <table class="heatmap-table" role="table">
-      <thead><tr><th>Número</th><th>Gap Actual</th><th>Gap Promedio</th><th>Ratio</th><th>Total</th><th>Estado</th></tr></thead><tbody>`;
-  ov.forEach(g=>{
-    const severity=g.ratio>=2?'#ef4444':g.ratio>=1.5?'#f97316':'#eab308';
-    const bar=Math.min(g.ratio/3*100,100);
-    h+=`<tr>
-      <td style="font-family:'JetBrains Mono';font-weight:700;color:var(--gold-400);">${g.number}</td>
-      <td style="text-align:center;font-family:'JetBrains Mono';">${g.gap}</td>
-      <td style="text-align:center;font-family:'JetBrains Mono';">${g.avg_gap}</td>
-      <td style="text-align:center;"><span style="background:${severity}30;color:${severity};padding:2px 8px;border-radius:8px;font-weight:700;font-family:'JetBrains Mono';">${g.ratio}x</span></td>
-      <td style="text-align:center;">${g.count}</td>
-      <td><div style="background:var(--surface-2);border-radius:4px;height:8px;width:80px;"><div style="background:${severity};height:100%;border-radius:4px;width:${bar}%;"></div></div></td>
-    </tr>`;
-  });
-  h+='</tbody></table></div></div>';
-
-  // Overdue endings
-  h+=`<div class="card reveal" style="margin-top:20px;">
-    <div class="card-header"><h3 class="card-title">Terminaciones Vencidas</h3><span class="card-badge badge-hot">Ratio > 1</span></div>
-    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;">`;
-  ovEnd.forEach(e=>{
-    const severity=e.ratio>=2?'#ef4444':e.ratio>=1.5?'#f97316':'#eab308';
-    h+=`<div style="background:var(--surface-2);padding:10px 16px;border-radius:12px;text-align:center;min-width:80px;border-left:3px solid ${severity};">
-      <div style="font-family:'JetBrains Mono';font-size:1.3rem;font-weight:700;color:var(--text-primary);">${e.ending}</div>
-      <div style="font-size:0.7rem;color:var(--text-muted);">Gap: ${e.gap}</div>
-      <div style="font-size:0.75rem;font-weight:600;color:${severity};">${e.ratio}x</div>
-    </div>`;
-  });
-  h+='</div></div>';
-
-  // On-time numbers (recently appeared)
-  h+=`<div class="card reveal" style="margin-top:20px;">
-    <div class="card-header"><h3 class="card-title">Números Recientes</h3><span class="card-badge badge-green">Ratio ≤ 1</span></div>
-    <p style="color:var(--text-muted);font-size:0.8rem;margin-bottom:12px;">Números frecuentes que aparecieron recientemente (dentro de su ciclo promedio).</p>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;">`;
-  ot.slice(0,20).forEach(g=>{
-    h+=`<span style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);padding:6px 12px;border-radius:10px;font-family:'JetBrains Mono';font-size:0.85rem;">
-      ${g.number} <small style="color:var(--text-muted);">gap:${g.gap} · ${g.ratio}x</small>
-    </span>`;
-  });
-  h+='</div></div>';
-
-  document.getElementById('gapsContent').innerHTML=h;
-  triggerReveals();
 }
 
 // MONTHLY RECOMMENDATION

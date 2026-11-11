@@ -1,0 +1,53 @@
+{
+ "comparados": [],
+ "comparados_para_peso": 0,
+ "marcador": {
+  "combinada": {
+   "alguna_terminacion_pct": null,
+   "alguna_terminacion_pct_azar": null,
+   "digitos_media": null,
+   "digitos_media_azar": 0.4,
+   "exactos": 0,
+   "exactos_azar": 0,
+   "sorteos": 0,
+   "sorteos_numeros": 0,
+   "terminacion_numeros": 0,
+   "terminacion_numeros_azar": 0,
+   "terminaciones_media": null,
+   "terminaciones_media_azar": null
+  },
+  "estadistico": {
+   "alguna_terminacion_pct": null,
+   "alguna_terminacion_pct_azar": null,
+   "digitos_media": null,
+   "digitos_media_azar": 0.4,
+   "exactos": 0,
+   "exactos_azar": 0,
+   "sorteos": 0,
+   "sorteos_numeros": 0,
+   "terminacion_numeros": 0,
+   "terminacion_numeros_azar": 0,
+   "terminaciones_media": null,
+   "terminaciones_media_azar": null
+  },
+  "ml": {
+   "alguna_terminacion_pct": null,
+   "alguna_terminacion_pct_azar": null,
+   "digitos_media": null,
+   "digitos_media_azar": 0.4,
+   "exactos": 0,
+   "exactos_azar": 0,
+   "sorteos": 0,
+   "sorteos_numeros": 0,
+   "terminacion_numeros": 0,
+   "terminacion_numeros_azar": 0,
+   "terminaciones_media": null,
+   "terminaciones_media_azar": null
+  }
+ },
+ "minimo_peso": 10,
+ "pendientes": [],
+ "peso_ml": 0.5,
+ "sin_registro": [],
+ "ventana_peso": 20
+}

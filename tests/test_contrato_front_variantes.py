@@ -1,0 +1,108 @@
+"""Las variantes con nulos de los fixtures difieren del principal solo en nulos y listas vacías (spec frontend-react, T009).
+
+No necesita base de datos ni servidor: solo lee `frontend/fixtures/`.
+"""
+import json
+import os
+import sys
+
+import pytest
+
+sys.path.insert(0, os.path.dirname(__file__))
+
+from contrato_front import aplanar, diferencias
+
+FIXTURES = os.path.join(os.path.dirname(__file__), "..", "frontend", "fixtures")
+
+CATEGORIAS = ["dominical", "miercolito", "gordito", "extraordinario"]
+PRINCIPALES = {
+    "stats": ["stats_pocos_sorteos", "stats_con_backtests", "stats_formatos_reales", "stats_sin_modelo", "stats_solo_primeros"],
+    "seguimiento": ["seguimiento_vacio"],
+    "comparar": ["comparar_sin_apariciones"],
+    "simulador": ["simulador_sin_aciertos"],
+    "backtesting": ["backtesting_sin_modelo", "backtesting_pocos_sorteos"],
+    "gaps": ["gaps_con_numeros"],
+}
+
+
+def _fixture(nombre):
+    with open(os.path.join(FIXTURES, nombre + ".json"), encoding="utf-8") as f:
+        return json.load(f)
+
+
+@pytest.mark.parametrize("principal,variante", [(p, v) for p, vs in PRINCIPALES.items() for v in vs])
+def test_la_variante_solo_difiere_en_nulos_y_listas_vacias(principal, variante):
+    assert diferencias(_fixture(principal), _fixture(variante), tolerar_vacios=True) == []
+
+
+def test_estan_todos_los_fixtures_esperados():
+    esperados = {"sorteos", "stats", "seguimiento", "gaps", "backtesting", "comparar", "simulador"}
+    esperados |= {v for vs in PRINCIPALES.values() for v in vs}
+    presentes = {f[:-5] for f in os.listdir(FIXTURES) if f.endswith(".json")}
+    assert esperados <= presentes, f"faltan fixtures: {sorted(esperados - presentes)}"
+
+
+@pytest.mark.parametrize("ruta", [f"{raiz}.{cat}.backtest" for raiz in ("decena_recomendada", "endings_by_category") for cat in CATEGORIAS])
+def test_los_backtests_estan_cubiertos_con_valor_y_sin_valor(ruta):
+    """Si todos los fixtures tuvieran el backtest nulo, el contrato nunca vería su forma real."""
+    con_valor = aplanar(_fixture("stats_con_backtests"))[ruta]
+    sin_valor = aplanar(_fixture("stats_pocos_sorteos"))[ruta]
+    assert con_valor == {"dict"}, f"{ruta}: el fixture con backtests no trae un objeto ({con_valor})"
+    assert sin_valor == {"null"}, f"{ruta}: el fixture sin backtests no trae nulo ({sin_valor})"
+
+
+def test_el_fixture_de_seguimiento_trae_comparados_y_pendientes_con_datos():
+    """Si estuvieran vacíos, la forma de sus elementos y los valores del marcador quedarían fuera del contrato."""
+    seguimiento = _fixture("seguimiento")
+    assert len(seguimiento["comparados"]) >= 1, "seguimiento.json sin comparados: revisa ULTIMOS_SIN_COMPARAR en el generador"
+    assert len(seguimiento["pendientes"]) >= 1, "seguimiento.json sin pendientes"
+    assert _fixture("seguimiento_vacio")["comparados"] == []
+
+
+def test_el_fixture_de_backtesting_sin_modelo_trae_ml_vacio_y_el_principal_no():
+    assert _fixture("backtesting_sin_modelo")["ml"] == {}
+    assert len(_fixture("backtesting")["ml"]) > 0
+
+
+def test_los_fixtures_no_dependen_del_dia_en_que_se_generaron():
+    """Valores que antes salían del reloj del sistema; si cambian, regenerar daría un diff distinto cada día."""
+    from gen_fixtures_front import AHORA_FIJO, HOY_FIJO
+
+    registros = _fixture("seguimiento")["comparados"] + _fixture("seguimiento")["pendientes"]
+    registrados = {r["registrado_en"] for r in registros}
+    assert registrados == {AHORA_FIJO.strftime("%Y-%m-%dT%H:%M")}, registrados
+    for nombre in ("stats", "stats_pocos_sorteos", "stats_con_backtests", "stats_formatos_reales"):
+        stats = _fixture(nombre)
+        assert stats["ml_info"]["train_date"] == AHORA_FIJO.strftime("%Y-%m-%d %H:%M")
+        mes = stats["monthly_reco"]
+        siguiente = HOY_FIJO.month % 12 + 1          # el día 15 > 10: el mes objetivo es el siguiente
+        assert (mes["target_month"], mes["target_year"]) == (siguiente, HOY_FIJO.year), nombre
+
+
+def test_el_fixture_de_gaps_con_numeros_trae_numeros_vencidos_y_a_tiempo():
+    """Sin elementos en `overdue_numbers` y `ontime_numbers`, su forma nunca entraría en el contrato."""
+    gaps = _fixture("gaps_con_numeros")
+    assert len(gaps["overdue_numbers"]) >= 1 and len(gaps["ontime_numbers"]) >= 1
+
+
+def test_el_fixture_de_backtesting_con_pocos_sorteos_trae_la_parte_estadistica_vacia():
+    """Con menos de 100 primeros premios de 4 cifras `statistical` es `{}`: otra forma de la misma respuesta."""
+    pocos = _fixture("backtesting_pocos_sorteos")
+    assert pocos["statistical"] == {}
+    assert len(_fixture("backtesting")["statistical"]) > 0
+
+
+def test_stats_sin_modelo_trae_las_formas_de_un_modelo_sin_entrenar():
+    """`ml_prizes` vacío y `ml_info` sin entrenar: lo que el tipo `Stats` dice de ese caso sale de este fixture."""
+    stats = _fixture("stats_sin_modelo")
+    assert stats["ml_prizes"] == {}
+    assert stats["ml_recommendations"] == [] and stats["ml_endings"] == []
+    assert stats["ml_info"]["trained"] is False
+    assert _fixture("stats")["ml_info"]["trained"] is True
+
+
+def test_stats_solo_primeros_trae_premios_vacios_donde_no_hay_premios_de_4_cifras():
+    """`prizes.segundo` y `prizes.tercero` son `{}` si ningún segundo ni tercero tiene 4 cifras."""
+    prizes = _fixture("stats_solo_primeros")["prizes"]
+    assert prizes["segundo"] == {} and prizes["tercero"] == {}
+    assert len(prizes["primero"]) > 0
