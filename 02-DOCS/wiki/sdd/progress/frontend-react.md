@@ -360,3 +360,13 @@ Todos sobre la suite de contrato, es decir, sobre lo que T015 y T052 tendrán qu
 
 ## Etapa 1 (T008–T019) completa
 Puente `window.LP`, `LegacyStore`, hooks, cliente de API, fixtures y contrato, montaje de islas y primera pestaña migrada (Gaps). Pendiente de la etapa: abrir su PR (apilado sobre #37, que aún espera el merge del dueño).
+
+## T020 — 2026-11-11
+- status: complete (commits 1dcd577 + 2a1b43b), rama `feat/react-etapa-2-seguimiento` desde main (tras fusionar #38)
+- red/green: 29 pruebas fallaron contra el esqueleto (por aserción); `Seguimiento.test.tsx` 34 pruebas; 398 en todo el front, `typecheck` 0, `npm audit` 0, 417 Python (base sembrada). 23 mutantes de la isla: 3 que sobrevivían se cerraron con pruebas (umbral exacto del 50/50, nota de peso ML, nota «sin ML»); sobrevive uno visual (segunda tarjeta del esqueleto).
+- files: frontend/src/tabs/{Seguimiento.tsx,Seguimiento.test.tsx}, templates/index.html (`<div data-react-root="seguimiento">` sustituye a segLoader/segContent y su contenido), static/app.js (solo se quita la llamada `loadSeguimiento()` de `activateNavTab`; sin los elementos lanzaría).
+- página real (5001, base sembrada): 1 petición por activación, 0 errores de consola, ningún id antiguo; esa base no tiene recomendaciones, ahí se ve el estado vacío.
+- risk: tier 1 — 1 revisor
+- review: ronda 1 → VERDICT pass, 5 nits. L2 (campo `clave` muerto), L3 (listas ausentes como vacías, igual que `app.js`) y L5 (prueba de marcado escapado sustituida por la de listas ausentes) arreglados; L1 (claves por categoría/id: un pendiente por categoría por diseño) y L4 (un frame con datos viejos antes del esqueleto) intencionales.
+- controls: tests ✅ build ✅ security ✅ traceability ✅ (AC2). Ronda 2 de 3.
+- desviación declarada: la ledger de `rsc` es local por worktree: aquí empieza en L1.
