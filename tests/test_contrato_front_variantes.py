@@ -21,6 +21,7 @@ PRINCIPALES = {
     "comparar": ["comparar_sin_apariciones"],
     "simulador": ["simulador_sin_aciertos"],
     "backtesting": ["backtesting_sin_modelo"],
+    "gaps": ["gaps_con_numeros"],
 }
 
 
@@ -76,3 +77,9 @@ def test_los_fixtures_no_dependen_del_dia_en_que_se_generaron():
         mes = stats["monthly_reco"]
         siguiente = HOY_FIJO.month % 12 + 1          # el día 15 > 10: el mes objetivo es el siguiente
         assert (mes["target_month"], mes["target_year"]) == (siguiente, HOY_FIJO.year), nombre
+
+
+def test_el_fixture_de_gaps_con_numeros_trae_numeros_vencidos_y_a_tiempo():
+    """Sin elementos en `overdue_numbers` y `ontime_numbers`, su forma nunca entraría en el contrato."""
+    gaps = _fixture("gaps_con_numeros")
+    assert len(gaps["overdue_numbers"]) >= 1 and len(gaps["ontime_numbers"]) >= 1

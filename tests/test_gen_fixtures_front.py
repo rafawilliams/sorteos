@@ -266,3 +266,32 @@ class TestGuardarAplicaLaNormalizacion:
         guardado = json.load(open(ruta, encoding="utf-8"))
         assert guardado["ml_info"]["train_date"] == "2026-01-15 12:00"
         assert len(guardado["lista"]) == gen.MAX_ELEMENTOS
+
+
+class TestConNumerosRepetidos:
+    @staticmethod
+    def _sembrada(n=600):
+        return [{"id": str(n - i), "fecha": "2019-01-01", "cat": "gordito", "primero": f"{(i * 7) % 10000:04d}",
+                 "segundo": "11", "tercero": "22"} for i in range(n)]
+
+    def test_un_numero_reciente_y_otro_lejano_salen_cada_uno_diez_veces(self):
+        r = gen.con_numeros_repetidos(self._sembrada())
+        primeros = [s["primero"] for s in r]
+        assert primeros.count("1111") >= 10 and primeros.count("2222") >= 10
+
+    def test_el_reciente_esta_entre_los_primeros_y_el_lejano_entre_los_antiguos(self):
+        r = gen.con_numeros_repetidos(self._sembrada())
+        indices_1111 = [i for i, s in enumerate(r) if s["primero"] == "1111"]
+        indices_2222 = [i for i, s in enumerate(r) if s["primero"] == "2222"]
+        assert max(indices_1111) < 100 and min(indices_2222) >= 250
+
+    def test_no_cambia_el_numero_de_sorteos_ni_sus_ids(self):
+        original = self._sembrada()
+        r = gen.con_numeros_repetidos(original)
+        assert [s["id"] for s in r] == [s["id"] for s in original]
+
+    def test_no_modifica_la_lista_original(self):
+        original = self._sembrada()
+        copia = copy.deepcopy(original)
+        gen.con_numeros_repetidos(original)
+        assert original == copia

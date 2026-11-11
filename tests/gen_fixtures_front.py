@@ -147,6 +147,21 @@ def fijar_valores_volatiles(cuerpo):
     return resultado
 
 
+def con_numeros_repetidos(sorteos):
+    """Copia donde un número sale 10 veces entre los sorteos recientes y otro 10 veces entre los antiguos.
+
+    La base sembrada casi no repite números de 4 cifras, así que `/api/gaps` devuelve `overdue_numbers` y
+    `ontime_numbers` vacíos. Con esto salen con elementos: el reciente (`1111`) «a tiempo» y el lejano
+    (`2222`, último en el sorteo 300) «vencido».
+    """
+    resultado = copy.deepcopy(sorteos)
+    for i in range(0, 40, 4):
+        resultado[i]["primero"] = "1111"
+    for i in range(300, 340, 4):
+        resultado[i]["primero"] = "2222"
+    return resultado
+
+
 def a_formatos_reales(sorteos):
     """Copia con los formatos de premio de los datos reales.
 
@@ -288,6 +303,9 @@ def generar(destino=DESTINO, contar=None):
         nunca = _numero_no_sorteado(sorteos)
         escritos.append(_guardar(destino, "comparar_sin_apariciones", _pedir(client, f"/api/comparar?numeros={nunca}")))
         escritos.append(_guardar(destino, "simulador_sin_aciertos", _pedir(client, f"/api/simulador?numero={nunca}")))
+
+        with _con_sorteos(app_module, con_numeros_repetidos(sorteos)):
+            escritos.append(_guardar(destino, "gaps_con_numeros", _pedir(client, "/api/gaps")))
 
         with _con_sorteos(app_module, ultimos(sorteos, POCOS_SORTEOS)):
             escritos.append(_guardar(destino, "stats_pocos_sorteos", _pedir(client, "/api/stats")))
