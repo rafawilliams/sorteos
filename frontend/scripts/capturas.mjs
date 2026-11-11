@@ -23,6 +23,7 @@ export const PESTAÑAS = [
 export const TEMAS = { oscuro: 'dark', claro: 'light' }
 
 const ESPERA_MAXIMA_MS = 300_000 // la primera carga de /api/stats entrena el modelo (50-100 s)
+export const TIEMPO_GUARDA_MS = 10_000 // la guarda de la base debe fallar pronto si el puerto no responde
 
 export function leerArgumentos(argv) {
   const opciones = { url: 'http://127.0.0.1:5001', salida: null, solo: null, temas: null, sorteos: '600' }
@@ -56,7 +57,7 @@ export async function comprobarBase(url, esperados, fetchFn = fetch) {
   let total
   try {
     // Con un tiempo límite: si algo ocupa el puerto y no responde, falla pronto en vez de colgarse.
-    const respuesta = await fetchFn(`${url}/api/sorteos?page=1&per_page=1`, { signal: AbortSignal.timeout(10_000) })
+    const respuesta = await fetchFn(`${url}/api/sorteos?page=1&per_page=1`, { signal: AbortSignal.timeout(TIEMPO_GUARDA_MS) })
     if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`)
     total = (await respuesta.json()).total
   } catch (error) {

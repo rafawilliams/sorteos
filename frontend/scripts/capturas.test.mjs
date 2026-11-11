@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { existsSync, mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
-import { CSS_CAPTURA, PESTAÑAS, TEMAS, capturar, comprobarBase, leerArgumentos } from './capturas.mjs'
+import { CSS_CAPTURA, PESTAÑAS, TEMAS, TIEMPO_GUARDA_MS, capturar, comprobarBase, leerArgumentos } from './capturas.mjs'
 
 describe('capturas: lista de pestañas y temas', () => {
   it('cubre las 14 pestañas de la barra principal, en su orden', () => {
@@ -100,6 +100,16 @@ describe('capturas: comprobarBase', () => {
     expect(llamadas).toHaveLength(1)
     expect(llamadas[0][0]).toBe('http://x:1/api/sorteos?page=1&per_page=1')
     expect(llamadas[0][1].signal).toBeInstanceOf(AbortSignal)
+  })
+
+  it('el tiempo límite de la guarda es corto pero razonable (entre 1 y 30 segundos)', () => {
+    expect(TIEMPO_GUARDA_MS).toBeGreaterThanOrEqual(1_000)
+    expect(TIEMPO_GUARDA_MS).toBeLessThanOrEqual(30_000)
+  })
+
+  it.each([[null], ['600'], [600.5], [Number.NaN], [undefined]])('rechaza un total que no es un entero (%s)', async (total) => {
+    const raro = async () => ({ ok: true, status: 200, json: async () => ({ total }) })
+    await expect(comprobarBase('http://x', 600, raro)).rejects.toThrow('respuesta inesperada')
   })
 
   it('dice «respuesta inesperada» si el servidor no devuelve un total (otro servicio en el puerto)', async () => {
