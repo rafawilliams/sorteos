@@ -129,3 +129,9 @@ Spec: [frontend-react](../specs/frontend-react.md) · Plan y tareas: [plan](../p
 - sintaxis de `static/app.js` válida.
 - limpieza del análisis: LOW 17 (T007 «desde main») superado: las capturas se hicieron con la interfaz sin cambios en esta rama; LOW 18 (plan §2 decía «isla registrada») corregido.
 - estado: T001–T007 completas; falta T059 (PR de la etapa 0).
+
+## T059 — 2026-11-11
+- status: en curso. PR de la etapa 0 abierto: https://github.com/rafawilliams/sorteos/pull/37 (rama `feat/react-frontend`, 19 commits). Panel de tres lentes registrado para T005; spec vinculada a la rama; tier 2 → el merge lo aprueba el dueño.
+- CI: el job nuevo **`frontend` pasa** (12 s: ci, typecheck, test, build, audit). El job `test` (Python) **falló dos veces** en el paso ya existente «Install MariaDB Connector/C»: `apt-get` no resuelve `azure.archive.ubuntu.com` (`Temporary failure resolving`, salida 100) antes de ejecutar ninguna prueba; tarda 6 min 30 s en agotar reintentos. No es del cambio (el paso no se tocó; las ejecuciones de `main` de los últimos días pasaron). Se relanzó una vez con `gh run rerun --failed` y falló igual. Se vuelve a lanzar con un commit nuevo.
+- mergeable: `MERGEABLE` sin conflictos (main avanzó 3 commits que solo tocan `.rsc.json` y `02-DOCS/wiki/ftd/pool-conexiones.md`).
+- no se modifica el workflow para sortear el fallo de `apt`: sería otro cambio de tier 2 fuera de alcance; si persiste, decisión del dueño.
