@@ -232,3 +232,19 @@ Verificadas una a una en el backend antes de aceptarlas: todas ciertas.
 - mutaciones nuevas (4 de 4 detectadas): `prizes` sin `| ObjetoVacio`, `ml_prizes` como `Record`, `train_date` sin `| null`, `train_samples` con otro tipo. Con las anteriores, 11 de 11.
 - límite que queda: que `decena_recomendada` o `endings_by_category` pasen de `Partial` a `Record` ningún fixture lo detecta (todos tienen las 4 categorías); se tipan por el código y está dicho en la cabecera.
 - red/green: 6 pruebas fallaron antes de añadir los dos fixtures; 129 pruebas de Python y 174 del front en verde; 18 fixtures deterministas.
+
+### Revisión de T012 — ronda 1 (1 should-fix) — 2026-11-11
+- should-fix L31 (arreglado): la prueba «no cambia de día según la zona horaria» no fijaba la zona y con el CI en UTC no podía fallar. Ahora `vite.config.ts` fija `test.env.TZ = 'America/Panama'` (la lotería es de Panamá, UTC-5), comprobado con el proceso en UTC y en Asia/Tokyo, y una prueba documenta la dependencia. Mutante comprobado: leer la fecha en UTC (`new Date(d)` sin `T00:00:00`) falla 2 pruebas con el proceso en UTC y en Tokio.
+- el revisor comparó cada función con su original de `static/app.js` y no halló diferencias de comportamiento (salvo `Object.hasOwn`, decidido).
+
+### Revisión de T013 — ronda 1 (`pass`; 3 nits, 2 questions) — 2026-11-11
+- nits L32/L33/L34 (arreglados): la etiqueta accesible también se comprueba recortada; un emoji es una sola esfera (mutantes `aria-label={String(valor)}` y `split('')` ahora detectados); la guardia de relleno ya vigila también `.js`, `.jsx` y `.mjs`.
+- question L35 (cerrada `intentional`): la guardia es más estricta que el principio (vigila todo `src`, no solo premios) a propósito y está dicho en su cabecera: un relleno legítimo futuro se añade a `PERMITIDO` con su motivo. Es una red contra el descuido, no contra quien la quiera esquivar.
+- question L36 (aparcada): `aria-label` sobre un `span` sin rol, con las esferas `aria-hidden`, es idéntico al original, pero un lector de pantalla puede no anunciar el premio. Mejorar con `role="img"` cambiaría el marcado; se anota en la cola de decisiones.
+
+### Revisión de T010 — ronda 2 (`pass`; 2 nits) — 2026-11-11
+- nits L37/L38 (arreglados): la prueba ya no exige que `frecuencia` sea el único método de decena (una regeneración con más datos puede traer `pair` o `triple`); y el control de no-vacío exige claves bajo `by_category`, `endings_by_category`, `decena_recomendada`, `by_prize`, `ml_prizes` y `formatos`.
+- el revisor confirmó que ningún campo queda tipado como siempre presente cuando el backend puede omitirlo o vaciarlo.
+
+## Decision queue (adiciones — etapa 1)
+- [review-after] Q4 — Las esferas (`Balls`) llevan `aria-label` en un `span` sin rol, igual que el código viejo; con `role="img"` los lectores de pantalla anunciarían el premio, pero cambia el marcado que la spec manda conservar. Decidir si se mejora la accesibilidad en una etapa posterior, evidencia: pregunta L36 de la revisión de T013, T013
