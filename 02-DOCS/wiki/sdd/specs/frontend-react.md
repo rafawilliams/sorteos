@@ -6,13 +6,13 @@ tags: [sdd, spec]
 timestamp: 2026-11-11T12:00:00Z
 topic: sdd
 slug: frontend-react
-status: draft
+status: clarified
 branch: feat/react-frontend
 ---
 
 # Spec — Migrar el front-end a React
 
-> Slug: `frontend-react` · Status: draft · Created: 2026-11-11
+> Slug: `frontend-react` · Status: clarified · Created: 2026-11-11
 > Inherits: [constitution](../constitution.md) (`v1.0.0`, que esta spec enmienda en el principio 1 y en los que lo referencian)
 
 ## Problem & why
@@ -39,6 +39,7 @@ Partir el archivo actual en varios módulos nativos del navegador, sin framework
 - Añadir enrutado por URL, renderizado en servidor, PWA, internacionalización o estado remoto con librerías extra «por si acaso».
 - Cambiar la librería de gráficos o el modelo de seguridad de `POST /api/actualizar`.
 - Migrar otras partes del repositorio (backend, scripts de sincronización).
+- Crear un despliegue o contenedor: hoy no existe ninguno en el repositorio y esta migración no lo añade.
 
 ## Users & context
 El dueño y único mantenedor del repositorio; y quien usa la web para consultar resultados y recomendaciones de la lotería de Panamá. Este último no debe notar la migración.
@@ -56,6 +57,7 @@ Cada pestaña migrada muestra los mismos datos, con la misma estructura y estilo
 - La clave del token de actualización sigue guardada solo mientras dura la sesión del navegador.
 - Rama y Pull Request por etapa, commits gitmoji en español, autoría humana (principios 9–11).
 - La app sigue sirviéndose desde el mismo servidor Flask y el mismo puerto de desarrollo.
+- La app construida no se guarda en el repositorio: se genera en CI y en la máquina de desarrollo. Los dos pasos de arranque que hoy conoce el dueño (`python app.py`) siguen siendo válidos una vez construida.
 
 ## How it proves it
 - Por pestaña: capturas del antes (referencia) y del después, en ambos temas, guardadas en el archivo de verificación de la etapa.
@@ -67,6 +69,7 @@ Cada pestaña migrada muestra los mismos datos, con la misma estructura y estilo
 ## Behaviour
 - Main path: el servidor entrega la app; esta carga los datos, muestra la pestaña activa y reacciona a los controles como hoy.
 - Edge cases: sin sorteos o sin estadísticas suficientes (backtests `None`, categoría sin premios de 4 cifras) se muestran los mismos mensajes vacíos que hoy; premios de 2, 4 y 5 cifras y vacíos se muestran tal como llegan; el primer cálculo del modelo puede tardar y se ve el mismo estado de carga que hoy.
+- Sin construir: si se arranca el servidor sin haber construido la interfaz, la página muestra un aviso claro que indica cómo construirla, sin error 500 ni detalles internos.
 - Error paths: si la API falla, el usuario ve un mensaje genérico sin detalles internos y puede reintentar; una pestaña con error no deja inutilizables las demás.
 - Convivencia: mientras haya pestañas sin migrar, ambas versiones coexisten en la misma página con el mismo estado compartido (modo ML, premio, tema) y sin duplicar peticiones a la API.
 
@@ -78,13 +81,24 @@ Cada pestaña migrada muestra los mismos datos, con la misma estructura y estilo
 - Given el token de actualización, When se introduce, Then solo se conserva durante la sesión del navegador y la actualización se comporta como hoy (401, 503, 502 y 500 con mensajes opacos).
 - Given un cambio que rompe el tipo de una respuesta de la API, When corre el CI, Then falla la compilación.
 - Given la migración completa, When corre `pytest -q -W error::SyntaxWarning` y la comprobación del front-end en CI, Then ambas pasan y ningún archivo de la interfaz anterior queda sin uso.
+- Given un clon limpio del repositorio sin interfaz construida, When se arranca el servidor y se abre la página, Then se ve el aviso de cómo construirla y la API sigue respondiendo.
+- Given un Pull Request, When corre el CI, Then construye la interfaz, comprueba tipos y pasa las pruebas de la interfaz antes de dar el verde.
+- Given una pestaña migrada, When se retiran del código antiguo sus comprobaciones por texto, Then existe una prueba de componente equivalente para cada regla que cubrían (esferas sin ceros añadidos, etiquetas de categoría sin variantes).
 - Given la constitución, When termina la migración, Then está enmendada a v2.0.0 con la entrada correspondiente en su registro de cambios.
 
 ## Points to clarify
-- **pregunta abierta** — ¿El servidor sirve la app ya construida desde el propio Flask (un solo proceso) o el desarrollo usa un servidor aparte con proxy a la API? Afecta al flujo de trabajo diario y a `launch.json`.
-- **pregunta abierta** — ¿Se commitea la app construida o se construye siempre en CI y en el despliegue? Depende de cómo se despliega hoy.
+- **suposición tomada** — La app construida no se commitea; se genera con el build en CI y en local. *Base:* decisión del dueño (2026-11-11). *Riesgo:* si más adelante se despliega sin Node, habrá que añadir ese paso o revisar la decisión.
+- **suposición tomada** — Flask sirve la app construida desde el mismo proceso; el desarrollo puede usar además un servidor con recarga que reenvíe la API a Flask. *Base:* el objetivo «servida por el mismo servidor» y que no cambia lo que se entrega. *Riesgo:* ninguno para el resultado; solo comodidad de desarrollo.
+- **suposición tomada** — Las hojas de estilo actuales se reutilizan tal cual (clases, variables de tema, esferas). *Base:* el diseño no cambia y las pruebas de estilo ya protegen esas clases. *Riesgo:* si se quisiera reorganizar los estilos, sería otra spec.
+- **suposición tomada** — Las pruebas que hoy buscan texto dentro del código antiguo se sustituyen pestaña a pestaña por pruebas de componente; las de estilo se mantienen mientras exista la hoja de estilos. *Base:* leído en `tests/test_ui_assets.py` y `tests/test_categorias_unicas.py`: comprueban cadenas de `app.js` y de `style.css`. *Riesgo:* quedarse sin cobertura de una regla si se borra la prueba sin su sustituta (cubierto por un criterio de aceptación).
 - **suposición tomada** — Chart.js se mantiene como librería de gráficos, envuelta en componentes. *Base:* no cambiar la librería está en el alcance, y los 8 gráficos ya usan sus opciones por tema. *Riesgo:* si el dueño prefiere otra, cambia el alcance.
 - **suposición tomada** — El orden de migración empieza por el armazón (carga de datos, tema, barra de pestañas) y sigue de pestañas simples a complejas. *Base:* minimiza el riesgo de la convivencia. *Riesgo:* si hay una pestaña prioritaria, se reordena el plan.
+- **suposición tomada** — Las dependencias del nuevo front se fijan con versión exacta y un archivo de bloqueo, en la versión de Node ya usada en desarrollo. *Base:* el principio 3 de la constitución. *Riesgo:* ninguno relevante.
 - **decisión diferida** — Enrutado por URL por pestaña; fuera de este ciclo.
-- **decisión diferida** — Eliminar la carga de Chart.js desde red externa a favor de empaquetarla; se decide en `plan` si el build lo hace natural.
-- **área no formulable** — Cómo mantener las pruebas de contenido que hoy leen el código fuente de la interfaz; sospecho que algunas cubren reglas (p. ej. categorías) que deberán pasar a pruebas de componente.
+- **decisión diferida** — Empaquetar Chart.js en lugar de cargarla desde una red externa; se decide en `plan` si el build lo hace natural.
+
+## Clarifications
+- 2026-11-11 — ¿Se commitea la app construida o se genera siempre? → No se commitea; build en CI y local, con aviso claro si falta. → Hoy no hay despliegue en el repo (solo `python app.py` y CI de tests) y el código generado ensucia los PR.
+- 2026-11-11 — Pregunta «¿Flask sirve la app o servidor aparte?» → Resuelta sin preguntar: Flask sirve la app construida (ya en Goals); el servidor de desarrollo con proxy es opcional. → No cambia el resultado entregado.
+- 2026-11-11 — Área no formulable «pruebas que leen el código fuente» → Graduada a suposición tomada y a criterio de aceptación. → Leídos los dos archivos de pruebas afectados.
+- Balance de los puntos tipados: 2 preguntas abiertas (1 preguntada, 1 resuelta por inferencia); las 2 suposiciones previas se validan y se añaden 5 nuevas; 2 decisiones diferidas intactas; 1 área no formulable graduada.
