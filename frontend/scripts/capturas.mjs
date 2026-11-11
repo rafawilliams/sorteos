@@ -37,7 +37,7 @@ export function leerArgumentos(argv) {
     i += 1
   }
   if (!opciones.salida) throw new Error('Falta --salida <carpeta>')
-  if (!/^\d+$/.test(opciones.sorteos)) throw new Error(`Valor no válido para --sorteos: ${opciones.sorteos}`)
+  if (!/^[1-9]\d*$/.test(opciones.sorteos)) throw new Error(`Valor no válido para --sorteos: ${opciones.sorteos}`)
   const solo = opciones.solo ? opciones.solo.split(',') : PESTAÑAS
   for (const p of solo) if (!PESTAÑAS.includes(p)) throw new Error(`Pestaña desconocida: ${p}`)
   const temas = opciones.temas ? opciones.temas.split(',') : Object.keys(TEMAS)
@@ -55,11 +55,15 @@ export function leerArgumentos(argv) {
 export async function comprobarBase(url, esperados, fetchFn = fetch) {
   let total
   try {
-    const respuesta = await fetchFn(`${url}/api/sorteos?page=1&per_page=1`)
+    // Con un tiempo límite: si algo ocupa el puerto y no responde, falla pronto en vez de colgarse.
+    const respuesta = await fetchFn(`${url}/api/sorteos?page=1&per_page=1`, { signal: AbortSignal.timeout(10_000) })
     if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`)
     total = (await respuesta.json()).total
   } catch (error) {
     throw new Error(`No se pudo comprobar la base del servidor en ${url}: ${error.message}`)
+  }
+  if (!Number.isInteger(total)) {
+    throw new Error(`No se pudo comprobar la base del servidor en ${url}: respuesta inesperada (no trae el total de sorteos). ¿Es la aplicación correcta?`)
   }
   if (total !== esperados) {
     throw new Error(
@@ -112,10 +116,12 @@ async function comprobarTarjetasVisibles(page, pestaña) {
   })
 }
 
-export async function capturar({ url, salida, pestañas, temas, sorteos }) {
-  await comprobarBase(url, sorteos)
+// `dependencias` solo existe para las pruebas: permite comprobar que la guarda va antes de crear la
+// carpeta o lanzar el navegador sin necesitar un servidor ni Chromium.
+export async function capturar({ url, salida, pestañas, temas, sorteos }, { fetchFn = fetch, motor = chromium } = {}) {
+  await comprobarBase(url, sorteos, fetchFn)
   mkdirSync(salida, { recursive: true })
-  const navegador = await chromium.launch()
+  const navegador = await motor.launch()
   const hechas = []
   try {
     for (const tema of temas) {

@@ -1,6 +1,8 @@
-import { describe, expect, it } from 'vitest'
-import { resolve } from 'node:path'
-import { CSS_CAPTURA, PESTAÑAS, TEMAS, comprobarBase, leerArgumentos } from './capturas.mjs'
+import { describe, expect, it, vi } from 'vitest'
+import { existsSync, mkdtempSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
+import { CSS_CAPTURA, PESTAÑAS, TEMAS, capturar, comprobarBase, leerArgumentos } from './capturas.mjs'
 
 describe('capturas: lista de pestañas y temas', () => {
   it('cubre las 14 pestañas de la barra principal, en su orden', () => {
@@ -59,6 +61,8 @@ describe('capturas: --sorteos (guarda de la base sembrada)', () => {
   it('falla si --sorteos no es un entero', () => {
     expect(() => leerArgumentos(['--salida', 'x', '--sorteos', 'abc'])).toThrow('Valor no válido para --sorteos')
     expect(() => leerArgumentos(['--salida', 'x', '--sorteos', '-5'])).toThrow('Valor no válido para --sorteos')
+    expect(() => leerArgumentos(['--salida', 'x', '--sorteos', '0'])).toThrow('Valor no válido para --sorteos')
+    expect(() => leerArgumentos(['--salida', 'x', '--sorteos', ''])).toThrow('Valor no válido para --sorteos')
   })
 
   it('rechaza claves heredadas del prototipo como opciones', () => {
@@ -90,10 +94,17 @@ describe('capturas: comprobarBase', () => {
     await expect(comprobarBase('http://x', 600, sinServidor)).rejects.toThrow(/No se pudo comprobar.*ECONNREFUSED/s)
   })
 
-  it('pide la primera página con un solo sorteo (no lee la base entera)', async () => {
+  it('pide la primera página con un solo sorteo (no lee la base entera) y con un tiempo límite', async () => {
     const llamadas = []
-    await comprobarBase('http://x:1', 3, async (url) => { llamadas.push(url); return { ok: true, json: async () => ({ total: 3 }) } })
-    expect(llamadas).toEqual(['http://x:1/api/sorteos?page=1&per_page=1'])
+    await comprobarBase('http://x:1', 3, async (url, opciones) => { llamadas.push([url, opciones]); return { ok: true, json: async () => ({ total: 3 }) } })
+    expect(llamadas).toHaveLength(1)
+    expect(llamadas[0][0]).toBe('http://x:1/api/sorteos?page=1&per_page=1')
+    expect(llamadas[0][1].signal).toBeInstanceOf(AbortSignal)
+  })
+
+  it('dice «respuesta inesperada» si el servidor no devuelve un total (otro servicio en el puerto)', async () => {
+    const sinTotal = async () => ({ ok: true, status: 200, json: async () => ({ data: [] }) })
+    await expect(comprobarBase('http://x', 600, sinTotal)).rejects.toThrow('respuesta inesperada')
   })
 })
 
@@ -106,6 +117,34 @@ describe('capturas: estilos inyectados', () => {
   it('mantiene sin animaciones ni transiciones', () => {
     expect(CSS_CAPTURA).toMatch(/animation:\s*none\s*!important/)
     expect(CSS_CAPTURA).toMatch(/transition:\s*none\s*!important/)
+  })
+})
+
+describe('capturas: capturar respeta la guarda antes de hacer nada', () => {
+  const base = { url: 'http://127.0.0.1:1', pestañas: ['gaps'], temas: ['oscuro'], sorteos: 600 }
+
+  it('con una base que no es la sembrada no crea la carpeta ni lanza el navegador', async () => {
+    const raiz = mkdtempSync(join(tmpdir(), 'capturas-'))
+    const salida = join(raiz, 'nueva')
+    const lanzar = vi.fn()
+    try {
+      await expect(capturar({ ...base, salida }, { fetchFn: respuesta(9296), motor: { launch: lanzar } })).rejects.toThrow('sirve 9296')
+      expect(lanzar).not.toHaveBeenCalled()
+      expect(existsSync(salida)).toBe(false)
+    } finally {
+      rmSync(raiz, { recursive: true, force: true })
+    }
+  })
+
+  it('con la base sembrada sí pasa a lanzar el navegador', async () => {
+    const raiz = mkdtempSync(join(tmpdir(), 'capturas-'))
+    const lanzar = vi.fn(async () => { throw new Error('navegador-falso') })
+    try {
+      await expect(capturar({ ...base, salida: join(raiz, 'nueva') }, { fetchFn: respuesta(600), motor: { launch: lanzar } })).rejects.toThrow('navegador-falso')
+      expect(lanzar).toHaveBeenCalledOnce()
+    } finally {
+      rmSync(raiz, { recursive: true, force: true })
+    }
   })
 })
 

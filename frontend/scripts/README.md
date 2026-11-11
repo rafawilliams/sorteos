@@ -76,8 +76,9 @@ Si sembraste otra cantidad (`python tests/seed_db.py 300`), pásala con `--sorte
 
 - Ventana fija de 1280 × 800 y local `es-PA`.
 - Desactiva las animaciones CSS y las de Chart.js (en cuanto carga la librería).
-- Fuerza visibles las tarjetas `.reveal`, que en la página solo aparecen al hacer scroll; si alguna
-  siguiera transparente, el script falla en voz alta en lugar de sacar una captura con huecos en blanco.
+- Fuerza visibles las tarjetas `.reveal`, que en la página solo aparecen al hacer scroll, y falla si
+  alguna sigue con opacidad menor que 1. No comprueba que la pestaña tenga contenido: mira siempre las
+  capturas nuevas antes de darlas por buenas.
 - Espera a que desaparezcan los esqueletos y los cargadores antes de capturar.
 - Captura solo la sección de la pestaña activa, no la cabecera (que lleva la fecha de última
   actualización).
