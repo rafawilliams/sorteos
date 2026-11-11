@@ -117,3 +117,15 @@ Spec: [frontend-react](../specs/frontend-react.md) · Plan y tareas: [plan](../p
 - evidencia final de T006: 28 pruebas en verde, typecheck 0, build 0, `npm audit` 0; la guarda contra el puerto 5000 sigue rechazando con `sirve 9296 sorteos` y exit 1.
 - controls T006: tests ✅ build ✅ security ✅ (la guarda y `npm audit`) traceability ✅ (AC1) — 3 rondas de revisión, 9 hallazgos cerrados (7 fixed, 2 intentional).
 - status T006: **complete**.
+
+## T007 — cierre — 2026-11-11
+- status: complete
+- puerta humana: el dueño aprobó las 28 capturas de `02-DOCS/attachments/react-baseline/` como referencia de AC1 («Aprobadas»), con la salvedad de que usan datos sintéticos (600 sorteos) y de la pastilla vacía del `#toast`.
+
+## Verificación previa al PR de la etapa 0 — 2026-11-11
+- `pytest -q -W error::SyntaxWarning` completo: **268 passed**, contra la base sembrada `sorteos_capturas` (como el CI), nunca contra la real.
+- `pip-audit -r requirements.txt --ignore-vuln PYSEC-2026-217`: sin vulnerabilidades (1 ignorada, la ya conocida).
+- `npm audit --audit-level=high`: 0 vulnerabilidades. `typecheck` 0 · `test -- --run` 28 passed · `build` 0.
+- sintaxis de `static/app.js` válida.
+- limpieza del análisis: LOW 17 (T007 «desde main») superado: las capturas se hicieron con la interfaz sin cambios en esta rama; LOW 18 (plan §2 decía «isla registrada») corregido.
+- estado: T001–T007 completas; falta T059 (PR de la etapa 0).
