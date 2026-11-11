@@ -178,14 +178,13 @@ function CeldaMetodo({ r }: { r: MetodoComparado | undefined }) {
   )
 }
 
-type FilaHistorial = { fecha: string; clave: string; fila: ReactElement }
+type FilaHistorial = { fecha: string; fila: ReactElement }
 
 function Historial({ datos }: { datos: Seguimiento }) {
   const comparada = (c: RegistroComparado): FilaHistorial => {
     const s = c.sorteo
     return {
       fecha: s.fecha,
-      clave: `c-${s.id}`,
       fila: (
         <tr key={`c-${s.id}`}>
           <td>
@@ -203,7 +202,6 @@ function Historial({ datos }: { datos: Seguimiento }) {
   }
   const sinRegistro = (s: Sorteo): FilaHistorial => ({
     fecha: s.fecha,
-    clave: `s-${s.id}`,
     fila: (
       <tr key={`s-${s.id}`} style={{ opacity: 0.55 }}>
         <td>
@@ -280,6 +278,9 @@ function Contenido({ datos }: { datos: Seguimiento }) {
   )
 }
 
+/** Como app.js: una lista ausente cuenta como vacía en vez de romper el render. */
+const conListas = (d: Seguimiento): Seguimiento => ({ ...d, comparados: d.comparados ?? [], pendientes: d.pendientes ?? [], sin_registro: d.sin_registro ?? [] })
+
 export function Componente() {
   const activa = useActiveTab() === 'seguimiento'
   const [estado, setEstado] = useState<Estado>({ fase: 'inactivo' })
@@ -291,7 +292,7 @@ export function Componente() {
     setEstado({ fase: 'cargando' })
     const r = await getSeguimiento()
     if (mia !== ultima.current) return
-    setEstado(r.ok ? { fase: 'listo', datos: r.data } : { fase: 'error', mensaje: r.mensaje })
+    setEstado(r.ok ? { fase: 'listo', datos: conListas(r.data) } : { fase: 'error', mensaje: r.mensaje })
   }, [])
 
   // Cada vez que la pestaña pasa a ser la activa. El doble efecto de StrictMode repite la petición en desarrollo

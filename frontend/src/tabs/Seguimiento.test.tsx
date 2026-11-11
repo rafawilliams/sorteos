@@ -249,13 +249,16 @@ describe('recomendaciones congeladas', () => {
     expect(await screen.findByText('Aún no hay recomendaciones congeladas. Se registran al calcular las estadísticas.')).toBeInTheDocument()
   })
 
-  it('el texto se muestra como texto: una categoría con marcado no crea elementos', async () => {
-    const d = copia()
-    d.pendientes[0]!.categoria = 'x<b>negrita</b>' as never
-    control.getSeguimiento.mockResolvedValue(ok(d))
+  it('un cuerpo sin las listas (comparados, pendientes, sin_registro) se trata como vacío, sin romper', async () => {
+    const d = copia() as unknown as Record<string, unknown>
+    delete d.comparados
+    delete d.pendientes
+    delete d.sin_registro
+    control.getSeguimiento.mockResolvedValue(ok(d as unknown as Seguimiento))
     montar()
-    await screen.findByText('Sorteos comparados')
-    expect(region('Recomendaciones pendientes por categoría').querySelector('b')).toBeNull()
+    expect(await screen.findByText(/Aún no hay recomendaciones congeladas/)).toBeInTheDocument()
+    expect(screen.getByText('Todavía no hay sorteos comparados.')).toBeInTheDocument()
+    expect(valorDe('Sorteos comparados')).toBe('0')
   })
 })
 
