@@ -118,6 +118,9 @@ describe('literales: las comprobaciones no pasan en vacío', () => {
     expect(todos.flatMap((d) => clavesBajo(d, 'prizes')).length).toBeGreaterThan(0)
     expect(todos.flatMap((d) => clavesBajo(d, 'metodos')).length).toBeGreaterThan(0)
     expect(todos.flatMap((d) => clavesBajo(d, 'marcador')).length).toBeGreaterThan(0)
+    for (const nombre of ['by_category', 'endings_by_category', 'decena_recomendada', 'by_prize', 'ml_prizes', 'formatos']) {
+      expect(todos.flatMap((d) => clavesBajo(d, nombre).flat()).length, `sin claves bajo «${nombre}»`).toBeGreaterThan(0)
+    }
   })
 
   it('un valor fuera de los conjuntos sí se detectaría', () => {
@@ -128,8 +131,9 @@ describe('literales: las comprobaciones no pasan en vacío', () => {
     expect(fueraDe(textosDe(roto, 'method'), METODOS_DECENA)).toEqual(['nuevo'])
   })
 
-  it('el método de decena «frecuencia» es el único que aparece en los fixtures; triple y pair se tipan por el código', () => {
+  it('el método de decena «frecuencia» aparece en los fixtures; triple y pair solo se tipan por el código', () => {
+    // No se exige que sea el ÚNICO: una regeneración con más datos puede traer «pair» o «triple», y es válido.
     const vistos = new Set(todos.flatMap((d) => textosDe(d, 'method')))
-    expect([...vistos]).toEqual(['frecuencia'])
+    expect(vistos.has('frecuencia')).toBe(true)
   })
 })
