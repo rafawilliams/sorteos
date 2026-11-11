@@ -39,3 +39,11 @@
 - Pruebas: Vitest + Testing Library con doble de `Chart`; capturas con Playwright solo en local.
 - Orden: Gaps → Seguimiento → Mis Números/Comparador → Simulador/Mensual → Precisión → Resultados → Decenas/Terminaciones → Predicciones → Estadísticas/Tendencias/Análisis → armazón. Etapas en serie porque todas editan `app.js` e `index.html`.
 - Riesgo: la etapa 0 toca el workflow de CI (tier 2): panel de revisores y aprobación humana.
+
+## 2026-11-11 — frontend-react: correcciones tras el análisis
+- Primer `analyze`: BLOCKED (3 HIGH, 9 MEDIUM, 4 LOW). Corregidos los 16 en plan, tareas, constitución (alcance de T001) y spec; segunda pasada: PASS con 2 LOW.
+- Decisión: la etapa 0 se hace en `feat/react-frontend` (spec vinculada a esa rama por el requisito tier 2 de `rsc`); su PR lleva también spec, plan y análisis (T059).
+- Decisión: capturas contra una base sembrada aparte (`sorteos_capturas`) para no tocar datos reales ni la tabla `predicciones`.
+- Decisión: relleno con ceros prohibido solo sobre premios; excepción acotada al número que teclea el usuario en el Simulador.
+- Decisión: descubrimiento automático de islas (`import.meta.glob`); se quitan los `[P]` que compartían archivos.
+- Cambio de spec (validado por el dueño al pedir la corrección): el armazón migra al final, no al principio.

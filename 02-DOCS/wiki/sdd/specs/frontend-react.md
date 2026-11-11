@@ -92,7 +92,7 @@ Cada pestaña migrada muestra los mismos datos, con la misma estructura y estilo
 - **suposición tomada** — Las hojas de estilo actuales se reutilizan tal cual (clases, variables de tema, esferas). *Base:* el diseño no cambia y las pruebas de estilo ya protegen esas clases. *Riesgo:* si se quisiera reorganizar los estilos, sería otra spec.
 - **suposición tomada** — Las pruebas que hoy buscan texto dentro del código antiguo se sustituyen pestaña a pestaña por pruebas de componente; las de estilo se mantienen mientras exista la hoja de estilos. *Base:* leído en `tests/test_ui_assets.py` y `tests/test_categorias_unicas.py`: comprueban cadenas de `app.js` y de `style.css`. *Riesgo:* quedarse sin cobertura de una regla si se borra la prueba sin su sustituta (cubierto por un criterio de aceptación).
 - **suposición tomada** — Chart.js se mantiene como librería de gráficos, envuelta en componentes. *Base:* no cambiar la librería está en el alcance, y los 8 gráficos ya usan sus opciones por tema. *Riesgo:* si el dueño prefiere otra, cambia el alcance.
-- **suposición tomada** — El orden de migración empieza por el armazón (carga de datos, tema, barra de pestañas) y sigue de pestañas simples a complejas. *Base:* minimiza el riesgo de la convivencia. *Riesgo:* si hay una pestaña prioritaria, se reordena el plan.
+- **suposición tomada** — El orden de migración va de pestañas simples a complejas y el armazón (carga de datos, tema, barra de pestañas) migra al final, cuando todas las pestañas ya son React. *Base:* decisión del plan (2026-11-11): cada etapa deja la app usable sin tener que construir un puente inverso. *Riesgo:* la etapa del armazón es la mayor; si hay una pestaña prioritaria, se reordena el plan.
 - **suposición tomada** — Las dependencias del nuevo front se fijan con versión exacta y un archivo de bloqueo, en la versión de Node ya usada en desarrollo. *Base:* el principio 3 de la constitución. *Riesgo:* ninguno relevante.
 - **decisión diferida** — Enrutado por URL por pestaña; fuera de este ciclo.
 - **decisión diferida** — Empaquetar Chart.js en lugar de cargarla desde una red externa; se decide en `plan` si el build lo hace natural.
@@ -102,3 +102,6 @@ Cada pestaña migrada muestra los mismos datos, con la misma estructura y estilo
 - 2026-11-11 — Pregunta «¿Flask sirve la app o servidor aparte?» → Resuelta sin preguntar: Flask sirve la app construida (ya en Goals); el servidor de desarrollo con proxy es opcional. → No cambia el resultado entregado.
 - 2026-11-11 — Área no formulable «pruebas que leen el código fuente» → Graduada a suposición tomada y a criterio de aceptación. → Leídos los dos archivos de pruebas afectados.
 - Balance de los puntos tipados: 2 preguntas abiertas (1 preguntada, 1 resuelta por inferencia); las 2 suposiciones previas se validan y se añaden 5 nuevas; 2 decisiones diferidas intactas; 1 área no formulable graduada.
+
+## Revisions
+- 2026-11-11 — La suposición del orden de migración se cambia de «armazón primero» a «armazón al final», para reflejar la decisión del plan (hallazgo 4 del análisis). Sin otros cambios de alcance ni de criterios.
