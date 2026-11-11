@@ -29,9 +29,15 @@ describe('Balls: una esfera por carácter del premio, sin transformarlo', () => 
     expect(bolas(container)).toEqual(['7', '4'])
   })
 
-  it('quita los espacios de los extremos pero no toca el resto', () => {
+  it('quita los espacios de los extremos pero no toca el resto, también en la etiqueta accesible', () => {
     const { container } = render(<Balls valor="  98  " />)
     expect(bolas(container)).toEqual(['9', '8'])
+    expect(container.querySelector('.lotto-balls')).toHaveAttribute('aria-label', '98')
+  })
+
+  it('un carácter fuera del plano básico es una sola esfera (Array.from, no split)', () => {
+    const { container } = render(<Balls valor="😀" />)
+    expect(bolas(container)).toEqual(['😀'])
   })
 })
 

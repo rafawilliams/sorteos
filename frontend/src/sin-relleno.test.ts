@@ -4,6 +4,11 @@ import { describe, expect, it } from 'vitest'
  * Principio 7 de la constitución: un premio se muestra tal como llega, nunca rellenado con ceros.
  * Única excepción: el número que teclea el usuario en el Simulador (`lib/numeroSimulador.ts`).
  * Esta prueba busca el relleno en el código fuente de la interfaz (spec frontend-react, plan §0).
+ *
+ * Es deliberadamente más estricta que el principio: vigila TODO `frontend/src`, no solo el código que pinta
+ * premios, porque distinguirlo por análisis estático no es fiable. Si una utilidad futura necesitara un
+ * relleno legítimo (por ejemplo un mes de 2 cifras), se añade a `PERMITIDO` con su motivo. Busca el nombre
+ * de la función, no el efecto: es una red contra el descuido, no contra quien la quiera esquivar.
  */
 const PERMITIDO = './lib/numeroSimulador.ts'
 const ESTE_ARCHIVO = './sin-relleno.test.ts'
@@ -11,7 +16,7 @@ const ESTE_ARCHIVO = './sin-relleno.test.ts'
 const RELLENO = new RegExp('pad' + 'Start|pad' + 'End|z' + 'fill')
 
 // Vite lee todos los fuentes de `src` como texto: no hace falta el sistema de archivos ni tipos de Node.
-const fuentes = import.meta.glob('./**/*.{ts,tsx}', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
+const fuentes = import.meta.glob('./**/*.{ts,tsx,js,jsx,mjs}', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
 
 describe('sin relleno de ceros en la interfaz', () => {
   const vigilados = Object.entries(fuentes).filter(([ruta]) => ruta !== PERMITIDO && ruta !== ESTE_ARCHIVO)
