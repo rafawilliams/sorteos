@@ -3,13 +3,17 @@
 import type { Snapshot, Store } from './tipos'
 
 export interface StoreFalso extends Store {
-  /** Sustituye campos del estado y avisa a los suscriptores (como haría el puente real). */
+  /**
+   * Sustituye campos del estado y avisa a los suscriptores, SIEMPRE, aunque el valor no cambie: es más permisivo
+   * que un almacén real, que podría no avisar. Las pruebas que dependan de eso no deben apoyarse en este doble.
+   */
   cambiar(parcial: Partial<Snapshot>): void
   /** Llamadas recibidas por las acciones, en orden. */
   llamadas: Array<{ accion: string; args: unknown[] }>
 }
 
-const ESTADO_INICIAL: Snapshot = {
+/** Estado de partida; función y no constante para que cada instancia tenga su propio array de sorteos. */
+const estadoInicial = (): Snapshot => ({
   sorteos: [],
   stats: null,
   useML: false,
@@ -18,10 +22,10 @@ const ESTADO_INICIAL: Snapshot = {
   theme: 'dark',
   activeTab: 'predicciones',
   ready: false,
-}
+})
 
 export function crearStoreFalso(inicial: Partial<Snapshot> = {}): StoreFalso {
-  let snapshot: Snapshot = { ...ESTADO_INICIAL, ...inicial }
+  let snapshot: Snapshot = { ...estadoInicial(), ...inicial }
   const escuchas = new Set<() => void>()
   const llamadas: StoreFalso['llamadas'] = []
 

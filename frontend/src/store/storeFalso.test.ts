@@ -16,6 +16,12 @@ describe('crearStoreFalso: estado inicial', () => {
     })
   })
 
+  it('no comparte el array de sorteos entre instancias', () => {
+    const a = crearStoreFalso()
+    a.getSnapshot().sorteos.push({} as never)
+    expect(crearStoreFalso().getSnapshot().sorteos).toEqual([])
+  })
+
   it('acepta un estado inicial parcial', () => {
     const s = crearStoreFalso({ theme: 'light', activeTab: 'gaps', ready: true }).getSnapshot()
     expect(s.theme).toBe('light')
