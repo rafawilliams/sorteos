@@ -57,9 +57,10 @@ const SIN_ANIMACION_CSS = '*,*::before,*::after{animation:none!important;transit
 
 async function esperarCarga(page) {
   await page.waitForSelector('#content', { state: 'visible', timeout: ESPERA_MAXIMA_MS })
-  // Hasta que no queden esqueletos ni cargadores de la pestaña activa, los datos no llegaron.
+  // Hasta que no queden esqueletos ni cargadores visibles en la pestaña activa, los datos no llegaron.
   await page.waitForFunction(
-    () => !document.querySelector('#content .skeleton, #content .section.active .loader-wrap'),
+    // Solo cuentan los visibles: algunas pestañas dejan su cargador en el DOM con display:none.
+    () => ![...document.querySelectorAll('#content .skeleton, #content .section.active .loader-wrap')].some((e) => e.offsetParent !== null),
     null,
     { timeout: ESPERA_MAXIMA_MS },
   )
