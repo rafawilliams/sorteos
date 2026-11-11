@@ -17,13 +17,15 @@ import json
 import os
 import sys
 from contextlib import contextmanager
-from datetime import date
+from datetime import date, timedelta
+from types import SimpleNamespace
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 SORTEOS_ESPERADOS = 600
 MAX_ELEMENTOS = 25
 POCOS_SORTEOS = 150          # menos de 230 desde 1995: los backtests de estadísticas salen None
+ULTIMOS_SIN_COMPARAR = 12    # sorteos que se «esconden» para que Seguimiento tenga registros por comparar
 DESTINO = os.path.join(os.path.dirname(__file__), "..", "frontend", "fixtures")
 
 
@@ -73,6 +75,14 @@ def duplicar_hacia_atras(sorteos, anios=7):
             copia["fecha"] = fecha.replace(year=fecha.year - anios, day=28).isoformat()
         copias.append(copia)
     return list(sorteos) + copias
+
+
+def desplazar_fechas(sorteos, dias):
+    """Copia con todas las fechas movidas `dias` días (negativos hacia atrás)."""
+    resultado = copy.deepcopy(sorteos)
+    for s in resultado:
+        s["fecha"] = (date.fromisoformat(s["fecha"]) + timedelta(days=dias)).isoformat()
+    return resultado
 
 
 def a_formatos_reales(sorteos):
@@ -130,19 +140,62 @@ def _numero_no_sorteado(sorteos):
     return next(f"{i:04d}" for i in range(10000) if f"{i:04d}" not in usados)
 
 
-def generar(destino=DESTINO):
+def _base_en_memoria():
+    """Base SQLite vacía con la tabla `predicciones`, como en tests/test_seguimiento_api.py."""
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    from seguimiento import Prediccion
+
+    motor = create_engine("sqlite://")
+    Prediccion.__table__.create(motor)
+    return motor, sessionmaker(bind=motor)
+
+
+@contextmanager
+def _seguimiento_en_memoria(app_module):
+    motor, fabrica = _base_en_memoria()
+    original = app_module.SeguimientoSession
+    app_module.SeguimientoSession = fabrica
+    try:
+        yield
+    finally:
+        app_module.SeguimientoSession = original
+        motor.dispose()
+
+
+def _seguimiento_con_datos(app_module, client, sorteos):
+    """/api/seguimiento con registros pendientes y ya comparados.
+
+    La base sembrada llega hasta 2019 y Seguimiento solo congela categorías con un sorteo en el último año,
+    así que se llevan las fechas al presente. Se calcula una primera vez sin los sorteos más nuevos (se
+    congelan las recomendaciones) y otra con todos (esos sorteos ya existen y se comparan).
+    """
+    reciente = date.fromisoformat(sorteos[0]["fecha"])
+    presentes = desplazar_fechas(sorteos, (date.today() - reciente).days - 3)
+    with _seguimiento_en_memoria(app_module):
+        with _con_sorteos(app_module, presentes[ULTIMOS_SIN_COMPARAR:]):
+            _pedir(client, "/api/stats")
+        with _con_sorteos(app_module, presentes):
+            _pedir(client, "/api/stats")
+            return _pedir(client, "/api/seguimiento")
+
+
+def generar(destino=DESTINO, contar=None):
+    if contar is None:
+        from base import Session
+        from loteria import Loteria
+
+        def contar():
+            sesion = Session()
+            try:
+                return sesion.query(Loteria).count()
+            finally:
+                sesion.close()
+
+    exigir_base_sembrada(contar)             # antes de importar la aplicación o escribir nada
+
     import app as app_module
-    from loteria import Loteria
-    from base import Session
 
-    def contar():
-        sesion = Session()
-        try:
-            return sesion.query(Loteria).count()
-        finally:
-            sesion.close()
-
-    exigir_base_sembrada(contar)
     app_module.app.config["TESTING"] = True
     sorteos = app_module.get_sorteos()
     escritos = []
@@ -153,9 +206,18 @@ def generar(destino=DESTINO):
 
         # /api/stats entrena el modelo la primera vez (50-100 s) y congela recomendaciones de Seguimiento.
         escritos.append(_guardar(destino, "stats", _pedir(client, "/api/stats")))
-        escritos.append(_guardar(destino, "seguimiento", _pedir(client, "/api/seguimiento")))
         escritos.append(_guardar(destino, "gaps", _pedir(client, "/api/gaps")))
         escritos.append(_guardar(destino, "backtesting", _pedir(client, "/api/backtesting?last_n=500")))
+
+        # Sin modelo entrenado la API devuelve `ml: {}`: otra forma de la misma respuesta.
+        entrenado = app_module.predictor
+        app_module.predictor = SimpleNamespace(trained=False)
+        app_module._cache.clear()
+        try:
+            escritos.append(_guardar(destino, "backtesting_sin_modelo", _pedir(client, "/api/backtesting?last_n=500")))
+        finally:
+            app_module.predictor = entrenado
+            app_module._cache.clear()
 
         con_dato = [sorteos[0]["primero"], sorteos[1]["primero"]]
         escritos.append(_guardar(destino, "comparar", _pedir(client, "/api/comparar?numeros=" + ",".join(con_dato))))
@@ -174,20 +236,9 @@ def generar(destino=DESTINO):
         with _con_sorteos(app_module, a_formatos_reales(sorteos)):
             escritos.append(_guardar(destino, "stats_formatos_reales", _pedir(client, "/api/stats")))
 
-        # Seguimiento sin ningún registro: base en memoria, como en tests/test_seguimiento_api.py.
-        from sqlalchemy import create_engine
-        from sqlalchemy.orm import sessionmaker
-        from seguimiento import Prediccion
-
-        motor = create_engine("sqlite://")
-        Prediccion.__table__.create(motor)
-        original = app_module.SeguimientoSession
-        app_module.SeguimientoSession = sessionmaker(bind=motor)
-        try:
+        escritos.append(_guardar(destino, "seguimiento", _seguimiento_con_datos(app_module, client, sorteos)))
+        with _seguimiento_en_memoria(app_module):
             escritos.append(_guardar(destino, "seguimiento_vacio", _pedir(client, "/api/seguimiento")))
-        finally:
-            app_module.SeguimientoSession = original
-            motor.dispose()
 
     app_module._cache.clear()
     return escritos

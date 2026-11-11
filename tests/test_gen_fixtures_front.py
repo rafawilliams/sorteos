@@ -113,3 +113,57 @@ class TestDuplicarHaciaAtras:
         copia = copy.deepcopy(SORTEOS)
         gen.duplicar_hacia_atras(SORTEOS)
         assert SORTEOS == copia
+
+    def test_los_id_no_se_repiten_con_los_id_reales_de_la_base_sembrada(self):
+        sembrada = [{"id": str(i), "fecha": "2019-01-01", "cat": "gordito", "primero": "1111", "segundo": "11", "tercero": "22"}
+                    for i in range(1, 601)]
+        ids = [s["id"] for s in gen.duplicar_hacia_atras(sembrada)]
+        assert len(ids) == 1200 and len(set(ids)) == 1200
+
+
+class TestDesplazarFechas:
+    def test_mueve_todas_las_fechas_los_dias_indicados(self):
+        r = gen.desplazar_fechas(SORTEOS, 10)
+        assert [s["fecha"] for s in r] == ["2026-01-14", "2026-01-13", "2026-01-12", "2026-01-11"]
+
+    def test_acepta_dias_negativos_y_cruza_meses_y_anios(self):
+        r = gen.desplazar_fechas(SORTEOS, -4)
+        assert [s["fecha"] for s in r] == ["2025-12-31", "2025-12-30", "2025-12-29", "2025-12-28"]
+
+    def test_no_cambia_ids_categorias_ni_premios(self):
+        r = gen.desplazar_fechas(SORTEOS, 30)
+        for original, nuevo in zip(SORTEOS, r):
+            assert {k: v for k, v in nuevo.items() if k != "fecha"} == {k: v for k, v in original.items() if k != "fecha"}
+
+    def test_no_modifica_la_lista_original(self):
+        copia = copy.deepcopy(SORTEOS)
+        gen.desplazar_fechas(SORTEOS, 5)
+        assert SORTEOS == copia
+
+
+class TestGenerarRespetaLaGuarda:
+    """`generar` debe consultar el `contar` que se le inyecta y abortar antes de tocar la aplicación o escribir."""
+
+    @staticmethod
+    def _contador(valor):
+        llamadas = []
+
+        def contar():
+            llamadas.append(1)
+            return valor
+        return contar, llamadas
+
+    def test_con_una_base_real_aborta_antes_de_escribir_nada(self, tmp_path):
+        contar, llamadas = self._contador(9296)
+        with pytest.raises(SystemExit) as error:
+            gen.generar(destino=str(tmp_path), contar=contar)
+        assert llamadas == [1]
+        assert "9296" in str(error.value)
+        assert list(tmp_path.iterdir()) == []
+
+    def test_con_una_base_vacia_tambien_aborta(self, tmp_path):
+        contar, llamadas = self._contador(0)
+        with pytest.raises(SystemExit):
+            gen.generar(destino=str(tmp_path), contar=contar)
+        assert llamadas == [1]
+        assert list(tmp_path.iterdir()) == []
