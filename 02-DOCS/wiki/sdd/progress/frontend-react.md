@@ -327,3 +327,16 @@ Todos sobre la suite de contrato, es decir, sobre lo que T015 y T052 tendrán qu
 - review: ronda 1 → VERDICT pass, 4 nits. L67 (cuerpo array) y L68 (`last_n` no finito) arreglados; L66 intencional (el 503 de `/api/actualizar` nombra `ACTUALIZAR_TOKEN`; ya se mostraba igual en `app.js`, app de uso personal); L69 intencional (el plan pide mensajes genéricos: se pierde «No se pudo cargar el seguimiento»; T020 debe mostrar el texto del cliente).
 - contrato para T054: con `status === 401` hay que borrar el token de `sessionStorage` (como hace `app.js`); `auth_required` no se propaga.
 - controls: tests ✅ build n/a security ✅ (audit 0; ningún dato interno llega al usuario) traceability ✅ (AC5). Ronda 2 de 3; los dos arreglos son acotados y con prueba.
+
+## T017 — 2026-11-11
+- status: complete (commits d42ac7b + 1c7b34c)
+- red/green: 21 pruebas fallaron contra el esqueleto (por aserción) antes de implementar; `Gaps.test.tsx` 25 pruebas + `useReveal.test.tsx` 2; 364 en todo el front, `typecheck` 0, `npm audit` 0, 397 Python (base sembrada). 20 mutantes de la isla y del hook detectados (los huecos que salieron —contador vencidos/recientes, insignias, guarda `vivo` que era código muerto— se cerraron); sobrevive uno cosmético (la segunda tarjeta del esqueleto).
+- files: frontend/src/tabs/{Gaps.tsx,Gaps.test.tsx}, frontend/src/components/{useReveal.ts,useReveal.test.tsx}, templates/index.html (`<div data-react-root="gaps">` sustituye a `#gapsContent`)
+- comprobado en la página real (puerto 5001, base sembrada, Playwright): isla montada, 1 sola petición a `/api/gaps` aunque se cambie de pestaña, 0 errores de consola, tarjetas `visible` al desplazarse.
+- risk: tier 1 — 1 revisor
+- review: ronda 1 → 8 hallazgos (1 should-fix, 2 questions, 5 nits). L70–L75 arreglados: prueba vacía eliminada; carga con `Skeleton` y vacío sin mensajes nuevos, como pide el plan §5 (mis decisiones iniciales (b) y (c) lo contradecían y se revirtieron); foco a la región al reintentar; `aria-busy` retirado (el `role="status"` con nombre ya anuncia la carga); `?.` sobrante fuera. L76 y L77 intencionales (todas las pruebas del front usan `fixtures/` relativo a `frontend/`; la rama con observer real la cubre `useReveal.test`).
+- desviación declarada: T017 sustituye `#gapsContent` en la plantilla (el plan lo dejaba para T018) para no duplicar contenido; el JS antiguo (`loadGaps`, `renderGaps`, llamada en `activateNavTab`) queda muerto hasta T018.
+- controls: tests ✅ build ✅ security ✅ traceability ✅ (AC2). Ronda 2 de 3; los arreglos no se han vuelto a revisar con un revisor aparte (acotados, con mutación comprobada).
+
+## Decision queue (adiciones — etapa 1)
+- [review-after] Q7 actualizada: en Gaps no se usa `aria-busy` (con `role="status"` y `aria-label` la carga se anuncia y `aria-busy` en el padre puede silenciarlo). Recomendación para las demás islas: mismo patrón (`role="status"` con nombre alrededor de los esqueletos), sin `aria-busy`.

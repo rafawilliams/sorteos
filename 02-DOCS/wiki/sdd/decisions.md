@@ -64,3 +64,9 @@ Context   — el plan fija `'Error de conexión'` y el `error` público del serv
 Options    — (a) usar `'Error de conexión'` para todo; (b) mostrar el texto del cuerpo o de la excepción; (c) un segundo mensaje genérico para «el servidor respondió con error».
 Decision   — (c): `'Error del servidor'` para toda respuesta de error sin `error` público aceptable (texto de hasta 200 caracteres, solo en `/api/comparar`, `/api/simulador` y `/api/actualizar`).
 Why        — (a) confunde al usuario (la red funciona) y (b) puede filtrar trazas o datos internos; (c) distingue el fallo sin mostrar nada interno.
+
+## 2026-11-11 — Estados de carga y vacío de las islas siguen al código antiguo  (feature: frontend-react, task: T017)
+Context   — al migrar Gaps, el autor añadió un spinner propio y textos de vacío nuevos; el revisor señaló que el plan §5 pide esqueleto en la carga y «el mismo mensaje que muestra hoy app.js» en el vacío.
+Options    — (a) conservar spinner y textos nuevos; (b) seguir el plan: `Skeleton` en la carga, vacío sin mensajes nuevos.
+Decision   — (b). La carga se anuncia con `role="status"` y `aria-label` alrededor de los esqueletos, sin `aria-busy`; al reintentar el foco pasa a la región.
+Why        — el plan está aprobado y mantiene la equivalencia visual con la referencia (AC1); un cambio de texto o de marcado se decide aparte, no se cuela en una migración.
