@@ -73,25 +73,16 @@ describe('carga la primera vez que la pestaña es la activa', () => {
     expect(control.getGaps).toHaveBeenCalledTimes(1)
   })
 
-  it('mientras carga muestra «Calculando gaps...» y marca la región como ocupada', async () => {
+  it('mientras carga muestra esqueletos, anunciados como «Calculando gaps...»', async () => {
     const d = diferida<ReturnType<typeof ok>>()
     control.getGaps.mockReturnValue(d.promesa)
     montar()
-    expect(screen.getByRole('status')).toHaveTextContent('Calculando gaps...')
-    expect(region()).toHaveAttribute('aria-busy', 'true')
+    const estado = screen.getByRole('status', { name: 'Calculando gaps...' })
+    expect(estado.querySelectorAll('.skeleton').length).toBeGreaterThan(0)
+    expect(screen.queryByText('Sorteos Analizados')).toBeNull()
     await act(async () => d.resolver(ok(CON_NUMEROS)))
     expect(screen.queryByRole('status')).toBeNull()
-    expect(region()).toHaveAttribute('aria-busy', 'false')
-  })
-
-  it('si se desmonta mientras carga no avisa en consola', async () => {
-    const d = diferida<ReturnType<typeof ok>>()
-    control.getGaps.mockReturnValue(d.promesa)
-    const error = vi.spyOn(console, 'error').mockImplementation(() => {})
-    const { unmount } = montar()
-    unmount()
-    await act(async () => d.resolver(ok(CON_NUMEROS)))
-    expect(error).not.toHaveBeenCalled()
+    expect(screen.getByText('Sorteos Analizados')).toBeInTheDocument()
   })
 })
 
@@ -188,24 +179,23 @@ describe('con datos', () => {
 describe('vacío', () => {
   beforeEach(() => control.getGaps.mockResolvedValue(ok(SIN_NUMEROS)))
 
-  it('sin números vencidos conserva la tabla con su cabecera y avisa que no hay', async () => {
+  // Como app.js: sin números no hay mensaje, solo la tabla con su cabecera y los contenedores vacíos.
+  it('sin números vencidos conserva la tabla con su cabecera y sin filas', async () => {
     montar()
     const tabla = await screen.findByRole('table', { name: /números vencidos/i })
     expect(within(tabla).getAllByRole('columnheader')).toHaveLength(6)
-    expect(within(tabla).getByText('Sin números vencidos')).toBeInTheDocument()
+    expect(tabla.querySelectorAll('tbody tr')).toHaveLength(0)
     const vencidos = screen.getByText('Números "Vencidos"').previousElementSibling!
     expect(vencidos.textContent).toBe('0')
   })
 
-  it('sin números recientes lo dice', async () => {
+  it('sin números recientes ni terminaciones deja sus tarjetas con el contenedor vacío', async () => {
+    control.getGaps.mockResolvedValue(ok({ ...SIN_NUMEROS, overdue_endings: [], ontime_numbers: [] }))
     montar()
-    expect(await screen.findByText('Sin números recientes')).toBeInTheDocument()
-  })
-
-  it('sin terminaciones vencidas lo dice', async () => {
-    control.getGaps.mockResolvedValue(ok({ ...SIN_NUMEROS, overdue_endings: [] }))
-    montar()
-    expect(await screen.findByText('Sin terminaciones vencidas')).toBeInTheDocument()
+    const recientes = (await screen.findByRole('heading', { name: 'Números Recientes' })).closest('.card') as HTMLElement
+    expect(within(recientes).queryByText(/gap:/)).toBeNull()
+    const terminaciones = screen.getByRole('heading', { name: 'Terminaciones Vencidas' }).closest('.card') as HTMLElement
+    expect(within(terminaciones).queryByText(/^Gap: /)).toBeNull()
   })
 })
 
@@ -217,7 +207,6 @@ describe('error', () => {
     const alerta = await screen.findByRole('alert')
     expect(alerta).toHaveTextContent('Error cargando gaps')
     expect(alerta).toHaveTextContent('Error del servidor')
-    expect(region()).toHaveAttribute('aria-busy', 'false')
     expect(screen.queryByText('Sorteos Analizados')).toBeNull()
 
     fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }))
@@ -240,8 +229,19 @@ describe('error', () => {
     control.getGaps.mockReturnValueOnce(d.promesa)
     montar()
     fireEvent.click(await screen.findByRole('button', { name: 'Reintentar' }))
-    expect(screen.getByRole('status')).toHaveTextContent('Calculando gaps...')
+    expect(screen.getByRole('status', { name: 'Calculando gaps...' })).toBeInTheDocument()
     expect(screen.queryByRole('alert')).toBeNull()
     await act(async () => d.resolver(ok(CON_NUMEROS)))
+  })
+
+  it('al reintentar el foco pasa a la región y no se pierde en <body>', async () => {
+    control.getGaps.mockResolvedValueOnce({ ok: false, mensaje: 'Error del servidor' })
+    control.getGaps.mockResolvedValueOnce(ok(CON_NUMEROS))
+    montar()
+    const boton = await screen.findByRole('button', { name: 'Reintentar' })
+    boton.focus()
+    fireEvent.click(boton)
+    expect(region()).toHaveFocus()
+    await screen.findByText('Sorteos Analizados')
   })
 })

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { getGaps } from '../api/client'
 import type { GapNumero, Gaps, GapTerminacion } from '../api/types'
+import { Skeleton } from '../components/Skeleton'
 import { useReveal } from '../components/useReveal'
 import { useActiveTab } from '../store/hooks'
 
@@ -32,13 +33,6 @@ function TablaVencidos({ numeros }: { numeros: GapNumero[] }) {
           </tr>
         </thead>
         <tbody>
-          {numeros.length === 0 && (
-            <tr>
-              <td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
-                Sin números vencidos
-              </td>
-            </tr>
-          )}
           {numeros.map((g) => {
             const color = gravedad(g.ratio)
             return (
@@ -65,7 +59,6 @@ function TablaVencidos({ numeros }: { numeros: GapNumero[] }) {
 }
 
 function TerminacionesVencidas({ terminaciones }: { terminaciones: GapTerminacion[] }) {
-  if (terminaciones.length === 0) return <p className="section-subtitle">Sin terminaciones vencidas</p>
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 12 }}>
       {terminaciones.map((e) => (
@@ -83,7 +76,6 @@ function TerminacionesVencidas({ terminaciones }: { terminaciones: GapTerminacio
 }
 
 function Recientes({ numeros }: { numeros: GapNumero[] }) {
-  if (numeros.length === 0) return <p className="section-subtitle">Sin números recientes</p>
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
       {numeros.slice(0, 20).map((g) => (
@@ -107,7 +99,7 @@ function Contenido({ datos }: { datos: Gaps }) {
     <>
       <div className="grid-2" style={{ marginBottom: 20 }}>
         <div className="stat-card">
-          <div className="stat-value">{datos.total_sorteos?.toLocaleString()}</div>
+          <div className="stat-value">{datos.total_sorteos.toLocaleString()}</div>
           <div className="stat-label">Sorteos Analizados</div>
         </div>
         <div className="stat-card">
@@ -155,6 +147,7 @@ export function Componente() {
   const activa = useActiveTab() === 'gaps'
   const [estado, setEstado] = useState<Estado>({ fase: 'inactivo' })
   const iniciado = useRef(false)
+  const regionRef = useRef<HTMLDivElement>(null)
 
   const cargar = useCallback(async () => {
     setEstado({ fase: 'cargando' })
@@ -171,17 +164,27 @@ export function Componente() {
   }, [activa, cargar])
 
   return (
-    <div role="region" aria-label="Análisis de gaps" aria-busy={estado.fase === 'cargando'}>
+    <div role="region" aria-label="Análisis de gaps" ref={regionRef} tabIndex={-1} style={{ outline: 'none' }}>
       {estado.fase === 'cargando' && (
-        <div className="loader-wrap" style={{ padding: 40 }} role="status">
-          <div className="spinner" />
-          <p>Calculando gaps...</p>
+        <div role="status" aria-label="Calculando gaps...">
+          <div className="skel-grid">
+            <Skeleton lineas={2} />
+            <Skeleton lineas={2} />
+          </div>
+          <Skeleton lineas={5} />
         </div>
       )}
       {estado.fase === 'error' && (
         <div role="alert">
           <p style={{ color: '#f87171' }}>Error cargando gaps. {estado.mensaje}</p>
-          <button type="button" className="btn" onClick={() => void cargar()}>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => {
+              regionRef.current?.focus() // el botón desaparece al reintentar: el foco pasa a la región, no a <body>
+              void cargar()
+            }}
+          >
             Reintentar
           </button>
         </div>
