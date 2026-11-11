@@ -94,3 +94,12 @@ Spec: [frontend-react](../specs/frontend-react.md) · Plan y tareas: [plan](../p
 - 28 PNG en `02-DOCS/attachments/react-baseline/`, sacadas con la interfaz actual (sin cambios todavía) sobre la base sembrada `sorteos_capturas`.
 - la tabla `sorteos` real no se tocó (el servidor de capturas usó otra base).
 - verificadas a ojo por el agente: `gaps-oscuro`, `predicciones-oscuro` y `precision-claro` muestran datos reales, no esqueletos.
+
+### Revisión de T006 — ronda 1 (1 blocker, 1 should-fix, 1 nit) — 2026-11-11
+- blocker (verificado en `estadisticas-oscuro.png`): las tarjetas `.reveal` nacen con `opacity:0` y solo se ven cuando un IntersectionObserver las ve entrar en pantalla; el script no hace scroll, así que la mitad inferior de las capturas largas salía en blanco (en Estadísticas faltaban Series, Letras, radar, dispersión y «Otros formatos»). **Error del agente:** se dio T006 por bueno tras mirar solo 3 de las 28 capturas, sin mirar las pestañas largas.
+- should-fix: la URL por defecto era el puerto 5000, donde puede estar la base real, y no había guarda.
+- nit: `nombre in opciones` aceptaba claves del prototipo (`--toString`).
+- corrección (ronda de arreglos 1): `CSS_CAPTURA` fuerza `.reveal` visible; el script espera y falla si queda alguna tarjeta transparente; URL por defecto 5001; nueva guarda `comprobarBase` / `--sorteos` (por defecto 600) que se niega a capturar si el servidor no sirve exactamente esos sorteos; `Object.hasOwn`.
+- red: con stubs de `CSS_CAPTURA` y `comprobarBase`, 12 pruebas nuevas fallaron en aserciones. green: 19 pruebas en verde; typecheck 0; build 0.
+- comprobado contra el caso real del incidente: `capturas.mjs --url http://127.0.0.1:5000` termina con exit 1 y `sirve 9296 sorteos y se esperaban 600`, sin crear la carpeta de salida.
+- las 28 capturas se rehicieron. Revisadas a ojo, completas: `estadisticas-oscuro`, `terminaciones-oscuro` y `tendencias-claro` (las pestañas largas que antes salían con huecos).

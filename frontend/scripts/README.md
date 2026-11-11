@@ -39,12 +39,16 @@ El servidor de capturas debe usar **otra base de datos**, sembrada con datos sin
 Si ya tienes `python app.py` corriendo en el puerto 5000, **Windows deja arrancar un segundo servidor
 en el mismo puerto sin avisar y las peticiones siguen yendo al primero**, es decir, a la base real.
 Pasó al preparar la primera referencia: el servidor de capturas mostraba 9.296 sorteos en vez de 600.
-Por eso el servidor de capturas va **siempre en otro puerto** (abajo, el 5001), y antes de capturar se
-comprueba que sirve la base sembrada:
+Por eso el servidor de capturas va **siempre en otro puerto** (abajo, el 5001, que es también el valor
+por defecto de `--url`), y el script **se niega a capturar** si el servidor no sirve exactamente 600
+sorteos (`--sorteos`, los de `tests/seed_db.py`). Si apuntas por error al 5000 verás algo así, sin que
+se cree ninguna captura:
 
-```bash
-curl -s "http://127.0.0.1:5001/api/sorteos?page=1&per_page=1"   # "total" debe ser 600
+```text
+Error: El servidor de http://127.0.0.1:5000 sirve 9296 sorteos y se esperaban 600 (la base sembrada).
 ```
+
+Si sembraste otra cantidad (`python tests/seed_db.py 300`), pásala con `--sorteos 300`.
 
 ## Uso
 
@@ -60,8 +64,8 @@ curl -s "http://127.0.0.1:5001/api/sorteos?page=1&per_page=1"   # "total" debe s
 2. Saca las capturas:
 
    ```bash
-   node frontend/scripts/capturas.mjs --salida <carpeta> --url http://127.0.0.1:5001
-   node frontend/scripts/capturas.mjs --salida <carpeta> --url http://127.0.0.1:5001 --solo gaps,seguimiento --temas oscuro
+   node frontend/scripts/capturas.mjs --salida <carpeta>
+   node frontend/scripts/capturas.mjs --salida <carpeta> --solo gaps,seguimiento --temas oscuro
    ```
 
    Deja `<pestaña>-oscuro.png` y `<pestaña>-claro.png`. La referencia se guarda en
@@ -72,6 +76,8 @@ curl -s "http://127.0.0.1:5001/api/sorteos?page=1&per_page=1"   # "total" debe s
 
 - Ventana fija de 1280 × 800 y local `es-PA`.
 - Desactiva las animaciones CSS y las de Chart.js (en cuanto carga la librería).
+- Fuerza visibles las tarjetas `.reveal`, que en la página solo aparecen al hacer scroll; si alguna
+  siguiera transparente, el script falla en voz alta en lugar de sacar una captura con huecos en blanco.
 - Espera a que desaparezcan los esqueletos y los cargadores antes de capturar.
 - Captura solo la sección de la pestaña activa, no la cabecera (que lleva la fecha de última
   actualización).
