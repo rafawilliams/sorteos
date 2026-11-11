@@ -14,6 +14,7 @@ from contrato_front import aplanar, diferencias
 
 FIXTURES = os.path.join(os.path.dirname(__file__), "..", "frontend", "fixtures")
 
+CATEGORIAS = ["dominical", "miercolito", "gordito", "extraordinario"]
 PRINCIPALES = {
     "stats": ["stats_pocos_sorteos", "stats_con_backtests", "stats_formatos_reales"],
     "seguimiento": ["seguimiento_vacio"],
@@ -40,7 +41,7 @@ def test_estan_todos_los_fixtures_esperados():
     assert esperados <= presentes, f"faltan fixtures: {sorted(esperados - presentes)}"
 
 
-@pytest.mark.parametrize("ruta", ["decena_recomendada.*.backtest", "endings_by_category.*.backtest"])
+@pytest.mark.parametrize("ruta", [f"{raiz}.{cat}.backtest" for raiz in ("decena_recomendada", "endings_by_category") for cat in CATEGORIAS])
 def test_los_backtests_estan_cubiertos_con_valor_y_sin_valor(ruta):
     """Si todos los fixtures tuvieran el backtest nulo, el contrato nunca vería su forma real."""
     con_valor = aplanar(_fixture("stats_con_backtests"))[ruta]

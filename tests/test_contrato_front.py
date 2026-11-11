@@ -4,7 +4,9 @@ Cadena backend → fixture → tipo: si el servidor cambia la forma de una respu
 si un tipo de TypeScript cambia sin su fixture, falla `tsc` (T010).
 
 Solo corre contra la base sembrada (600 sorteos, `tests/seed_db.py`, la del CI): llama a `/api/stats`,
-que escribe recomendaciones en la tabla `predicciones`, y los fixtures salen de esa misma base.
+que escribe recomendaciones en la tabla `predicciones`, y los fixtures salen de esa misma base. En local,
+con otra base o sin base, se salta con el motivo; en CI no puede saltarse (ver test_contrato_front_ci.py).
+Todo se pide con el mismo reloj congelado con el que se generaron los fixtures.
 """
 import json
 import os
@@ -16,26 +18,17 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, os.path.dirname(__file__))
 
 import app as app_module
-from base import Session
-from contrato_front import diferencias
-from gen_fixtures_front import SORTEOS_ESPERADOS, _numero_no_sorteado, recortar
-from loteria import Loteria
+import gen_fixtures_front as gen
+from contrato_front import diferencias, estado_base
 
 FIXTURES = os.path.join(os.path.dirname(__file__), "..", "frontend", "fixtures")
 
-
-def _base_sembrada():
-    sesion = Session()
-    try:
-        return sesion.query(Loteria).count() == SORTEOS_ESPERADOS
-    finally:
-        sesion.close()
-
+_ESTADO, _DATO = estado_base()           # nunca lanza: sin base, el módulo se salta en vez de romper la recolección
 
 pytestmark = pytest.mark.skipif(
-    not _base_sembrada(),
-    reason="El contrato con el front solo se comprueba contra la base sembrada (600 sorteos, tests/seed_db.py): "
-           "/api/stats escribe en `predicciones`.",
+    _ESTADO != "sembrada",
+    reason=f"El contrato con el front solo se comprueba contra la base sembrada (600 sorteos, tests/seed_db.py): "
+           f"estado de la base = {_ESTADO} ({_DATO}). /api/stats escribe en `predicciones`.",
 )
 
 
@@ -50,7 +43,7 @@ def client():
     limitador = app_module.limiter.enabled
     app_module.limiter.enabled = False           # las pruebas piden /api/stats y /api/backtesting varias veces
     app_module._cache.clear()
-    with app_module.app.test_client() as c:
+    with gen._reloj_fijo(), app_module.app.test_client() as c:
         yield c
     app_module.limiter.enabled = limitador
     app_module._cache.clear()
@@ -59,7 +52,7 @@ def client():
 def _pedir(client, ruta):
     respuesta = client.get(ruta)
     assert respuesta.status_code == 200, f"{ruta} -> {respuesta.status_code}: {respuesta.get_data(as_text=True)[:200]}"
-    return recortar(respuesta.get_json())
+    return gen.recortar(respuesta.get_json())
 
 
 @pytest.fixture(scope="module")
@@ -70,7 +63,7 @@ def stats_en_vivo(client):
 
 def _numeros():
     sorteos = app_module.get_sorteos()
-    return [sorteos[0]["primero"], sorteos[1]["primero"]], _numero_no_sorteado(sorteos)
+    return [sorteos[0]["primero"], sorteos[1]["primero"]], gen._numero_no_sorteado(sorteos)
 
 
 class TestEstructuraDeLaApi:
@@ -87,8 +80,15 @@ class TestEstructuraDeLaApi:
         # con el modelo ya entrenado por `stats_en_vivo`, `ml` viene con su forma completa
         assert diferencias(_fixture("backtesting"), _pedir(client, "/api/backtesting?last_n=500")) == []
 
-    def test_seguimiento(self, client, stats_en_vivo):
-        # su contenido depende de las filas de `predicciones`: se toleran listas vacías y nulos
+    def test_seguimiento_con_registros_en_estricto(self, client, stats_en_vivo):
+        """Seguimiento con pendientes y comparados, calculado como el generador: sin tolerar nada."""
+        with gen._seguimiento_en_memoria(app_module):
+            cuerpo = gen.recortar(gen._seguimiento_con_datos(app_module, client, app_module.get_sorteos()))
+        assert diferencias(_fixture("seguimiento"), cuerpo) == []
+
+    def test_seguimiento_leido_de_la_base(self, client, stats_en_vivo):
+        # la base sembrada llega a 2019 y no registra nada: aquí solo se comprueba el cableado con la tabla
+        # real y el nivel superior; la forma de los registros la cubre la prueba anterior, en estricto
         assert diferencias(_fixture("seguimiento"), _pedir(client, "/api/seguimiento"), tolerar_vacios=True) == []
 
     def test_comparar(self, client):
