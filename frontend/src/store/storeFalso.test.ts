@@ -95,6 +95,16 @@ describe('crearStoreFalso: acciones', () => {
     ])
   })
 
+  it('una recarga que falla se traga el fallo, queda registrada y conserva los datos', async () => {
+    const store = crearStoreFalso({ ready: true })
+    store.fallarSiguienteRecarga()
+    await expect(store.actions.reload()).resolves.toBeUndefined()
+    expect(store.llamadas).toEqual([{ accion: 'reload', args: [] }, { accion: 'reload:fallo-tragado', args: [] }])
+    expect(store.getSnapshot().ready).toBe(true)
+    await store.actions.reload() // la siguiente recarga ya no falla
+    expect(store.llamadas.filter((l) => l.accion === 'reload:fallo-tragado')).toHaveLength(1)
+  })
+
   it('reload se registra y devuelve una promesa que se resuelve', async () => {
     const store = crearStoreFalso()
     await expect(store.actions.reload()).resolves.toBeUndefined()

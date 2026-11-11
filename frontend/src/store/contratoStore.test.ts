@@ -89,6 +89,63 @@ function conAccionConThis(): Store {
   return Object.assign(Object.create(base), { actions: { ...base.actions, setUseML: roto.setUseML } }) as Store
 }
 
+/** Almacén escrito a mano, correcto por defecto, con interruptores para introducir UN defecto de notificación. */
+class StoreManual implements Store {
+  private snapshot: Snapshot = crearStoreFalso().getSnapshot()
+  private escuchas = new Set<() => void>()
+  fallosTragados = 0
+  private fallosPendientes = 0
+  constructor(private opciones: { sinAvisarEn?: string[]; avisarAntes?: boolean; vaciaStatsSinAvisarEnReload?: boolean } = {}) {}
+  getSnapshot() {
+    return this.snapshot
+  }
+  subscribe = (escucha: () => void) => {
+    this.escuchas.add(escucha)
+    return () => {
+      this.escuchas.delete(escucha)
+    }
+  }
+  private poner(accion: string, parcial: Partial<Snapshot>) {
+    const avisar = () => {
+      if (!this.opciones.sinAvisarEn?.includes(accion)) this.escuchas.forEach((e) => e())
+    }
+    if (this.opciones.avisarAntes) avisar() // defecto: la escucha lee el estado viejo
+    this.snapshot = { ...this.snapshot, ...parcial }
+    if (!this.opciones.avisarAntes) avisar()
+  }
+  cargar() {
+    this.poner('cargar', { sorteos: [SORTEO], stats: STATS, ready: true })
+  }
+  fallarSiguienteRecarga() {
+    this.fallosPendientes += 1
+  }
+  actions = {
+    setUseML: (v: boolean) => this.poner('setUseML', { useML: v }),
+    setPrize: (p: Snapshot['prize']) => this.poner('setPrize', { prize: p }),
+    setStatsPrize: (p: Snapshot['statsPrize']) => this.poner('setStatsPrize', { statsPrize: p }),
+    toast: () => {},
+    reload: async () => {
+      if (this.opciones.vaciaStatsSinAvisarEnReload) {
+        // defecto: vacía `stats` un momento SIN avisar a nadie (solo se ve leyendo el estado a intervalos)
+        const viejo = this.snapshot
+        await Promise.resolve()
+        this.snapshot = { ...this.snapshot, stats: null }
+        await Promise.resolve()
+        this.snapshot = viejo
+      }
+      if (this.fallosPendientes > 0) {
+        this.fallosPendientes -= 1
+        this.fallosTragados += 1 // el fallo se registraría y se traga; los datos viejos se quedan
+      }
+    },
+  }
+}
+
+const controlManual: ControlDeCarga = {
+  cargar: (s) => (s as StoreManual).cargar(),
+  fallarSiguienteRecarga: (s) => (s as StoreManual).fallarSiguienteRecarga(),
+}
+
 /** Defecto único: la instantánea es estable pero `sorteos` devuelve un array nuevo en cada lectura. */
 function conCampoInestableDesdeElPrincipio(): Store {
   const base = crearStoreFalso()
@@ -299,9 +356,122 @@ function conReloadFallidoQuePierdeLosDatos(): Store {
   } as Store
 }
 
+/** Defecto único: tras un `await` interno, `stats` se vacía un momento y luego se restaura (parpadeo de esqueleto). */
+function conReloadQueVaciaStatsTrasUnAwait(): Store {
+  const base = crearStoreFalso()
+  return {
+    ...base,
+    actions: {
+      ...base.actions,
+      reload: async () => {
+        const viejo = base.getSnapshot().stats
+        await Promise.resolve()
+        base.cambiar({ stats: null })
+        await Promise.resolve()
+        base.cambiar({ stats: viejo })
+      },
+    },
+  } as Store
+}
+
+/** Defecto único: `stats` se vacía un momento pasado un `setTimeout` (mucho después de las microtareas inmediatas). */
+function conReloadQueVaciaStatsTrasUnTimeout(): Store {
+  const base = crearStoreFalso()
+  const esperar = () => new Promise<void>((r) => setTimeout(r, 5))
+  return {
+    ...base,
+    actions: {
+      ...base.actions,
+      reload: async () => {
+        const viejo = base.getSnapshot().stats
+        await esperar()
+        base.cambiar({ stats: null })
+        await esperar()
+        base.cambiar({ stats: viejo })
+      },
+    },
+  } as Store
+}
+
+/** Defecto único: una recarga fallida deja los sorteos vacíos (pero conserva `stats` y `ready`). */
+function conReloadFallidoQueVaciaLosSorteos(): Store {
+  const base = crearStoreFalso()
+  let falla = false
+  return {
+    ...base,
+    fallarSiguienteRecarga: () => {
+      falla = true
+    },
+    actions: {
+      ...base.actions,
+      reload: async () => {
+        if (falla) {
+          falla = false
+          base.cambiar({ sorteos: [] })
+        }
+      },
+    },
+  } as Store
+}
+
+/** Defecto único: una recarga fallida sustituye `stats` por una copia igual (los datos están, la referencia cambió). */
+function conReloadFallidoQueReemplazaStatsPorUnaCopia(): Store {
+  const base = crearStoreFalso()
+  let falla = false
+  return {
+    ...base,
+    fallarSiguienteRecarga: () => {
+      falla = true
+    },
+    actions: {
+      ...base.actions,
+      reload: async () => {
+        if (falla) {
+          falla = false
+          base.cambiar({ stats: { ...base.getSnapshot().stats } as Snapshot['stats'] })
+        }
+      },
+    },
+  } as Store
+}
+
+/** Defecto único: una recarga fallida cambia un campo que no tiene nada que ver (el modo de predicción). */
+function conReloadFallidoQueCambiaUnCampoAjeno(): Store {
+  const base = crearStoreFalso()
+  let falla = false
+  return {
+    ...base,
+    fallarSiguienteRecarga: () => {
+      falla = true
+    },
+    actions: {
+      ...base.actions,
+      reload: async () => {
+        if (falla) {
+          falla = false
+          base.cambiar({ useML: !base.getSnapshot().useML })
+        }
+      },
+    },
+  } as Store
+}
+
 const rechaza = async (comprobar: () => Promise<void> | void, mensaje: RegExp) => {
   await expect(Promise.resolve().then(comprobar)).rejects.toThrow(mensaje)
 }
+
+describirContratoDeStore('almacén escrito a mano (StoreManual)', () => new StoreManual(), controlManual)
+
+describe('el almacén manual se traga de verdad el fallo de la recarga', () => {
+  it('cuenta el fallo tragado y conserva los datos', async () => {
+    const store = new StoreManual()
+    store.cargar()
+    store.fallarSiguienteRecarga()
+    await store.actions.reload()
+    expect(store.fallosTragados).toBe(1)
+    expect(store.getSnapshot().stats).toBe(STATS)
+  })
+})
 
 describe('la suite de contrato acepta un almacén correcto escrito como clase con flechas', () => {
   for (const [nombre, comprobar] of Object.entries(comprobaciones)) {
@@ -365,7 +535,40 @@ describe('la suite de contrato detecta cada defecto por su causa', () => {
   })
 
   it('una recarga fallida que pierde los datos', async () => {
-    await rechaza(() => comprobaciones.recarga!(conReloadFallidoQuePierdeLosDatos, control), /tras una recarga fallida/)
+    await rechaza(() => comprobaciones.recarga!(conReloadFallidoQuePierdeLosDatos, control), /recarga fallida se vació `stats`/)
+  })
+
+  it('un setter que actualiza el estado pero no avisa: nombra la acción', async () => {
+    await rechaza(() => comprobaciones.suscripcion!(() => new StoreManual({ sinAvisarEn: ['setPrize'] }), controlManual), /setPrize.*no avisó/)
+    await rechaza(() => comprobaciones.suscripcion!(() => new StoreManual({ sinAvisarEn: ['setStatsPrize'] }), controlManual), /setStatsPrize.*no avisó/)
+  })
+
+  it('un almacén que avisa antes de actualizar el estado: la escucha leería el valor viejo', async () => {
+    await rechaza(() => comprobaciones.suscripcion!(() => new StoreManual({ avisarAntes: true }), controlManual), /avisó antes de actualizar/)
+  })
+
+  it('una recarga que vacía `stats` un momento tras un await interno (parpadeo)', async () => {
+    await rechaza(() => comprobaciones.recarga!(conReloadQueVaciaStatsTrasUnAwait, control), /durante la recarga se vació `stats`/)
+  })
+
+  it('una recarga que vacía `stats` pasado un setTimeout: solo lo ve la escucha de avisos', async () => {
+    await rechaza(() => comprobaciones.recarga!(conReloadQueVaciaStatsTrasUnTimeout, control), /durante la recarga se vació `stats`/)
+  })
+
+  it('una recarga que vacía `stats` sin avisar a nadie: solo lo ven las lecturas a intervalos', async () => {
+    await rechaza(() => comprobaciones.recarga!(() => new StoreManual({ vaciaStatsSinAvisarEnReload: true }), controlManual), /durante la recarga se vació `stats`/)
+  })
+
+  it('una recarga fallida que vacía los sorteos', async () => {
+    await rechaza(() => comprobaciones.recarga!(conReloadFallidoQueVaciaLosSorteos, control), /recarga fallida se vaciaron los sorteos/)
+  })
+
+  it('una recarga fallida que sustituye `stats` por una copia igual: la referencia debe conservarse', async () => {
+    await rechaza(() => comprobaciones.recarga!(conReloadFallidoQueReemplazaStatsPorUnaCopia, control), /recarga fallida cambió «stats»/)
+  })
+
+  it('una recarga fallida que cambia un campo ajeno', async () => {
+    await rechaza(() => comprobaciones.recarga!(conReloadFallidoQueCambiaUnCampoAjeno, control), /recarga fallida cambió «useML»/)
   })
 
   it('una recarga que rechaza cuando falla la carga', async () => {

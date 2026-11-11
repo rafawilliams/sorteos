@@ -19,7 +19,11 @@ const ACCIONES = ['setUseML', 'setPrize', 'setStatsPrize', 'toast', 'reload'] as
 export interface ControlDeCarga {
   /** Deja `sorteos` y `stats` con datos y `ready` en `true`, como tras una carga correcta. */
   cargar(store: Store): Promise<void> | void
-  /** Hace que la siguiente llamada a `reload` encuentre un fallo de carga (p. ej. una red caída). */
+  /**
+   * Hace que la siguiente llamada a `reload` encuentre un fallo de carga: una red caída o una respuesta de error
+   * (p. ej. un 500 con un cuerpo JSON). El almacén debe tragarse el fallo y conservar los datos viejos; en
+   * particular, un cuerpo de error no puede ocupar el lugar de `stats`.
+   */
   fallarSiguienteRecarga(store: Store): void
 }
 
@@ -27,6 +31,36 @@ type Comprobacion = (crear: () => Store, control: ControlDeCarga) => Promise<voi
 
 /** El otro valor posible de un premio, para forzar un cambio. */
 const otroPremio = (p: Snapshot['prize']): Snapshot['prize'] => (p === 'primero' ? 'segundo' : 'primero')
+
+/**
+ * Llama a `reload` y observa el estado en TODOS los avisos y en varios turnos de microtareas (un almacén puede vaciar
+ * datos tras un `await` interno: una sola lectura síncrona no lo vería). Exige que se conserven los datos viejos, y
+ * que la promesa no rechace; el rechazo se recoge al instante para que, si fallan antes las aserciones, no quede una
+ * promesa rechazada sin manejar que oculte la causa. Devuelve la instantánea final.
+ */
+async function recargarObservando(store: Store, mensajeSiRechaza: (detalle: string) => string, momento: string): Promise<Snapshot> {
+  const vistos: Snapshot[] = []
+  const cancelar = store.subscribe(() => vistos.push(store.getSnapshot()))
+  const resultado = store.actions.reload().then(
+    () => null,
+    (error: unknown) => error as Error,
+  )
+  vistos.push(store.getSnapshot())
+  for (let turno = 0; turno < 10; turno += 1) {
+    await Promise.resolve()
+    vistos.push(store.getSnapshot())
+  }
+  const error = await resultado
+  cancelar()
+  vistos.push(store.getSnapshot())
+  if (error) throw new Error(mensajeSiRechaza(error.message))
+  vistos.forEach((v, i) => {
+    expect(v.stats, `${momento} se vació \`stats\` (observación ${i}): deben conservarse los datos viejos`).not.toBeNull()
+    expect(v.ready, `${momento} \`ready\` volvió a false (observación ${i}): deben conservarse los datos viejos`).toBe(true)
+    expect(v.sorteos, `${momento} se vaciaron los sorteos (observación ${i})`).not.toHaveLength(0)
+  })
+  return store.getSnapshot()
+}
 
 /** Ejecuta `fn` y, si falla, dice qué pieza falló al usarse suelta: la causa típica es que dependa de `this`. */
 function suelta<T>(nombre: string, fn: () => T): T {
@@ -77,18 +111,31 @@ export const comprobaciones: Record<string, Comprobacion> = {
     }
   },
 
-  /** `subscribe` avisa tras cada cambio y devuelve la función que cancela. */
+  /**
+   * `subscribe` avisa tras el cambio que hace CADA acción de escritura, y la escucha ya ve el estado nuevo
+   * (si avisara antes de actualizar, `useSyncExternalStore` leería el valor viejo y no repintaría). Devuelve la
+   * función que cancela.
+   */
   suscripcion(crear) {
-    const store = crear()
-    const escucha = vi.fn()
-    const cancelar = store.subscribe(escucha)
-    expect(typeof cancelar, 'subscribe debe devolver la función que cancela').toBe('function')
-    store.actions.setUseML(!store.getSnapshot().useML)
-    expect(escucha, 'no avisó tras un cambio').toHaveBeenCalled()
-    cancelar()
-    escucha.mockClear()
-    store.actions.setUseML(!store.getSnapshot().useML)
-    expect(escucha, 'siguió avisando tras cancelar la suscripción').not.toHaveBeenCalled()
+    const cambios: Array<[string, (s: Store) => void, keyof Snapshot, (a: Snapshot) => unknown]> = [
+      ['setUseML', (s) => s.actions.setUseML(!s.getSnapshot().useML), 'useML', (a) => !a.useML],
+      ['setPrize', (s) => s.actions.setPrize(otroPremio(s.getSnapshot().prize)), 'prize', (a) => otroPremio(a.prize)],
+      ['setStatsPrize', (s) => s.actions.setStatsPrize(otroPremio(s.getSnapshot().statsPrize)), 'statsPrize', (a) => otroPremio(a.statsPrize)],
+    ]
+    for (const [nombre, ejecutar, campo, esperado] of cambios) {
+      const store = crear()
+      const antes = store.getSnapshot()
+      const vistos: Snapshot[] = []
+      const cancelar = store.subscribe(() => vistos.push(store.getSnapshot()))
+      expect(typeof cancelar, 'subscribe debe devolver la función que cancela').toBe('function')
+      ejecutar(store)
+      expect(vistos.length, `«${nombre}» no avisó tras un cambio`).toBeGreaterThan(0)
+      expect(vistos.at(-1)![campo], `«${nombre}» avisó antes de actualizar el estado: la escucha leyó el valor viejo`).toEqual(esperado(antes))
+      cancelar()
+      vistos.length = 0
+      ejecutar(store)
+      expect(vistos, `«${nombre}» siguió avisando tras cancelar la suscripción`).toHaveLength(0)
+    }
   },
 
   /**
@@ -144,22 +191,22 @@ export const comprobaciones: Record<string, Comprobacion> = {
     expect(cargado.stats, 'el control de carga no dejó `stats` con datos: la prueba no probaría nada').not.toBeNull()
     expect(cargado.ready, 'el control de carga no dejó `ready` en true').toBe(true)
 
-    const enCurso = store.actions.reload()
-    const durante = store.getSnapshot()
-    expect(durante.stats, 'durante la recarga se vació `stats`: deben conservarse los datos viejos').not.toBeNull()
-    expect(durante.ready, 'durante la recarga `ready` volvió a false: deben conservarse los datos viejos').toBe(true)
-    expect(durante.sorteos, 'durante la recarga se vaciaron los sorteos').not.toHaveLength(0)
-    await enCurso.catch((error: unknown) => {
-      throw new Error(`reload rechazó en una recarga correcta: no debe rechazar (${(error as Error).message})`)
-    })
+    // Recarga correcta: se observa el estado en cada aviso y en varios turnos de microtareas, no en un solo instante.
+    const trasExito = await recargarObservando(store, (n) => `reload rechazó en una recarga correcta: no debe rechazar (${n})`, 'durante la recarga')
+    expect(trasExito.stats, 'tras una recarga correcta `stats` quedó vacío').not.toBeNull()
+    expect(trasExito.ready, 'tras una recarga correcta `ready` quedó en false').toBe(true)
+    expect(trasExito.sorteos, 'tras una recarga correcta quedaron los sorteos vacíos').not.toHaveLength(0)
 
+    // Recarga fallida: se traga el fallo y NO cambia nada (ningún campo), ni durante ni después.
     control.fallarSiguienteRecarga(store)
-    await store.actions.reload().catch((error: unknown) => {
-      throw new Error(`reload rechazó cuando falló la carga: no debe rechazar, debe resolverse y conservar los datos (${(error as Error).message})`)
-    })
-    const trasFallo = store.getSnapshot()
-    expect(trasFallo.stats, 'tras una recarga fallida se perdieron los datos de `stats`').not.toBeNull()
-    expect(trasFallo.ready, 'tras una recarga fallida `ready` volvió a false').toBe(true)
+    const trasFallo = await recargarObservando(
+      store,
+      (n) => `reload rechazó cuando falló la carga: no debe rechazar, debe resolverse y conservar los datos (${n})`,
+      'durante la recarga fallida',
+    )
+    for (const campo of CAMPOS) {
+      expect(trasFallo[campo], `una recarga fallida cambió «${campo}»: debe dejar todo como estaba`).toBe(trasExito[campo])
+    }
     expect(store.getSnapshot(), 'la instantánea no es estable tras la recarga').toBe(trasFallo)
   },
 }

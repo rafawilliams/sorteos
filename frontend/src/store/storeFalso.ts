@@ -64,7 +64,10 @@ export function crearStoreFalso(inicial: Partial<Snapshot> = {}): StoreFalso {
       },
       async reload() {
         registrar('reload')
-        fallaLaRecarga = false // un fallo se registraría y se tragaría: los datos viejos se quedan
+        if (fallaLaRecarga) {
+          fallaLaRecarga = false
+          registrar('reload:fallo-tragado') // el fallo se registra y se traga: los datos viejos se quedan
+        }
       },
     },
     cambiar,

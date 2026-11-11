@@ -63,9 +63,12 @@ export interface AccionesStore {
   /**
    * Vuelve a cargar sorteos y estadísticas (tras actualizar los datos). Mientras dura se conservan los datos viejos
    * (`stats` y `ready` no vuelven a `null` ni a `false`) hasta que llegan los nuevos. La promesa se resuelve cuando la
-   * carga termina, con éxito o sin él, y nunca rechaza: un fallo se registra y los datos viejos se quedan, como en
-   * `static/app.js`. Diferencia aceptada: `app.js` además repinta sus propios contenedores como esqueletos mientras
-   * recarga (`showSkeletons`); las islas conservan los datos a la vista.
+   * carga termina, con éxito o sin él, y nunca rechaza: un fallo se registra y los datos viejos se quedan. Un fallo
+   * es una red caída o una respuesta de error (p. ej. un 500 con cuerpo JSON): ese cuerpo NO sustituye a `stats`.
+   * Esto es MÁS estricto que `static/app.js`, que asigna `stats` sin comprobar la respuesta HTTP; `LegacyStore` debe
+   * ignorar cualquier cuerpo sin `total_sorteos` numérico y conservar el estado anterior. Otra diferencia aceptada:
+   * `app.js` repinta sus propios contenedores como esqueletos mientras recarga (`showSkeletons`); las islas
+   * conservan los datos a la vista.
    */
   reload(): Promise<void>
 }
