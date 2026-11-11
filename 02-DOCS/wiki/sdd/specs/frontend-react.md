@@ -6,13 +6,13 @@ tags: [sdd, spec]
 timestamp: 2026-11-11T12:00:00Z
 topic: sdd
 slug: frontend-react
-status: clarified
+status: planned (aprobada 2026-11-11 por el dueño: "el backend queda en Python y Flask API, continúa con el plan")
 branch: feat/react-frontend
 ---
 
 # Spec — Migrar el front-end a React
 
-> Slug: `frontend-react` · Status: clarified · Created: 2026-11-11
+> Slug: `frontend-react` · Status: planned · Created: 2026-11-11
 > Inherits: [constitution](../constitution.md) (`v1.0.0`, que esta spec enmienda en el principio 1 y en los que lo referencian)
 
 ## Problem & why
