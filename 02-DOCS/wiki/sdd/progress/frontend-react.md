@@ -304,3 +304,16 @@ Todos sobre la suite de contrato, es decir, sobre lo que T015 y T052 tendrán qu
 
 ## Decision queue (adiciones — etapa 1)
 - [review-after] Q6 — T015/L60: `renderFull` vuelve a llamar a `init*Tabs`, así que cada `reload()` desde React duplica listeners de las pestañas de premio/categoría (inocuo para el estado, cuesta repintados). Recomendación: guardar con una marca en el nodo al migrar esas pestañas (T046/T052) o antes si molesta. Evidencia: ledger L60.
+
+## T016 — 2026-11-11
+- status: complete (commits 75c2748 + 8f5287f)
+- red/green: 13 pruebas fallaron contra los esqueletos vacíos (por aserción) antes de implementar; ahora `montaje.test.tsx`, `Skeleton.test.tsx`, `main.test.ts`: 291 pruebas en todo el front, `typecheck` 0, `npm audit` 0. 9 mutantes de `montaje`/`Skeleton` detectados (uno equivalente —`Math.max` redundante— se quitó; uno se mató con una prueba nueva).
+- files: frontend/src/{main.tsx,montaje.tsx,main.test.ts,montaje.test.tsx}, frontend/src/components/{Skeleton.tsx,Skeleton.test.tsx}
+- desviación declarada: la lógica de montaje vive en `montaje.tsx` (no en `main.tsx`) para probarla sin efectos secundarios; `main.tsx` solo hace glob + `montarIslas`. «FE test main» lo cubren `main.test.ts` y `montaje.test.tsx`.
+- comprobado con el servidor (puerto 5001, base sembrada) y Playwright: `window.LP` presente, `dist/app.js` 200, sin aviso de «interfaz no construida», 0 errores de consola, 0 peticiones fallidas. Una isla temporal con su `.test.tsx` en `tabs/`: el bundle incluye la isla y no la prueba.
+- risk: tier 1 — 1 revisor
+- review: ronda 1 → 4 hallazgos (1 should-fix, 2 nits, 1 question). L62–L64 arreglados (glob con exclusión `!./tabs/*.test.tsx`; marca de montado deshecha si `createRoot` lanza; `main.test.ts`); L65 aparcado (Q7).
+- controls: tests ✅ build ✅ security ✅ (audit 0) traceability ✅ (AC2). Ronda 2 de 3; los arreglos no se han vuelto a revisar con un revisor aparte.
+
+## Decision queue (adiciones — etapa 1)
+- [review-after] Q7 — T016/L65: `Skeleton` replica `skelCard` sin `aria-busy` ni texto para lectores de pantalla (una isla puede estar en carga 50–100 s). Recomendación: que cada isla ponga `aria-busy="true"` en su contenedor mientras `stats` es nulo (se decide al migrar la primera isla con datos, T017, y se aplica igual a todas), sin cambiar el marcado de `Skeleton`. Evidencia: ledger L65.
