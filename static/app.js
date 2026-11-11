@@ -129,7 +129,6 @@ function activateNavTab(tab){
   _lpEmit('activeTab');
   if(tab.dataset.tab==='precision') loadBacktesting();
   if(tab.dataset.tab==='seguimiento') loadSeguimiento();
-  if(tab.dataset.tab==='gaps') loadGaps();
   triggerReveals();
 }
 
@@ -904,80 +903,6 @@ function renderCompResults(d){
     if(compChartInstance)compChartInstance.destroy();
     compChartInstance=new Chart(ctx.getContext('2d'),{type:'bar',data:{labels:MONTHS,datasets},options:chartOpts()});
   }
-}
-
-// GAPS ANALYSIS
-async function loadGaps(){
-  const container=document.getElementById('gapsContent');
-  if(!container)return;
-  if(container.dataset.loaded==='1'){return;}
-  container.innerHTML='<div class="loader-wrap" style="padding:40px;"><div class="spinner"></div><p>Calculando gaps...</p></div>';
-  try{
-    const res=await fetch('/api/gaps');
-    const d=await res.json();
-    renderGaps(d);
-    container.dataset.loaded='1';
-  }catch(e){container.innerHTML='<p style="color:#f87171;">Error cargando gaps</p>';}
-}
-function renderGaps(d){
-  const ov=d.overdue_numbers||[];
-  const ot=d.ontime_numbers||[];
-  const ovEnd=d.overdue_endings||[];
-
-  let h=`<div class="grid-2" style="margin-bottom:20px;">
-    <div class="stat-card"><div class="stat-value">${d.total_sorteos?.toLocaleString()}</div><div class="stat-label">Sorteos Analizados</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:#f87171;">${ov.length}</div><div class="stat-label">Números "Vencidos"</div></div>
-  </div>`;
-
-  // Overdue numbers
-  h+=`<div class="card reveal">
-    <div class="card-header"><h3 class="card-title">Números Vencidos</h3><span class="card-badge badge-hot">Ratio > 1</span></div>
-    <p style="color:var(--text-muted);font-size:0.8rem;margin-bottom:12px;">Números frecuentes (5+ apariciones) cuyo gap actual supera su promedio histórico. <strong>Ratio</strong> = gap actual ÷ gap promedio.</p>
-    <div style="overflow-x:auto;">
-    <table class="heatmap-table" role="table">
-      <thead><tr><th>Número</th><th>Gap Actual</th><th>Gap Promedio</th><th>Ratio</th><th>Total</th><th>Estado</th></tr></thead><tbody>`;
-  ov.forEach(g=>{
-    const severity=g.ratio>=2?'#ef4444':g.ratio>=1.5?'#f97316':'#eab308';
-    const bar=Math.min(g.ratio/3*100,100);
-    h+=`<tr>
-      <td style="font-family:'JetBrains Mono';font-weight:700;color:var(--gold-400);">${g.number}</td>
-      <td style="text-align:center;font-family:'JetBrains Mono';">${g.gap}</td>
-      <td style="text-align:center;font-family:'JetBrains Mono';">${g.avg_gap}</td>
-      <td style="text-align:center;"><span style="background:${severity}30;color:${severity};padding:2px 8px;border-radius:8px;font-weight:700;font-family:'JetBrains Mono';">${g.ratio}x</span></td>
-      <td style="text-align:center;">${g.count}</td>
-      <td><div style="background:var(--surface-2);border-radius:4px;height:8px;width:80px;"><div style="background:${severity};height:100%;border-radius:4px;width:${bar}%;"></div></div></td>
-    </tr>`;
-  });
-  h+='</tbody></table></div></div>';
-
-  // Overdue endings
-  h+=`<div class="card reveal" style="margin-top:20px;">
-    <div class="card-header"><h3 class="card-title">Terminaciones Vencidas</h3><span class="card-badge badge-hot">Ratio > 1</span></div>
-    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;">`;
-  ovEnd.forEach(e=>{
-    const severity=e.ratio>=2?'#ef4444':e.ratio>=1.5?'#f97316':'#eab308';
-    h+=`<div style="background:var(--surface-2);padding:10px 16px;border-radius:12px;text-align:center;min-width:80px;border-left:3px solid ${severity};">
-      <div style="font-family:'JetBrains Mono';font-size:1.3rem;font-weight:700;color:var(--text-primary);">${e.ending}</div>
-      <div style="font-size:0.7rem;color:var(--text-muted);">Gap: ${e.gap}</div>
-      <div style="font-size:0.75rem;font-weight:600;color:${severity};">${e.ratio}x</div>
-    </div>`;
-  });
-  h+='</div></div>';
-
-  // On-time numbers (recently appeared)
-  h+=`<div class="card reveal" style="margin-top:20px;">
-    <div class="card-header"><h3 class="card-title">Números Recientes</h3><span class="card-badge badge-green">Ratio ≤ 1</span></div>
-    <p style="color:var(--text-muted);font-size:0.8rem;margin-bottom:12px;">Números frecuentes que aparecieron recientemente (dentro de su ciclo promedio).</p>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;">`;
-  ot.slice(0,20).forEach(g=>{
-    h+=`<span style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);padding:6px 12px;border-radius:10px;font-family:'JetBrains Mono';font-size:0.85rem;">
-      ${g.number} <small style="color:var(--text-muted);">gap:${g.gap} · ${g.ratio}x</small>
-    </span>`;
-  });
-  h+='</div></div>';
-
-  document.getElementById('gapsContent').innerHTML=h;
-  triggerReveals();
 }
 
 // MONTHLY RECOMMENDATION
