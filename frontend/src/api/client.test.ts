@@ -56,8 +56,10 @@ describe.each([
     expect(await llamar()).toEqual({ ok: false, mensaje: RED })
   })
 
-  it('un 200 con un cuerpo que no es un objeto → fallo, no datos', async () => {
+  it('un 200 con un cuerpo que no es un objeto (null o un array) → fallo, no datos', async () => {
     stubFetch({ cuerpo: null })
+    expect((await llamar()).ok).toBe(false)
+    stubFetch({ cuerpo: [] })
     expect((await llamar()).ok).toBe(false)
   })
 })
@@ -119,6 +121,14 @@ describe('formato de las consultas', () => {
     const fn = stubFetch({ cuerpo: fixture('backtesting') })
     await getBacktesting(200.9)
     expect(url(fn)).toBe('/api/backtesting?last_n=200')
+  })
+
+  it('backtesting: un last_n no finito se sustituye por 500', async () => {
+    const fn = stubFetch({ cuerpo: fixture('backtesting') })
+    await getBacktesting(Number.NaN)
+    await getBacktesting(Number.POSITIVE_INFINITY)
+    expect(url(fn, 0)).toBe('/api/backtesting?last_n=500')
+    expect(url(fn, 1)).toBe('/api/backtesting?last_n=500')
   })
 
   it('las lecturas usan GET: fetch se llama solo con la ruta', async () => {

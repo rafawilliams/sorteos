@@ -24,6 +24,7 @@ export const MENSAJE_RED = 'Error de conexión'
 export const MENSAJE_SERVIDOR = 'Error del servidor'
 
 const LARGO_MAXIMO_ERROR_PUBLICO = 200
+const ULTIMOS_POR_DEFECTO = 500
 
 /** El `error` del servidor si es un texto razonable; si no, `undefined` (y se usa el genérico). */
 function errorPublico(cuerpo: unknown): string | undefined {
@@ -48,7 +49,7 @@ async function pedir<T>(ruta: string, publico = false): Promise<Result<T>> {
   }
   const propio = publico ? errorPublico(cuerpo) : undefined
   if (!res.ok) return { ok: false, mensaje: propio ?? MENSAJE_SERVIDOR }
-  if (typeof cuerpo !== 'object' || cuerpo === null) return { ok: false, mensaje: MENSAJE_SERVIDOR }
+  if (typeof cuerpo !== 'object' || cuerpo === null || Array.isArray(cuerpo)) return { ok: false, mensaje: MENSAJE_SERVIDOR }
   if (propio !== undefined) return { ok: false, mensaje: propio } // un 200 con `error`, como comprobaba app.js
   return { ok: true, data: cuerpo as T }
 }
@@ -62,7 +63,8 @@ export function getSeguimiento(): Promise<Result<Seguimiento>> {
 }
 
 export function getBacktesting(lastN: number): Promise<Result<Backtesting>> {
-  return pedir(`/api/backtesting?last_n=${Math.trunc(lastN)}`)
+  // Un valor no finito se sustituye por el que el servidor usa por defecto, en vez de mandar `last_n=NaN`.
+  return pedir(`/api/backtesting?last_n=${Number.isFinite(lastN) ? Math.trunc(lastN) : ULTIMOS_POR_DEFECTO}`)
 }
 
 export function comparar(numeros: string[]): Promise<Result<Comparacion>> {
