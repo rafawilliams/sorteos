@@ -47,3 +47,8 @@
 - Decisión: relleno con ceros prohibido solo sobre premios; excepción acotada al número que teclea el usuario en el Simulador.
 - Decisión: descubrimiento automático de islas (`import.meta.glob`); se quitan los `[P]` que compartían archivos.
 - Cambio de spec (validado por el dueño al pedir la corrección): el armazón migra al final, no al principio.
+
+## 2026-11-11 — sdd-init: calibración del runtime SDD
+- Creado `02-DOCS/wiki/sdd/config.yaml`: strict TDD con pytest, modo interactivo, enrutado de modelos apagado.
+- Presupuesto de revisión: el dueño eligió 900 líneas por PR (opciones: 400 por defecto o 900); el presupuesto de archivos sube de 12 a 25 por coherencia. Entrega `ask-on-risk`.
+- Los comandos de front (tipos, pruebas, build) se añadirán a `testing.commands` con la tarea T002.
