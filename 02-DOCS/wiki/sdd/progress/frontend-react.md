@@ -350,3 +350,13 @@ Todos sobre la suite de contrato, es decir, sobre lo que T015 y T052 tendrán qu
 - risk: tier 1 — 1 revisor
 - review: ronda 1 → VERDICT pass, 3 hallazgos (2 nits, 1 question), todos intencionales: la guardia es por texto (un comentario con el nombre retirado bloquea; una concatenación `'gaps'+'Content'` no se ve; no vigila un `cargarGaps` con otro nombre). El plan §5 pide solo vigilar ids retirados.
 - controls: tests ✅ build ✅ security n/a traceability ✅ (AC10).
+
+## T019 — 2026-11-11
+- status: complete (aprobada por el dueño: «Aprobadas»)
+- capturas `gaps-oscuro` y `gaps-claro` generadas con `frontend/scripts/capturas.mjs --solo gaps` contra el servidor 5001 y la base sembrada (600 sorteos); deterministas (dos ejecuciones, 0 píxeles de diferencia).
+- frente a la referencia (`02-DOCS/attachments/react-baseline/`): difieren el 0,27 % (oscuro) y el 0,58 % (claro) de los píxeles. Causa: el borde de la primera tarjeta, resaltado en la referencia por `.card:hover` (el puntero estaba encima al capturar), y 5–40 px de antialiasing en esquinas de fichas. Ninguna procede de la isla.
+- verificación con navegador real (Playwright): flechas, Inicio y Fin de la barra (gaps → simulador → gaps → predicciones → seguimiento), el contenido de Gaps persiste al volver sin nueva petición, el tema alterna (`window.LP` y `data-theme` coinciden, tarjeta blanca en claro), región con `aria-label` «Análisis de gaps», 0 errores de consola. Gaps no tiene subpestañas.
+- risk: tier 1, sin código nuevo.
+
+## Etapa 1 (T008–T019) completa
+Puente `window.LP`, `LegacyStore`, hooks, cliente de API, fixtures y contrato, montaje de islas y primera pestaña migrada (Gaps). Pendiente de la etapa: abrir su PR (apilado sobre #37, que aún espera el merge del dueño).
