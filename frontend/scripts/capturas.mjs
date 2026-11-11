@@ -11,6 +11,7 @@
 
 import { mkdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { chromium } from 'playwright'
 
 export const PESTAÑAS = [
@@ -99,7 +100,7 @@ export async function capturar({ url, salida, pestañas, temas }) {
   return hechas
 }
 
-if (import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}` || process.argv[1]?.endsWith('capturas.mjs')) {
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   try {
     const opciones = leerArgumentos(process.argv.slice(2))
     const hechas = await capturar(opciones)
