@@ -277,3 +277,17 @@ Todos sobre la suite de contrato, es decir, sobre lo que T015 y T052 tendrán qu
 - mutantes de la suite (6 de 6 que sobrevivían, ahora detectados): `subscribe` como método, acción como método, sin identidad de `subscribe` tras cambios, sin `reload` en la identidad, sin comprobar `stats` durante la recarga, nada tras un fallo, y solo el almacén vacío.
 - red/green: 12 pruebas negativas fallaron contra el esqueleto; 51 pruebas en `store`, 232 en todo el front. `typecheck` 0.
 - esta era la ronda 2 de 3.
+
+### Revisión de T014 — ronda 3 (la última; 2 should-fix, 2 nits, 1 question) — 2026-11-11
+- should-fix L50 (arreglado): `suscripcion` solo probaba `setUseML`. Ahora comprueba cada setter (`setUseML`, `setPrize`, `setStatsPrize`), que avise tras el cambio y que la escucha ya lea el valor NUEVO (si avisara antes de actualizar, `useSyncExternalStore` leería el viejo). Defectos nuevos: un setter que no avisa (nombrado en el mensaje) y uno que avisa antes de actualizar.
+- should-fix L51 (arreglado): la conservación de datos durante `reload` se medía en un instante. Ahora se observa en cada aviso y en 10 turnos de microtareas; defectos nuevos: `stats` vacío tras un `await`, tras un `setTimeout` (solo lo ve la escucha) y sin avisar (solo lo ven las lecturas a intervalos). Comprobado: quitar cualquiera de los dos mecanismos hace caer una prueba.
+- nit L52 (arreglado): tras una recarga fallida se comprueban TODOS los campos por referencia, no solo `stats` y `ready`; defectos nuevos: vacía los sorteos, cambia un campo ajeno y sustituye `stats` por una copia igual.
+- question L53 (arreglada): la documentación de `reload` reconoce que es MÁS estricta que `app.js` ante un fallo HTTP con cuerpo JSON (un 500 no puede ocupar el lugar de `stats`) y el `ControlDeCarga` dice que `fallarSiguienteRecarga` debe simular también una respuesta de error.
+- nit L54 (arreglado): el fallo de recarga del doble ya no es estado muerto: se registra (`reload:fallo-tragado`) y tiene prueba; el almacén manual cuenta los fallos tragados.
+- nit L55 (arreglado): el rechazo de `reload` se recoge al instante (`.then(() => null, e => e)`) para que no quede una promesa rechazada sin manejar si antes fallan las aserciones.
+- red/green: 7 pruebas fallaron antes de implementar; 67 en `store`, 248 en todo el front, `typecheck` 0.
+- controls T014: tests ✅ build n/a security n/a traceability ✅ (AC2) — 3 rondas (el límite del ledger), 17 hallazgos cerrados. status T014: **complete**.
+- **Límite de rondas:** esta era la 3.ª y última; los arreglos de esta ronda no se han vuelto a revisar. Se anota en la cola de decisiones.
+
+## Decision queue (adiciones — etapa 1)
+- [review-after] Q5 — Los arreglos de la ronda 3 de T014 (la suite de contrato del Store: setters, observación continua de `reload`, campos tras un fallo) no tuvieron una cuarta revisión porque el ledger limita a 3 rondas; revisarlos en la revisión de cierre de la rama o al ejercitar la suite con `LegacyStore` (T015), evidencia: 67 pruebas en `store`, 20 almacenes defectuosos y mutantes comprobados, T014
