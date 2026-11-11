@@ -3,27 +3,27 @@ type: constitution
 title: sorteos — Constitution
 description: Principios innegociables que obedecen todas las fases rsc-sdd.
 tags: [sdd, constitution]
-timestamp: 2026-11-01T12:16:00Z
+timestamp: 2026-11-11T16:00:00Z
 topic: sdd
-version: v1.0.0
+version: v2.0.0
 ---
 
 # sorteos — Constitution
 
-> Version: v1.0.0 · Ratified: 2026-11-01 · Last amended: 2026-11-01
+> Version: v2.0.0 · Ratified: 2026-11-01 · Last amended: 2026-11-11
 > Los principios innegociables que obedecen todas las fases rsc-sdd.
 
 ## 1. Stack canon
 
-1. **Runtime y lenguajes:** Python 3.13 en backend y JavaScript vanilla (ES6+) con CSS nativo en frontend, sin bundlers ni frameworks JS. Verificado en `.github/workflows/tests.yml`.
-2. **Frameworks fijos:** Flask (API REST), SQLAlchemy + MariaDB 11 (persistencia), scikit-learn (`HistGradientBoostingClassifier` para ML) y Chart.js (visualización). Cambiar cualquiera de ellos requiere enmienda MAJOR.
-3. **Dependencias:** todas las dependencias de producción y desarrollo se fijan con versión exacta (`==`) en `requirements.txt` y `requirements-dev.txt`.
+1. **Runtime y lenguajes:** Python 3.13 en backend y TypeScript con React en frontend (carpeta `frontend/`, build con Vite, versión de Node fijada en `.nvmrc`), con CSS nativo y sin preprocesadores. Mientras dure la migración (spec `frontend-react`) conviven `static/app.js` y las islas React; al terminar solo queda React. Verificado en `.github/workflows/tests.yml` y `frontend/package.json`.
+2. **Frameworks fijos:** Flask (API REST), SQLAlchemy + MariaDB 11 (persistencia), scikit-learn (`HistGradientBoostingClassifier` para ML), React con Vite y Vitest (interfaz y sus pruebas) y Chart.js (visualización). Cambiar cualquiera de ellos requiere enmienda MAJOR.
+3. **Dependencias:** todas las dependencias de producción y desarrollo se fijan con versión exacta: `==` en `requirements.txt` y `requirements-dev.txt`, y en `frontend/` versiones sin `^` ni `~` más `package-lock.json`.
 
 ## 2. Quality bar
 
 4. **Suite de pruebas limpia:** todo cambio debe pasar `pytest -q -W error::SyntaxWarning` sin fallos ni warnings de sintaxis.
-5. **Auditoría de dependencias:** `pip-audit -r requirements.txt --ignore-vuln PYSEC-2026-217` debe pasar sin vulnerabilidades en cada PR (`.github/workflows/tests.yml`).
-6. **Validez de frontend:** cualquier cambio en `static/app.js` debe validar sintaxis con `node -e "new Function(require('fs').readFileSync('static/app.js','utf8'))"`.
+5. **Auditoría de dependencias:** `pip-audit -r requirements.txt --ignore-vuln PYSEC-2026-217` y, en `frontend/`, `npm audit --audit-level=high` deben pasar sin vulnerabilidades en cada PR (`.github/workflows/tests.yml`).
+6. **Validez de frontend:** cualquier cambio en `frontend/` debe pasar `npm --prefix frontend run typecheck`, `npm --prefix frontend test -- --run` y `npm --prefix frontend run build`. Mientras exista `static/app.js`, además valida su sintaxis con `node -e "new Function(require('fs').readFileSync('static/app.js','utf8'))"`.
 
 ## 3. Conventions
 
@@ -43,7 +43,7 @@ version: v1.0.0
 
 ## 6. UX / accessibility floor
 
-14. **Accesibilidad e interfaz:** toda vista o pestaña interactiva mantiene roles ARIA (`tablist`, `tab`, `tabpanel`, `aria-selected`, `aria-live`), navegación completa por teclado (flechas, `Home`/`End`, `focus-visible`) y compatibilidad visual en modo oscuro y claro (`[data-theme="light"]` + `isLight()`).
+14. **Accesibilidad e interfaz:** toda vista o pestaña interactiva mantiene roles ARIA (`tablist`, `tab`, `tabpanel`, `aria-selected`, `aria-live`), navegación completa por teclado (flechas, `Home`/`End`, `focus-visible`) y compatibilidad visual en modo oscuro y claro (`[data-theme="light"]` en `<html>`, persistido en `localStorage['theme']`).
 
 ## 7. Performance budgets
 
@@ -58,7 +58,7 @@ version: v1.0.0
 Un cambio se fusiona solo cuando TODO se cumple:
 
 - [ ] `pytest -q -W error::SyntaxWarning` en verde (principio 4).
-- [ ] `pip-audit` sin vulnerabilidades nuevas y sintaxis JS válida si aplica (principios 5–6).
+- [ ] `pip-audit` y `npm audit --audit-level=high` sin vulnerabilidades nuevas; si hay cambios en `frontend/`, `typecheck`, `test` y `build` en verde, y la sintaxis de `static/app.js` válida mientras exista (principios 5–6).
 - [ ] Formatos de premios (2/4/5 cifras), fechas ISO y errores opacos respetados (principios 7–8).
 - [ ] En rama dedicada, con commits gitmoji, autoría humana y PR en verde (principios 9–11).
 - [ ] Sin secretos en código ni regresiones en `X-Update-Token` / `FLASK_DEBUG` (principios 12–13).
@@ -66,9 +66,21 @@ Un cambio se fusiona solo cuando TODO se cumple:
 - [ ] Caché de 5 min y persistencia de `predictor.joblib` intactos (principio 15).
 - [ ] Decisiones y documentos SDD/FTD actualizados en `02-DOCS/wiki/` (principio 16).
 
+## Principios reemplazados (v1.0.0)
+
+Texto de los principios antes de la v2.0.0, conservado como registro. No vigente.
+
+- ~~1. **Runtime y lenguajes:** Python 3.13 en backend y JavaScript vanilla (ES6+) con CSS nativo en frontend, sin bundlers ni frameworks JS. Verificado en `.github/workflows/tests.yml`.~~ — reemplazado el 2026-11-11 (v2.0.0).
+- ~~2. **Frameworks fijos:** Flask (API REST), SQLAlchemy + MariaDB 11 (persistencia), scikit-learn (`HistGradientBoostingClassifier` para ML) y Chart.js (visualización). Cambiar cualquiera de ellos requiere enmienda MAJOR.~~ — reemplazado el 2026-11-11 (v2.0.0).
+- ~~3. **Dependencias:** todas las dependencias de producción y desarrollo se fijan con versión exacta (`==`) en `requirements.txt` y `requirements-dev.txt`.~~ — reemplazado el 2026-11-11 (v2.0.0).
+- ~~5. **Auditoría de dependencias:** `pip-audit -r requirements.txt --ignore-vuln PYSEC-2026-217` debe pasar sin vulnerabilidades en cada PR (`.github/workflows/tests.yml`).~~ — reemplazado el 2026-11-11 (v2.0.0).
+- ~~6. **Validez de frontend:** cualquier cambio en `static/app.js` debe validar sintaxis con `node -e "new Function(require('fs').readFileSync('static/app.js','utf8'))"`.~~ — reemplazado el 2026-11-11 (v2.0.0).
+- ~~14. **Accesibilidad e interfaz:** toda vista o pestaña interactiva mantiene roles ARIA (`tablist`, `tab`, `tabpanel`, `aria-selected`, `aria-live`), navegación completa por teclado (flechas, `Home`/`End`, `focus-visible`) y compatibilidad visual en modo oscuro y claro (`[data-theme="light"]` + `isLight()`).~~ — reemplazado el 2026-11-11 (v2.0.0).
+
 ## Amendment log (append-only)
 
 | Date | Version | Change | Why |
 |------|---------|--------|-----|
 | 2026-10-31 | draft | Draft generated by `rsc onboard`. | The SDD floor needs a constitution; ratification is the `constitution` phase's. |
 | 2026-11-01 | v1.0.0 | Ratified initial constitution (16 principles + DoD); fixed workflow from `main` to branch + PR. | Formalizar las reglas reales tras los PRs #1–#14. |
+| 2026-11-11 | v2.0.0 | **MAJOR.** Principio 1 invertido (JavaScript vanilla sin frameworks → TypeScript con React); amplía 2 (React, Vite, Vitest), 3 (versiones exactas en `frontend/`), 5 (`npm audit`), 6 (typecheck, test y build) y 14 (quita `isLight()`); ajusta la definición de hecho. Las versiones anteriores quedan en «Principios reemplazados». | Spec [frontend-react](specs/frontend-react.md): migrar la interfaz a React por etapas. Ratificada por el dueño el 2026-11-11. |

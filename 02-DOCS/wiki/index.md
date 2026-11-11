@@ -20,7 +20,7 @@
 - [Verificación — Modularizar el backend (2026-11-02)](sdd/verifications/modularizar-backend-2026-11-02.md)
 - [Verificación — Mejoras de UI (2026-11-02)](sdd/verifications/mejoras-ui-esferas-2026-11-02.md)
 - [Decisiones SDD](sdd/decisions.md)
-- [Constitución (v1.0.0)](sdd/constitution.md)
+- [Constitución (v2.0.0)](sdd/constitution.md)
 
 ## ftd
 - [Documentos de tareas FTD](ftd/) — una página por cambio fusionado (PRs #1–#13).
