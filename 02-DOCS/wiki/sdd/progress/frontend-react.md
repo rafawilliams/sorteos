@@ -340,3 +340,13 @@ Todos sobre la suite de contrato, es decir, sobre lo que T015 y T052 tendrán qu
 
 ## Decision queue (adiciones — etapa 1)
 - [review-after] Q7 actualizada: en Gaps no se usa `aria-busy` (con `role="status"` y `aria-label` la carga se anuncia y `aria-busy` en el padre puede silenciarlo). Recomendación para las demás islas: mismo patrón (`role="status"` con nombre alrededor de los esqueletos), sin `aria-busy`.
+
+## T018 — 2026-11-11
+- status: complete (commit fe5d9a0)
+- red/green: la guardia falló en 3 aserciones sobre los archivos reales (`gapsContent` en app.js, `loadGaps`, `renderGaps`) antes de retirar el código; después 25 pruebas Python en verde (`test_ids_retirados` + `test_ui_assets`), 417 en toda la suite con base sembrada; 364 en el front; `typecheck` 0.
+- mutantes: reintroducir el id o la función en app.js, el id en style.css o en index.html, y quitar el marcador `data-react-root="gaps"`: los 5 hacen fallar la guardia.
+- files: static/app.js (−75 líneas: `loadGaps`, `renderGaps`, llamada en `activateNavTab`), tests/test_ids_retirados.py (detector probado con texto sintético: getElementById con ambas comillas, querySelector, plantilla, atributo, selector CSS; nombres parecidos no saltan)
+- `node new Function(app.js)` sin error; página real (5001, base sembrada): isla Gaps con 1 petición y 0 errores de consola.
+- risk: tier 1 — 1 revisor
+- review: ronda 1 → VERDICT pass, 3 hallazgos (2 nits, 1 question), todos intencionales: la guardia es por texto (un comentario con el nombre retirado bloquea; una concatenación `'gaps'+'Content'` no se ve; no vigila un `cargarGaps` con otro nombre). El plan §5 pide solo vigilar ids retirados.
+- controls: tests ✅ build ✅ security n/a traceability ✅ (AC10).
