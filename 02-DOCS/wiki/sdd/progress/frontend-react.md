@@ -103,3 +103,11 @@ Spec: [frontend-react](../specs/frontend-react.md) · Plan y tareas: [plan](../p
 - red: con stubs de `CSS_CAPTURA` y `comprobarBase`, 12 pruebas nuevas fallaron en aserciones. green: 19 pruebas en verde; typecheck 0; build 0.
 - comprobado contra el caso real del incidente: `capturas.mjs --url http://127.0.0.1:5000` termina con exit 1 y `sirve 9296 sorteos y se esperaban 600`, sin crear la carpeta de salida.
 - las 28 capturas se rehicieron. Revisadas a ojo, completas: `estadisticas-oscuro`, `terminaciones-oscuro` y `tendencias-claro` (las pestañas largas que antes salían con huecos).
+
+### Revisión de T006 — ronda 2 (1 should-fix, 3 nits, 1 question) — 2026-11-11
+- should-fix (L6, arreglado): el cableado `capturar` → `comprobarBase` no tenía prueba; borrar la guarda dejaba las pruebas en verde. Ahora `capturar` acepta `{ fetchFn, motor }` inyectables y dos pruebas comprueban que con una base distinta de la sembrada no se crea la carpeta ni se lanza el navegador, y que con la sembrada sí se lanza. Mutación comprobada: al borrar la llamada falla exactamente esa prueba.
+- nit L7 (cerrado `intentional`): la comprobación de opacidad no demuestra que la pestaña tenga contenido. Se corrigió la promesa del README para decir lo que de verdad comprueba y recordar que hay que mirar las capturas nuevas.
+- nit L8 (arreglado): `--sorteos` solo acepta enteros positivos (`0` y vacío se rechazan), con pruebas.
+- nit L9 (arreglado): la guarda usa un tiempo límite de 10 s.
+- question L10 (arreglado): una respuesta sin `total` da «respuesta inesperada» en vez de «sirve undefined sorteos».
+- red: 5 pruebas fallaron antes (con URL a la que nadie escucha, sin tocar el servidor real); green: 22 pruebas; typecheck 0; build 0.
