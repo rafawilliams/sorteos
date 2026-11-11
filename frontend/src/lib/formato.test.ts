@@ -48,12 +48,18 @@ describe('catClase', () => {
 })
 
 describe('formatDate', () => {
+  it('el entorno de pruebas corre en la zona horaria de Panamá (UTC-5), fijada en vite.config.ts', () => {
+    // Sin una zona fija, las pruebas de fechas no detectarían una lectura en UTC cuando el CI corre en UTC.
+    expect(new Date('2019-12-31T00:00:00Z').getDate()).toBe(30)
+  })
+
   it('da el día, el mes abreviado y el año en español de Panamá', () => {
     expect(formatDate('2019-10-02')).toMatch(/^2 oct\.? 2019$/)
     expect(formatDate('2026-01-15')).toMatch(/^15 ene\.? 2026$/)
   })
 
   it('no cambia de día según la zona horaria (la fecha se lee como local)', () => {
+    // Una fecha ISO sin hora se interpreta en UTC; con la zona de Panamá el 31 de diciembre pasaría al 30.
     expect(formatDate('2024-02-29')).toMatch(/^29 feb\.? 2024$/)
     expect(formatDate('2019-12-31')).toMatch(/^31 dic\.? 2019$/)
   })
