@@ -1,0 +1,228 @@
+{
+ "comparison": {
+  "best_method": "Estadístico",
+  "ml_better": false,
+  "ml_lift": 0.9,
+  "stat_lift": 0.97
+ },
+ "ml": {
+  "avg_lift_top1": 0.9,
+  "avg_top1_accuracy": 9.0,
+  "avg_top3_accuracy": 30.2,
+  "ending_random_top10": 10.0,
+  "ending_random_top5": 5.0,
+  "ending_top10_hit_rate": 9.0,
+  "ending_top5_hit_rate": 3.0,
+  "per_position": [
+   {
+    "avg_prob_actual": 9.8,
+    "lift_top1": 0.9,
+    "position": 0,
+    "random_baseline_top1": 10.0,
+    "random_baseline_top3": 30.0,
+    "top1_accuracy": 9.0,
+    "top3_accuracy": 29.8
+   },
+   {
+    "avg_prob_actual": 10.0,
+    "lift_top1": 0.98,
+    "position": 1,
+    "random_baseline_top1": 10.0,
+    "random_baseline_top3": 30.0,
+    "top1_accuracy": 9.8,
+    "top3_accuracy": 32.4
+   },
+   {
+    "avg_prob_actual": 10.0,
+    "lift_top1": 0.84,
+    "position": 2,
+    "random_baseline_top1": 10.0,
+    "random_baseline_top3": 30.0,
+    "top1_accuracy": 8.4,
+    "top3_accuracy": 29.8
+   },
+   {
+    "avg_prob_actual": 9.8,
+    "lift_top1": 0.88,
+    "position": 3,
+    "random_baseline_top1": 10.0,
+    "random_baseline_top3": 30.0,
+    "top1_accuracy": 8.8,
+    "top3_accuracy": 29.0
+   }
+  ],
+  "rolling_accuracy": [
+   {
+    "count": 2,
+    "month": "2018-02",
+    "top1_avg": 0.0,
+    "top3_avg": 25.0
+   },
+   {
+    "count": 24,
+    "month": "2018-03",
+    "top1_avg": 7.3,
+    "top3_avg": 33.3
+   },
+   {
+    "count": 27,
+    "month": "2018-04",
+    "top1_avg": 11.1,
+    "top3_avg": 29.6
+   },
+   {
+    "count": 27,
+    "month": "2018-05",
+    "top1_avg": 6.5,
+    "top3_avg": 29.6
+   },
+   {
+    "count": 24,
+    "month": "2018-06",
+    "top1_avg": 10.4,
+    "top3_avg": 30.2
+   },
+   {
+    "count": 27,
+    "month": "2018-07",
+    "top1_avg": 11.1,
+    "top3_avg": 22.2
+   },
+   {
+    "count": 27,
+    "month": "2018-08",
+    "top1_avg": 9.3,
+    "top3_avg": 31.5
+   },
+   {
+    "count": 27,
+    "month": "2018-09",
+    "top1_avg": 7.4,
+    "top3_avg": 28.7
+   },
+   {
+    "count": 27,
+    "month": "2018-10",
+    "top1_avg": 8.3,
+    "top3_avg": 33.3
+   },
+   {
+    "count": 24,
+    "month": "2018-11",
+    "top1_avg": 6.2,
+    "top3_avg": 38.5
+   },
+   {
+    "count": 27,
+    "month": "2018-12",
+    "top1_avg": 8.3,
+    "top3_avg": 28.7
+   },
+   {
+    "count": 27,
+    "month": "2019-01",
+    "top1_avg": 9.3,
+    "top3_avg": 29.6
+   },
+   {
+    "count": 24,
+    "month": "2019-02",
+    "top1_avg": 7.3,
+    "top3_avg": 30.2
+   },
+   {
+    "count": 27,
+    "month": "2019-03",
+    "top1_avg": 7.4,
+    "top3_avg": 29.6
+   },
+   {
+    "count": 24,
+    "month": "2019-04",
+    "top1_avg": 10.4,
+    "top3_avg": 29.2
+   },
+   {
+    "count": 27,
+    "month": "2019-05",
+    "top1_avg": 13.9,
+    "top3_avg": 38.9
+   },
+   {
+    "count": 27,
+    "month": "2019-06",
+    "top1_avg": 7.4,
+    "top3_avg": 30.6
+   },
+   {
+    "count": 27,
+    "month": "2019-07",
+    "top1_avg": 10.2,
+    "top3_avg": 27.8
+   },
+   {
+    "count": 24,
+    "month": "2019-08",
+    "top1_avg": 10.4,
+    "top3_avg": 33.3
+   },
+   {
+    "count": 27,
+    "month": "2019-09",
+    "top1_avg": 8.3,
+    "top3_avg": 23.1
+   },
+   {
+    "count": 3,
+    "month": "2019-10",
+    "top1_avg": 16.7,
+    "top3_avg": 16.7
+   }
+  ],
+  "total_evaluated": 500
+ },
+ "statistical": {
+  "avg_lift_top1": 0.97,
+  "avg_top1_accuracy": 9.7,
+  "avg_top3_accuracy": 30.2,
+  "per_position": [
+   {
+    "avg_prob_actual": 9.9,
+    "lift_top1": 0.9,
+    "position": 0,
+    "random_baseline_top1": 10.0,
+    "random_baseline_top3": 30.0,
+    "top1_accuracy": 9.0,
+    "top3_accuracy": 29.6
+   },
+   {
+    "avg_prob_actual": 10.1,
+    "lift_top1": 0.92,
+    "position": 1,
+    "random_baseline_top1": 10.0,
+    "random_baseline_top3": 30.0,
+    "top1_accuracy": 9.2,
+    "top3_accuracy": 33.4
+   },
+   {
+    "avg_prob_actual": 9.9,
+    "lift_top1": 1.04,
+    "position": 2,
+    "random_baseline_top1": 10.0,
+    "random_baseline_top3": 30.0,
+    "top1_accuracy": 10.4,
+    "top3_accuracy": 29.2
+   },
+   {
+    "avg_prob_actual": 9.9,
+    "lift_top1": 1.0,
+    "position": 3,
+    "random_baseline_top1": 10.0,
+    "random_baseline_top3": 30.0,
+    "top1_accuracy": 10.0,
+    "top3_accuracy": 28.6
+   }
+  ],
+  "total_evaluated": 500
+ }
+}

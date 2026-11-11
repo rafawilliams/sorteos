@@ -1,0 +1,53 @@
+{
+ "numbers": [
+  {
+   "best_month": "Oct",
+   "best_month_count": 1,
+   "digits": [
+    "9",
+    "6",
+    "1",
+    "4"
+   ],
+   "ending_matches": 14,
+   "exact": {
+    "primero": 1,
+    "segundo": 0,
+    "tercero": 0
+   },
+   "frequency_pct": 0.167,
+   "gap": 0,
+   "last_appearance": "2019-10-02",
+   "monthly": {
+    "Oct": 1
+   },
+   "number": "9614",
+   "total_exact": 1
+  },
+  {
+   "best_month": "Sep",
+   "best_month_count": 1,
+   "digits": [
+    "4",
+    "4",
+    "5",
+    "0"
+   ],
+   "ending_matches": 18,
+   "exact": {
+    "primero": 1,
+    "segundo": 0,
+    "tercero": 0
+   },
+   "frequency_pct": 0.167,
+   "gap": 1,
+   "last_appearance": "2019-09-29",
+   "monthly": {
+    "Sep": 1
+   },
+   "number": "4450",
+   "total_exact": 1
+  }
+ ],
+ "total_sorteos": 600
+}

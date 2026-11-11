@@ -1,0 +1,27 @@
+{
+ "numbers": [
+  {
+   "best_month": "—",
+   "best_month_count": 0,
+   "digits": [
+    "0",
+    "0",
+    "0",
+    "0"
+   ],
+   "ending_matches": 19,
+   "exact": {
+    "primero": 0,
+    "segundo": 0,
+    "tercero": 0
+   },
+   "frequency_pct": 0.0,
+   "gap": null,
+   "last_appearance": null,
+   "monthly": {},
+   "number": "0000",
+   "total_exact": 0
+  }
+ ],
+ "total_sorteos": 600
+}

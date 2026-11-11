@@ -1,0 +1,283 @@
+{
+ "data": [
+  {
+   "cat": "extraordinario",
+   "fecha": "2019-10-02",
+   "folio": "599",
+   "id": "600",
+   "letra": "ABCD",
+   "primero": "9614",
+   "segundo": "3920",
+   "serie": "2",
+   "tercero": "3972"
+  },
+  {
+   "cat": "gordito",
+   "fecha": "2019-09-29",
+   "folio": "598",
+   "id": "599",
+   "letra": "ABCD",
+   "primero": "4450",
+   "segundo": "2249",
+   "serie": "20",
+   "tercero": "1789"
+  },
+  {
+   "cat": "miercolito",
+   "fecha": "2019-09-25",
+   "folio": "597",
+   "id": "598",
+   "letra": "ABCD",
+   "primero": "8824",
+   "segundo": "4442",
+   "serie": "23",
+   "tercero": "9208"
+  },
+  {
+   "cat": "dominical",
+   "fecha": "2019-09-22",
+   "folio": "596",
+   "id": "597",
+   "letra": "ABCD",
+   "primero": "4201",
+   "segundo": "7849",
+   "serie": "7",
+   "tercero": "3505"
+  },
+  {
+   "cat": "extraordinario",
+   "fecha": "2019-09-18",
+   "folio": "595",
+   "id": "596",
+   "letra": "ABCD",
+   "primero": "4712",
+   "segundo": "1294",
+   "serie": "15",
+   "tercero": "5674"
+  },
+  {
+   "cat": "gordito",
+   "fecha": "2019-09-15",
+   "folio": "594",
+   "id": "595",
+   "letra": "ABCD",
+   "primero": "5654",
+   "segundo": "2399",
+   "serie": "2",
+   "tercero": "4758"
+  },
+  {
+   "cat": "miercolito",
+   "fecha": "2019-09-11",
+   "folio": "593",
+   "id": "594",
+   "letra": "ABCD",
+   "primero": "8899",
+   "segundo": "6220",
+   "serie": "27",
+   "tercero": "6464"
+  },
+  {
+   "cat": "dominical",
+   "fecha": "2019-09-08",
+   "folio": "592",
+   "id": "593",
+   "letra": "ABCD",
+   "primero": "4480",
+   "segundo": "4715",
+   "serie": "19",
+   "tercero": "1996"
+  },
+  {
+   "cat": "extraordinario",
+   "fecha": "2019-09-04",
+   "folio": "591",
+   "id": "592",
+   "letra": "ABCD",
+   "primero": "7861",
+   "segundo": "5714",
+   "serie": "26",
+   "tercero": "9183"
+  },
+  {
+   "cat": "gordito",
+   "fecha": "2019-09-01",
+   "folio": "590",
+   "id": "591",
+   "letra": "ABCD",
+   "primero": "4735",
+   "segundo": "3396",
+   "serie": "11",
+   "tercero": "8011"
+  },
+  {
+   "cat": "miercolito",
+   "fecha": "2019-08-28",
+   "folio": "589",
+   "id": "590",
+   "letra": "ABCD",
+   "primero": "9143",
+   "segundo": "4890",
+   "serie": "10",
+   "tercero": "3684"
+  },
+  {
+   "cat": "dominical",
+   "fecha": "2019-08-25",
+   "folio": "588",
+   "id": "589",
+   "letra": "ABCD",
+   "primero": "7932",
+   "segundo": "3150",
+   "serie": "9",
+   "tercero": "4038"
+  },
+  {
+   "cat": "extraordinario",
+   "fecha": "2019-08-21",
+   "folio": "587",
+   "id": "588",
+   "letra": "ABCD",
+   "primero": "8950",
+   "segundo": "5804",
+   "serie": "20",
+   "tercero": "4331"
+  },
+  {
+   "cat": "gordito",
+   "fecha": "2019-08-18",
+   "folio": "586",
+   "id": "587",
+   "letra": "ABCD",
+   "primero": "2837",
+   "segundo": "7531",
+   "serie": "11",
+   "tercero": "8734"
+  },
+  {
+   "cat": "miercolito",
+   "fecha": "2019-08-14",
+   "folio": "585",
+   "id": "586",
+   "letra": "ABCD",
+   "primero": "7837",
+   "segundo": "8609",
+   "serie": "11",
+   "tercero": "6173"
+  },
+  {
+   "cat": "dominical",
+   "fecha": "2019-08-11",
+   "folio": "584",
+   "id": "585",
+   "letra": "ABCD",
+   "primero": "3397",
+   "segundo": "9189",
+   "serie": "22",
+   "tercero": "5325"
+  },
+  {
+   "cat": "extraordinario",
+   "fecha": "2019-08-07",
+   "folio": "583",
+   "id": "584",
+   "letra": "ABCD",
+   "primero": "7726",
+   "segundo": "1020",
+   "serie": "17",
+   "tercero": "2262"
+  },
+  {
+   "cat": "gordito",
+   "fecha": "2019-08-04",
+   "folio": "582",
+   "id": "583",
+   "letra": "ABCD",
+   "primero": "3340",
+   "segundo": "6723",
+   "serie": "25",
+   "tercero": "8221"
+  },
+  {
+   "cat": "miercolito",
+   "fecha": "2019-07-31",
+   "folio": "581",
+   "id": "582",
+   "letra": "ABCD",
+   "primero": "5139",
+   "segundo": "6861",
+   "serie": "14",
+   "tercero": "2481"
+  },
+  {
+   "cat": "dominical",
+   "fecha": "2019-07-28",
+   "folio": "580",
+   "id": "581",
+   "letra": "ABCD",
+   "primero": "1800",
+   "segundo": "3125",
+   "serie": "15",
+   "tercero": "0310"
+  },
+  {
+   "cat": "extraordinario",
+   "fecha": "2019-07-24",
+   "folio": "579",
+   "id": "580",
+   "letra": "ABCD",
+   "primero": "3968",
+   "segundo": "0517",
+   "serie": "23",
+   "tercero": "9380"
+  },
+  {
+   "cat": "gordito",
+   "fecha": "2019-07-21",
+   "folio": "578",
+   "id": "579",
+   "letra": "ABCD",
+   "primero": "8589",
+   "segundo": "6229",
+   "serie": "27",
+   "tercero": "2421"
+  },
+  {
+   "cat": "miercolito",
+   "fecha": "2019-07-17",
+   "folio": "577",
+   "id": "578",
+   "letra": "ABCD",
+   "primero": "0841",
+   "segundo": "9560",
+   "serie": "6",
+   "tercero": "7871"
+  },
+  {
+   "cat": "dominical",
+   "fecha": "2019-07-14",
+   "folio": "576",
+   "id": "577",
+   "letra": "ABCD",
+   "primero": "9477",
+   "segundo": "9463",
+   "serie": "24",
+   "tercero": "3728"
+  },
+  {
+   "cat": "extraordinario",
+   "fecha": "2019-07-10",
+   "folio": "575",
+   "id": "576",
+   "letra": "ABCD",
+   "primero": "0436",
+   "segundo": "9779",
+   "serie": "9",
+   "tercero": "7775"
+  }
+ ],
+ "last_update": "2019-10-02",
+ "page": 1,
+ "per_page": 50,
+ "total": 600
+}
