@@ -34,6 +34,18 @@ El servidor de capturas debe usar **otra base de datos**, sembrada con datos sin
    npx --prefix frontend playwright install chromium
    ```
 
+## Cuidado con el puerto 5000 (Windows)
+
+Si ya tienes `python app.py` corriendo en el puerto 5000, **Windows deja arrancar un segundo servidor
+en el mismo puerto sin avisar y las peticiones siguen yendo al primero**, es decir, a la base real.
+Pasó al preparar la primera referencia: el servidor de capturas mostraba 9.296 sorteos en vez de 600.
+Por eso el servidor de capturas va **siempre en otro puerto** (abajo, el 5001), y antes de capturar se
+comprueba que sirve la base sembrada:
+
+```bash
+curl -s "http://127.0.0.1:5001/api/sorteos?page=1&per_page=1"   # "total" debe ser 600
+```
+
 ## Uso
 
 1. Arranca el servidor contra esa base. Hazlo desde una copia limpia de la rama, sin un
@@ -41,14 +53,15 @@ El servidor de capturas debe usar **otra base de datos**, sembrada con datos sin
    entrena el modelo con los datos sintéticos (50-100 s) y lo guarda ahí.
 
    ```bash
-   DATABASE_URL="mariadb+mariadbconnector://USUARIO:CLAVE@127.0.0.1:3306/sorteos_capturas" python app.py
+   DATABASE_URL="mariadb+mariadbconnector://USUARIO:CLAVE@127.0.0.1:3306/sorteos_capturas" \
+     python -c "import app; app.app.run(port=5001, debug=False)"
    ```
 
 2. Saca las capturas:
 
    ```bash
-   node frontend/scripts/capturas.mjs --salida <carpeta>
-   node frontend/scripts/capturas.mjs --salida <carpeta> --solo gaps,seguimiento --temas oscuro
+   node frontend/scripts/capturas.mjs --salida <carpeta> --url http://127.0.0.1:5001
+   node frontend/scripts/capturas.mjs --salida <carpeta> --url http://127.0.0.1:5001 --solo gaps,seguimiento --temas oscuro
    ```
 
    Deja `<pestaña>-oscuro.png` y `<pestaña>-claro.png`. La referencia se guarda en

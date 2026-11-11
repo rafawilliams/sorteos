@@ -73,3 +73,10 @@ Spec: [frontend-react](../specs/frontend-react.md) · Plan y tareas: [plan](../p
 - comprobado: typecheck 0 · test 0 (8 passed) · build 0 · `npm audit` 0 · el script sale con código 1 y mensaje claro sin `--salida` o con una pestaña desconocida.
 - pendiente: «con el servidor arrancado, el script deja 28 PNG». Necesita la base `sorteos_capturas` sembrada y el navegador de Playwright (`npx playwright install chromium`).
 - risk: tier 1 — la revisión de un revisor se hace al completar el done-check, para no gastar rondas sobre código aún sin ejecutar de punta a punta.
+
+## T006 / T007 — incidente y estado — 2026-11-11
+- hecho: base `sorteos_capturas` creada en el MariaDB local con las credenciales del `.env` (solo `CREATE DATABASE` y siembra de 600 sorteos sintéticos con `tests/seed_db.py`; la base real no se tocó). Chromium de Playwright instalado.
+- incidente: el servidor de capturas arrancó en el puerto 5000, donde ya corría el servidor de desarrollo del dueño (PID 24532, desde el 6 de noviembre, contra la base real). Windows permitió el segundo enlace y las peticiones iban al primero: `/api/sorteos` devolvió 9296 sorteos en vez de 600. Se detectó **antes de lanzar ninguna captura**, así que `/api/stats` no se ejecutó contra la base real y no se escribió nada en `predicciones`. Solo se hicieron 3 lecturas (`GET /` y dos `GET /api/sorteos`).
+- lección: README de capturas actualizado: servidor de capturas siempre en el puerto 5001 y comprobar que `total` es 600 antes de capturar.
+- bloqueo: el servidor de capturas propio (árbol de procesos 52204, arrancado a las 09:47) sigue vivo y orphan; detenerlo por PID fue rechazado por el sistema de permisos y no se intentó otra vía. Lo debe cerrar el dueño o autorizar el cierre.
+- pendiente: capturas de T006 y T007 (28 PNG de referencia) y su aprobación, más la revisión de T006 y T059.
