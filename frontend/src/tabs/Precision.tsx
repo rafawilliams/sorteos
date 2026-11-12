@@ -93,10 +93,12 @@ function Contenido({ datos }: { datos: Backtesting }) {
 
   const posiciones = ml.per_position ?? []
   const posicionesEst = st.per_position ?? []
-  // Sin modelo la API responde `ml_better: true` (toma 10 % por defecto): solo se corona a uno si hay datos de los dos.
+  // Sin modelo la API responde `ml_better: true` (toma 10 % por defecto): solo se corona a uno si hay datos de los dos y
+  // la API ha decidido (un `ml_better` booleano). Sin `comparison`, `!undefined` coronaría al Estadístico sin que nadie lo dijera.
   const ambos = hayMl && hayEst
-  const mlMejor = ambos && !!datos.comparison?.ml_better
-  const estMejor = ambos && !datos.comparison?.ml_better
+  const decidido = ambos && typeof datos.comparison?.ml_better === 'boolean'
+  const mlMejor = decidido && datos.comparison.ml_better
+  const estMejor = decidido && !datos.comparison.ml_better
   const serie = ml.rolling_accuracy ?? SIN_SERIE
 
   return (
@@ -263,9 +265,11 @@ export function Componente() {
   }, [activa, cargar])
 
   return (
-    <div role="region" aria-label="Precisión histórica" ref={regionRef} tabIndex={-1} style={{ outline: 'none' }}>
+    // Sin `role="region"`: el panel de la pestaña ya tiene nombre y dentro hay otras tres regiones con el suyo.
+    <div ref={regionRef} tabIndex={-1} style={{ outline: 'none' }}>
       {estado.fase === 'cargando' && (
         <div role="status" aria-label="Calculando backtesting">
+          <p style={{ color: 'var(--text-muted)' }}>Calculando backtesting…</p>
           <Skeleton lineas={5} />
         </div>
       )}

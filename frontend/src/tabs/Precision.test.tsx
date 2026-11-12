@@ -127,6 +127,8 @@ describe('carga, error y reintento', () => {
     control.getBacktesting.mockReturnValue(d.promesa)
     montar()
     expect(await screen.findByRole('status', { name: 'Calculando backtesting' })).toBeInTheDocument()
+    // El texto visible del cargador antiguo se conserva: con el modelo sin entrenar la primera carga puede tardar segundos.
+    expect(screen.getByText('Calculando backtesting…')).toBeVisible()
     await act(async () => d.resolver(ok(NORMAL)))
     expect(screen.queryByRole('status', { name: 'Calculando backtesting' })).not.toBeInTheDocument()
   })
@@ -139,12 +141,12 @@ describe('carga, error y reintento', () => {
     expect(screen.queryByText('ML Top-1 Precisión')).not.toBeInTheDocument()
   })
 
-  it('«Reintentar» vuelve a pedir y devuelve el foco a la región', async () => {
+  it('«Reintentar» vuelve a pedir y devuelve el foco al contenedor de la isla', async () => {
     control.getBacktesting.mockResolvedValueOnce({ ok: false, mensaje: 'Fallo.' }).mockResolvedValue(ok(NORMAL))
-    montar()
+    const { container } = montar()
     await screen.findByRole('alert')
     fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }))
-    expect(screen.getByRole('region', { name: 'Precisión histórica' })).toHaveFocus()
+    expect(container.firstElementChild).toHaveFocus()
     await screen.findByText('ML Top-1 Precisión')
     expect(control.getBacktesting).toHaveBeenCalledTimes(2)
   })
@@ -160,6 +162,18 @@ describe('carga, error y reintento', () => {
     await act(async () => lenta.resolver(ok(conMl({ avg_top1_accuracy: 99.9 }))))
     expect(screen.getByText('11.1%')).toBeInTheDocument()
     expect(screen.queryByText('99.9%')).not.toBeInTheDocument()
+  })
+})
+
+describe('accesibilidad del contenedor', () => {
+  it('el contenedor no es una región con nombre: repetiría el del panel y anidaría las otras tres', async () => {
+    const { container } = montar()
+    await screen.findByText('ML Top-1 Precisión')
+    expect(screen.queryByRole('region', { name: 'Precisión histórica' })).not.toBeInTheDocument()
+    expect(container.firstElementChild).not.toHaveAttribute('role')
+    expect(container.firstElementChild).toHaveAttribute('tabindex', '-1') // sigue pudiendo recibir el foco al reintentar
+    // Las tres regiones con nombre propio de antes siguen ahí.
+    for (const n of ['Resumen de precisión', 'Precisión por posición de dígito', 'Comparación ML vs Estadístico']) expect(region(n)).toBeInTheDocument()
   })
 })
 
@@ -366,6 +380,25 @@ describe('sin modelo y con pocos sorteos', () => {
     expect(within(tarjetaMetodo('🤖 Machine Learning')).queryByText('Sin modelo entrenado.')).not.toBeInTheDocument()
     expect(screen.queryByText('Mejor')).not.toBeInTheDocument()
     expect(tarjetaMetodo('📊 Estadístico').querySelectorAll('.bar-fill')).toHaveLength(0)
+  })
+
+  it('con ML pero sin Estadístico y la API diciendo `ml_better: true`, tampoco se corona a ML', async () => {
+    control.getBacktesting.mockResolvedValue(ok({ ...NORMAL, statistical: {} as never, comparison: { ...NORMAL.comparison, ml_better: true } }))
+    montar()
+    await screen.findByText('ML Top-1 Precisión')
+    expect(screen.queryByText('Mejor')).not.toBeInTheDocument()
+  })
+
+  it('sin `comparison` (o sin un `ml_better` booleano) la API no ha decidido nada: no se corona a nadie', async () => {
+    for (const comparison of [undefined, {}, { ml_better: null }]) {
+      control.getBacktesting.mockResolvedValue(ok({ ...NORMAL, comparison } as never))
+      const { unmount, store } = montar({ activa: true })
+      await screen.findByText('ML Top-1 Precisión')
+      expect(screen.queryByText('Mejor'), `con comparison ${JSON.stringify(comparison)}`).not.toBeInTheDocument()
+      expect(within(tarjetaMetodo('📊 Estadístico')).getByText('—')).toBeInTheDocument()
+      void store
+      unmount()
+    }
   })
 
   it('con pocos sorteos (ML y Estadístico vacíos) dice que aún no hay datos y no pinta tarjetas vacías', async () => {
