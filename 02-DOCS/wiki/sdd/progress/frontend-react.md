@@ -500,3 +500,7 @@ Islas Mis Números y Comparador, componente `Chart`, retirada del código antigu
 - pruebas: 46 entre isla y botón; mutantes 42/42 detectados (8 nuevos de esta ronda: el contenedor `role="img"` de vuelta, la tabla sin nombre, el nombre sin «Copiado», `data-num`, aviso tras desmontar…).
 - navegador real (Chromium, árbol de accesibilidad por CDP, 5003): 8/8 y 0 errores de consola: tabla con nombre y sin «imagen»; `data-numero`; nombre «Copiar N» → «Copiado N» → «Copiar N»; el portapapeles recibe el número.
 - no se ha lanzado una segunda ronda de revisión sobre estos arreglos; el riesgo calculado (`rsc risk`) sigue **pendiente**.
+
+## Etapa 4 — riesgo calculado (2026-11-12)
+- risk: **tier 1** (calculado con `npx @ericrisco/rsc risk --base fff6728 --json` sobre todo el diff de la etapa): `reviewers: 1`, `humanApproval: false`, `escalate: null`; clases `default` y `docs`; no toca auth, facturación, CI, migraciones ni secretos. Sustituye al «pendiente» de las entradas de T028 y T029, y coincide con lo que se hizo: un revisor de contexto fresco por tarea (T028 y T029).
+- corrección: las entradas anteriores decían que `rsc risk` «no se ha podido ejecutar porque `npx` está bloqueado». Era una suposición: solo se había intentado `rsc doctor` una vez y se extrapoló a toda la familia de comandos. Al intentar `rsc risk` por primera vez (a petición de la persona) se ejecutó sin problema. `review consolidate` y `review ledger` siguen sin haberse ejecutado; no se han probado.
