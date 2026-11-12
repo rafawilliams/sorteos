@@ -97,6 +97,8 @@ function copyNumber(num){navigator.clipboard.writeText(num).then(()=>{showToast(
 document.addEventListener('DOMContentLoaded',async()=>{initTabs();await loadData()});
 
 // Keyboard navigation helper for tablists
+// Las flechas, Inicio y Fin activan la pestaña con un click() sintético: el menú lateral abierto no debe cerrarse por eso
+let _navPorTeclado=false;
 function initTablistKeyboard(container){
   const tabs=Array.from(container.querySelectorAll('[role="tab"]'));
   if(!tabs.length)return;
@@ -108,7 +110,7 @@ function initTablistKeyboard(container){
     else if(e.key==='ArrowLeft'||e.key==='ArrowUp'){next=(cur-1+tabs.length)%tabs.length;e.preventDefault();}
     else if(e.key==='Home'){next=0;e.preventDefault();}
     else if(e.key==='End'){next=tabs.length-1;e.preventDefault();}
-    if(next>=0){tabs[next].focus();tabs[next].click();}
+    if(next>=0){tabs[next].focus();_navPorTeclado=true;try{tabs[next].click()}finally{_navPorTeclado=false}}
   });
   // Only first tab in set should be in tab order
   tabs.forEach((t,i)=>t.setAttribute('tabindex',i===0?'0':'-1'));
@@ -153,8 +155,11 @@ function initMenu(){
   const btn=document.getElementById('menuToggle'),nav=document.getElementById('navTabs'),fondo=document.getElementById('menuBackdrop');
   if(!btn||!nav||!fondo)return;
   const abierto=()=>nav.classList.contains('open');
+  // Con el menú abierto el resto de la página es inerte (sin foco ni lectura): el fondo oscuro es modal
+  const resto=()=>Array.from(document.querySelector('.app').children).filter(el=>el!==nav&&el!==fondo);
   const poner=on=>{
     nav.classList.toggle('open',on);fondo.hidden=!on;document.body.classList.toggle('menu-open',on);
+    resto().forEach(el=>el.toggleAttribute('inert',on));
     btn.setAttribute('aria-expanded',String(on));
     btn.setAttribute('aria-label',on?'Cerrar menú de secciones':'Abrir menú de secciones');
   };
@@ -162,10 +167,11 @@ function initMenu(){
     poner(!abierto());
     if(abierto()){const t=nav.querySelector('.nav-tab.active')||nav.querySelector('.nav-tab');if(t)t.focus()}
   });
-  fondo.addEventListener('click',()=>poner(false));
+  fondo.addEventListener('click',()=>{poner(false);btn.focus()});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&abierto()){poner(false);btn.focus()}});
-  // Con el menú abierto, elegir una sección lo cierra (en escritorio no está "abierto": el foco no se mueve)
-  nav.querySelectorAll('.nav-tab').forEach(t=>t.addEventListener('click',()=>{if(abierto()){poner(false);btn.focus()}}));
+  // Con el menú abierto, elegir una sección con clic o Enter lo cierra; con las flechas se recorre sin cerrarlo.
+  // (En escritorio no está "abierto": el foco no se mueve.)
+  nav.querySelectorAll('.nav-tab').forEach(t=>t.addEventListener('click',()=>{if(abierto()&&!_navPorTeclado){poner(false);btn.focus()}}));
   if(window.matchMedia){const ancho=matchMedia('(min-width:901px)');if(ancho.addEventListener)ancho.addEventListener('change',e=>{if(e.matches)poner(false)})}
 }
 

@@ -66,11 +66,12 @@ describe('abrir y cerrar', () => {
     expect(document.body).not.toHaveClass('menu-open')
   })
 
-  it('pulsar el fondo cierra', () => {
+  it('pulsar el fondo cierra y devuelve el foco al botón (no lo pierde en <body>)', () => {
     boton().click()
     fondo().click()
     expect(nav()).not.toHaveClass('open')
     expect(fondo().hidden).toBe(true)
+    expect(document.activeElement).toBe(boton())
   })
 
   it('Escape cierra y devuelve el foco al botón', () => {
@@ -105,6 +106,41 @@ describe('abrir y cerrar', () => {
     $('#tab-gaps').focus()
     $('#tab-gaps').click()
     expect(document.activeElement).toBe($('#tab-gaps'))
+  })
+
+  it('las flechas recorren las secciones CON el menú abierto, sin cerrarlo ni quitar el foco de la lista', () => {
+    boton().click()
+    $('#tab-predicciones').focus()
+    nav().dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }))
+    expect(nav()).toHaveClass('open')
+    expect(document.activeElement).toBe($('#tab-decenas'))
+    expect($('#sec-decenas')).toHaveClass('active')
+    nav().dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }))
+    expect(nav()).toHaveClass('open')
+    expect(document.activeElement).toBe($('#tab-seguimiento'))
+    nav().dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }))
+    expect(document.activeElement).toBe($('#tab-precision'))
+    expect(nav()).toHaveClass('open')
+  })
+
+  it('tras recorrer con flechas, un clic en una sección sí cierra (la marca de teclado no se queda pegada)', () => {
+    boton().click()
+    $('#tab-predicciones').focus()
+    nav().dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }))
+    $('#tab-gaps').click()
+    expect(nav()).not.toHaveClass('open')
+    expect(document.activeElement).toBe(boton())
+  })
+
+  it('abierto, el resto de la página es inerte; cerrado, deja de serlo', () => {
+    const resto = () => Array.from(document.querySelector('.app')!.children).filter((el) => el !== nav() && el !== fondo())
+    expect(resto().length).toBeGreaterThan(2)
+    boton().click()
+    resto().forEach((el) => expect(el).toHaveAttribute('inert'))
+    expect(nav()).not.toHaveAttribute('inert')
+    expect(boton()).not.toHaveAttribute('inert')
+    boton().click()
+    resto().forEach((el) => expect(el).not.toHaveAttribute('inert'))
   })
 
   it('al ensancharse la ventana con el menú abierto se cierra solo', () => {

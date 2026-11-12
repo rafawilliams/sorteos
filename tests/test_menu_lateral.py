@@ -89,7 +89,9 @@ class TestCss:
 
     def test_las_pestanas_no_transicionan_visibility(self):
         """`transition: all` incluía `visibility`: la pestaña seguía oculta al enfocarla justo tras abrir."""
-        assert "transition:all" not in regla(".nav-tab")
+        reglas = re.findall(r"^\.nav-tab\{([^}]*)\}", CSS, re.M)
+        assert reglas, "no hay reglas .nav-tab"
+        assert not any(re.search(r"transition:\s*all", r) for r in reglas)
 
     def test_la_barra_queda_por_encima_del_fondo_y_el_boton_por_encima_de_la_barra(self):
         z = lambda sel: int(re.search(r"z-index:(\d+)", regla(sel)).group(1))
@@ -101,3 +103,23 @@ class TestCss:
 
     def test_el_boton_tiene_foco_visible(self):
         assert ".menu-toggle:focus-visible" in CSS
+
+    def test_las_rejillas_colapsan_cuando_el_contenido_mide_900_o_menos(self):
+        """El contenido mide el ancho de la ventana menos los 248 px de la barra: 900 + 248 = 1148."""
+        tablet = bloque_media("max-width:1148px")
+        assert ".grid-2,.grid-3{grid-template-columns:1fr}" in tablet
+        assert ".grid-4{grid-template-columns:repeat(2,1fr)}" in tablet
+        assert "@media(max-width:900px){.grid-2" not in CSS
+        # y el bloque grande de reglas de tablet (títulos, filtros, gráficos) sube con ellas
+        assert ".hero h1{font-size:clamp(2rem,5vw,3rem)}" in tablet
+        assert ".filter-bar{flex-direction:column" in tablet
+
+    def test_el_boton_no_tapa_el_inicio_de_la_pagina(self):
+        assert ".app{padding-top:56px}" in bloque_media("max-width:900px")
+        assert ".app{padding:56px 14px 60px}" in bloque_media("max-width:640px")
+
+    def test_movimiento_reducido_sin_transicion(self):
+        assert ".nav-tabs,.nav-tabs.open{transition:none}" in bloque_media("prefers-reduced-motion:reduce")
+
+    def test_la_barra_no_desborda_en_horizontal(self):
+        assert "overflow-x:hidden" in regla(".nav-tabs")
