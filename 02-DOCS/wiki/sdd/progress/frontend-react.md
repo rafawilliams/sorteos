@@ -437,6 +437,13 @@ Isla Seguimiento, retirada del código antiguo con la guardia ampliada y referen
 - risk: tier 1 — 1 revisor. review ronda 1 → VERDICT pass, 0 hallazgos (`chartOpts`, `esc`, `showToast`, `triggerReveals` y las clases compartidas siguen en uso; nadie más llamaba a `updateFavBadge`; la insignia la pone la isla).
 - controls: tests ✅ build ✅ security n/a traceability ✅ (AC10).
 
-## T026 — 2026-11-11 (pendiente de la aprobación del dueño)
+## T026 — 2026-11-11 (aprobada por el dueño el 2026-11-12)
 - capturas con DATOS (la base sembrada no tiene favoritos ni comparaciones): Mis Números con tres favoritos en `lp_favorites` y Comparador con tres números, en oscuro y claro, sacadas con el código antiguo (rama de la etapa 2) y con las islas (etapa 3) con las mismas acciones, y comparadas píxel a píxel. Mis Números: 0 píxeles de diferencia en los dos temas. Comparador: la primera pasada difería en 6.465 píxeles por un defecto del código antiguo (comillas dobles dentro del `style` de las celdas, que lo cortaban); se reproduce lo que se ve (decisión en decisions.md) y la segunda pasada da 0 en los dos temas.
 - verificación solo con teclado en la página real (0 errores de consola): en Mis Números, escribir, Tab, Enter añade; Tab llega a «Simular 0042» y «Eliminar 0042»; Enter elimina y el foco pasa a la lista. En el Comparador, escribir y Enter añaden con etiquetas; «Quitar 9614» con Enter quita y recompara. El tema recrea el gráfico. Las flechas de la barra lateral desde Comparador llevan a Gaps. Ninguna de las dos pestañas tiene subpestañas.
+- aprobación (2026-11-12): el dueño aprueba las 4 capturas de las islas («las apruebo así») sin repetir la comparación lado a lado con el código antiguo; vale la de arriba (0 píxeles en los dos temas). Capturas nuevas sacadas el 2026-11-12 en el 5001 con la base sembrada (600 sorteos), 0 errores de consola en oscuro y claro: `favoritos-{oscuro,claro}.png` (0042, 9614, 1234) y `comparador-{oscuro,claro}.png` (los mismos tres números, tabla de 9 métricas y gráfico mensual). No se guardan en el repositorio.
+- corrección a la verificación de teclado: en el campo del Comparador **Enter no añade** (solo el botón «+ Agregar»); el código antiguo tampoco lo hacía, así que hay paridad y no es una regresión. Si se quiere Enter, es una mejora aparte.
+- nota para las próximas capturas: el toast oculto (`.toast`, `translateY(80px)` fuera de la ventana) aparece en los recortes más altos que el viewport (1280×800). Ocultarlo con CSS en las capturas antiguas y nuevas por igual; `frontend/scripts/capturas.mjs` aún no lo hace.
+- risk: tier 1, sin código nuevo.
+
+## Etapa 3 (T023–T027) completa
+Islas Mis Números y Comparador, componente `Chart`, retirada del código antiguo con la guardia ampliada y capturas aprobadas. Pendiente de la etapa: abrir su PR contra `main` (apilada sobre la etapa 2, ya fusionada).
