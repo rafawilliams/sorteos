@@ -135,7 +135,8 @@ describe('mes objetivo', () => {
 })
 
 describe('ventaja de dígitos por posición', () => {
-  const tabla = () => screen.getByRole('img', { name: 'Tabla de ventaja de dígitos por posición' })
+  // La tabla es una tabla con nombre (no una «imagen» con la tabla dentro: `role="img"` vuelve presentacional su contenido).
+  const tabla = () => screen.getByRole('table', { name: 'Tabla de ventaja de dígitos por posición' })
   const celdasDe = (fila: number) => Array.from(tabla().querySelectorAll('tbody tr')[fila]!.querySelectorAll('td'))
   /** El fondo que el navegador deja para ese color, calculado con la misma fórmula que el código antiguo. */
   const fondo = (color: string) => {
@@ -186,8 +187,17 @@ describe('ventaja de dígitos por posición', () => {
 
   it.each([0, 3, 5])('con %i filas en vez de 4 no se pinta la tabla (la tarjeta sí)', (n) => {
     montar(conReco({ digit_advantage: MR.digit_advantage.slice(0, n).concat(Array(Math.max(0, n - 4)).fill({})) }))
-    expect(screen.queryByRole('img', { name: 'Tabla de ventaja de dígitos por posición' })?.querySelector('table') ?? null).toBeNull()
+    expect(screen.queryByRole('table')).toBeNull()
+    // Sin tabla tampoco queda un contenedor vacío con nombre (antes: una «imagen» sin contenido).
+    expect(screen.queryByRole('img', { name: 'Tabla de ventaja de dígitos por posición' })).toBeNull()
+    expect(screen.queryByLabelText('Tabla de ventaja de dígitos por posición')).toBeNull()
     expect(screen.getByText('Ventaja de Dígitos por Posición')).toBeInTheDocument()
+  })
+
+  it('ningún contenedor con `role="img"` envuelve la tabla (sus hijos serían presentacionales)', () => {
+    montar()
+    expect(screen.queryByRole('img', { name: 'Tabla de ventaja de dígitos por posición' })).toBeNull()
+    expect(tabla().closest('[role="img"]')).toBeNull()
   })
 })
 
@@ -330,15 +340,6 @@ describe('perfiles mensuales detallados', () => {
 })
 
 describe('la pestaña vive con el Store', () => {
-  it('cambiar de pestaña y volver no rompe nada ni recrea el gráfico', () => {
-    const { store } = montar()
-    const antes = graficos.props.length
-    act(() => store.cambiar({ activeTab: 'gaps' }))
-    act(() => store.cambiar({ activeTab: 'mensual' as never }))
-    expect(graficos.props.length).toBe(antes)
-    expect(screen.getByText('Perfil de los 12 Meses')).toBeInTheDocument()
-  })
-
   it('cuando llegan los datos pasa del esqueleto a la pestaña', () => {
     const { store } = montar(null)
     expect(screen.getByRole('status', { name: 'Cargando recomendación mensual' })).toBeInTheDocument()

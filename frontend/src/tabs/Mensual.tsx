@@ -42,7 +42,8 @@ function colorVentaja(v: number): string {
 function TablaVentaja({ ventaja }: { ventaja: Array<Record<string, number>> }) {
   return (
     <div style={{ overflowX: 'auto' }}>
-      <table className="heatmap-table" role="table">
+      {/* Una tabla con nombre, no un `role="img"` que la envuelva: `img` vuelve presentacional todo su contenido (ARIA). */}
+      <table className="heatmap-table" role="table" aria-label="Tabla de ventaja de dígitos por posición">
         <thead>
           <tr>
             <th>Pos</th>
@@ -195,9 +196,7 @@ export function Componente() {
           Diferencia porcentual de cada dígito en el mes objetivo respecto al promedio general. <span style={{ color: '#4ade80' }}>Verde</span> = más frecuente,{' '}
           <span style={{ color: '#f87171' }}>Rojo</span> = menos frecuente.
         </p>
-        <div role="img" aria-label="Tabla de ventaja de dígitos por posición">
-          {ventaja.length === 4 && <TablaVentaja ventaja={ventaja} />}
-        </div>
+        {ventaja.length === 4 && <TablaVentaja ventaja={ventaja} />}
       </div>
 
       <div className="card reveal" style={{ marginTop: 24 }} ref={revelar}>

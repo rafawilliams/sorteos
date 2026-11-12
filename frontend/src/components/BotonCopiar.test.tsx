@@ -31,12 +31,15 @@ afterEach(() => {
 })
 
 describe('BotonCopiar', () => {
-  it('es un botón «Copiar» con el número en `data-num` y un nombre accesible que lo distingue', () => {
+  it('es un botón «Copiar» con el número en `data-numero` (no en `data-num`, que usa el `copyNumber` antiguo) y un nombre accesible que lo distingue', () => {
     montar('9541')
     expect(boton()).toHaveTextContent('Copiar')
     expect(boton()).toHaveAttribute('type', 'button')
     expect(boton()).toHaveClass('copy-btn')
-    expect(boton()).toHaveAttribute('data-num', '9541')
+    expect(boton()).toHaveAttribute('data-numero', '9541')
+    // `copyNumber` de app.js reescribe el texto de todo `.copy-btn[data-num="…"]`: este botón no debe entrar en ese selector.
+    expect(boton()).not.toHaveAttribute('data-num')
+    expect(document.querySelectorAll('.copy-btn[data-num="9541"]')).toHaveLength(0)
     expect(screen.getByRole('button', { name: 'Copiar 9541' })).toBeInTheDocument()
   })
 
@@ -49,14 +52,22 @@ describe('BotonCopiar', () => {
     expect(boton()).toHaveClass('copied')
   })
 
-  it('vuelve a «Copiar» a los 1500 ms y no antes', async () => {
-    montar()
+  it('el nombre accesible acompaña al estado: «Copiado 9541» mientras dice «OK»', async () => {
+    montar('9541')
+    await clic()
+    expect(screen.getByRole('button', { name: 'Copiado 9541' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Copiar 9541' })).not.toBeInTheDocument()
+  })
+
+  it('vuelve a «Copiar» a los 1500 ms y no antes, con su nombre de antes', async () => {
+    montar('9541')
     await clic()
     act(() => void vi.advanceTimersByTime(1499))
     expect(boton()).toHaveTextContent('OK')
     act(() => void vi.advanceTimersByTime(1))
     expect(boton()).toHaveTextContent('Copiar')
     expect(boton()).not.toHaveClass('copied')
+    expect(screen.getByRole('button', { name: 'Copiar 9541' })).toBeInTheDocument()
   })
 
   it('un segundo clic dentro del plazo lo reinicia', async () => {
@@ -86,14 +97,25 @@ describe('BotonCopiar', () => {
     expect(avisos(store)).toEqual([['No se pudo copiar', undefined]])
   })
 
-  it('si el botón desaparece antes de que responda el portapapeles, no avisa ni deja temporizadores', async () => {
+  it('si el botón desaparece antes de que responda el portapapeles, el aviso sale igual (la copia se hizo) pero no queda ningún temporizador', async () => {
     let responder!: () => void
     escribir.mockReturnValue(new Promise<void>((r) => (responder = r)))
-    const { store, unmount } = montar()
+    const { store, unmount } = montar('9541')
     act(() => void fireEvent.click(boton())) // la copia queda en vuelo
     unmount()
     await act(async () => responder())
-    expect(avisos(store)).toEqual([])
+    expect(avisos(store)).toEqual([['Copiado: 9541', undefined]])
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
+  it('si el botón desaparece y el portapapeles rechaza, también se avisa del fallo (mismo trato que el éxito)', async () => {
+    let rechazar!: (e: Error) => void
+    escribir.mockReturnValue(new Promise<void>((_, r) => (rechazar = r)))
+    const { store, unmount } = montar()
+    act(() => void fireEvent.click(boton()))
+    unmount()
+    await act(async () => rechazar(new Error('denegado')))
+    expect(avisos(store)).toEqual([['No se pudo copiar', undefined]])
     expect(vi.getTimerCount()).toBe(0)
   })
 
