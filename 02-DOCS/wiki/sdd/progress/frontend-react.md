@@ -370,3 +370,11 @@ Puente `window.LP`, `LegacyStore`, hooks, cliente de API, fixtures y contrato, m
 - review: ronda 1 → VERDICT pass, 5 nits. L2 (campo `clave` muerto), L3 (listas ausentes como vacías, igual que `app.js`) y L5 (prueba de marcado escapado sustituida por la de listas ausentes) arreglados; L1 (claves por categoría/id: un pendiente por categoría por diseño) y L4 (un frame con datos viejos antes del esqueleto) intencionales.
 - controls: tests ✅ build ✅ security ✅ traceability ✅ (AC2). Ronda 2 de 3.
 - desviación declarada: la ledger de `rsc` es local por worktree: aquí empieza en L1.
+
+## T021 — 2026-11-11
+- status: complete (commit 16886fb)
+- red/green: la guardia ampliada falló en 11 aserciones sobre el `app.js` real antes de retirar el código; después 49 pruebas Python en verde (`test_ids_retirados` + `test_ui_assets`), 441 en la suite completa con base sembrada, 398 en el front. `node new Function(app.js)` sin error.
+- mutantes: reintroducir cada uno de los 6 ids `seg*` y las 5 funciones en app.js, un id en style.css y otro en index.html, y quitar el marcador de la isla: los 14 casos hacen fallar la guardia.
+- files: static/app.js (−61 líneas: `loadSeguimiento`, `renderSeguimiento`, `segPct`, `segNum`, `SEG_METODOS`), tests/test_ids_retirados.py
+- risk: tier 1 — 1 revisor. review ronda 1 → VERDICT pass, 0 hallazgos (helpers compartidos `esc`, `formatDate`, `catLabel`, `triggerReveals` y las clases CSS siguen en uso; sin referencias colgantes ni estilos huérfanos).
+- controls: tests ✅ build ✅ security n/a traceability ✅ (AC10).
