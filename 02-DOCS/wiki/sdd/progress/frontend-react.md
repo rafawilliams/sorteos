@@ -360,3 +360,13 @@ Todos sobre la suite de contrato, es decir, sobre lo que T015 y T052 tendrán qu
 
 ## Etapa 1 (T008–T019) completa
 Puente `window.LP`, `LegacyStore`, hooks, cliente de API, fixtures y contrato, montaje de islas y primera pestaña migrada (Gaps). Pendiente de la etapa: abrir su PR (apilado sobre #37, que aún espera el merge del dueño).
+
+## Menú lateral — 2026-11-11 (rama `feat/react-menu-navegacion`, enmienda pedida por el dueño)
+- status: complete (commits cf4bad8 + c175128)
+- pedido: «pasa las tabs a menú» y «usa icono en el menú cuando se esconda la barra lateral». Decididos con el dueño: barra lateral, rama nueva desde `main` ahora. Spec enmendada (AC1 y criterio nuevo) y decisión en `decisions.md`.
+- hecho: `<nav role="tablist" aria-orientation="vertical">` fijo a la izquierda en 4 grupos (3 marcas `nav-tab-group`); con ≤900 px se esconde y lo abre un botón con icono ☰ (✕ al abrir) que cierra con Escape, fondo o elegir sección; con el menú abierto el resto de la página es `inert`; las flechas recorren las secciones sin cerrarlo; las rejillas colapsan a 1148 px (900 + 248). ~25 líneas de `app.js`, el resto CSS y marcado; el puente, el teclado y las islas no cambian.
+- pruebas: `frontend/src/store/menu.test.ts` (16, contra el `app.js` y la plantilla reales en jsdom) y `tests/test_menu_lateral.py` (17: marcado y reglas CSS que jsdom no ve). 28 mutantes (CSS, plantilla, JS): todos detectados. 380 en el front, 434 Python (base sembrada), `typecheck` 0, `npm audit` 0.
+- navegador real (Playwright, base sembrada, 0 errores de consola): cortes 900/901, foco al abrir, flechas, Escape, elegir sección, ensanchar con el menú abierto, rejillas a 1000/1200 px, sin solape del botón a 320 px, sin desbordamiento horizontal, ambos temas.
+- fallos que solo salieron en navegador real (corregidos y con prueba): el fondo tapaba la barra (`.app` crea su propio contexto de apilamiento) y `transition: all` en las pestañas incluía `visibility` (el foco fallaba justo al abrir).
+- risk: tier 1 — 1 revisor. review ronda 1 → 9 hallazgos (4 should-fix, 4 nits, 1 pregunta): los 9 arreglados (el de la pregunta: las flechas no cierran el menú, Enter y clic sí). Ronda 2 de 3, sin segunda revisión aparte.
+- pendiente tras fusionar: renovar las 28 capturas de referencia (el ancho útil baja 248 px) y que el dueño las apruebe. Las ramas de etapa en curso (`feat/react-etapa-2-seguimiento`) tendrán que fusionar `main` y sacar sus capturas con el menú.
