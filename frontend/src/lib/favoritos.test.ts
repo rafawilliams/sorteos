@@ -124,7 +124,7 @@ describe('apariciones: los 20 sorteos más recientes', () => {
   })
 
   it('solo mira los 20 más recientes', () => {
-    const s = Array.from({ length: 25 }, (_, i) => sorteo(`2026-01-${25 - i < 10 ? '0' : ''}${25 - i}`, i === 22 ? '0042' : '9999'))
+    const s = Array.from({ length: 25 }, (_, i) => sorteo(`2026-01-${25 - i < 10 ? '0' : ''}${25 - i}`, i === 20 ? '0042' : '9999'))
     expect(apariciones('0042', s)).toEqual([])
     s[19] = sorteo('2026-01-06', '0042')
     expect(apariciones('0042', s)).toHaveLength(1)
