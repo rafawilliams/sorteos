@@ -156,26 +156,12 @@
           <p class="section-subtitle">Historial completo de sorteos de la Lotería de Panamá.</p>
         </div>
         <div style="display:flex;gap:8px;">
-          <button class="btn" id="csvBtn" onclick="exportCSV()" aria-label="Exportar resultados a CSV">⬇ Exportar CSV</button>
+          <span id="resultadosCsv" style="display:contents"></span>
           <button class="btn btn-gold" id="updateBtn" onclick="runUpdate()" aria-label="Actualizar datos de sorteos">↻ Actualizar datos</button>
         </div>
       </div>
 
-      <div class="stat-cards" id="statCounters" role="region" aria-label="Contadores por categoría"></div>
-
-      <div class="filter-bar" role="search" aria-label="Filtros de búsqueda">
-        <input class="filter-input" id="searchInput" type="search" placeholder="Buscar número…" aria-label="Buscar número">
-        <select class="filter-select" id="catFilter" aria-label="Filtrar por categoría"><option value="all">Todas las categorías</option></select>
-        <input class="filter-date" id="dateFrom" type="date" aria-label="Fecha desde">
-        <input class="filter-date" id="dateTo" type="date" aria-label="Fecha hasta">
-      </div>
-
-      <div class="table-wrap" role="region" aria-label="Tabla de resultados" tabindex="0">
-        <table role="table" aria-label="Sorteos de la Lotería de Panamá"><thead><tr>
-          <th scope="col">Fecha</th><th scope="col">Categoría</th><th scope="col">1er Premio</th><th scope="col">2do Premio</th><th scope="col">3er Premio</th><th scope="col">Letras</th><th scope="col">Serie</th><th scope="col">Folio</th>
-        </tr></thead><tbody id="sorteosBody"></tbody></table>
-      </div>
-      <nav class="pagination" id="pagination" role="navigation" aria-label="Paginación de resultados"></nav>
+      <div data-react-root="resultados"></div>
     </section>
 
     <!-- ==================== ESTADÍSTICAS ==================== -->

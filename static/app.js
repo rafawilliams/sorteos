@@ -76,8 +76,7 @@ function toggleTheme(){
 (function(){const saved=localStorage.getItem('theme');if(saved)applyTheme(saved)})();
 
 // STATE
-let allSorteos=[], stats={}, currentPage=1;
-const PER_PAGE=50;
+let allSorteos=[], stats={};
 let currentPrize='primero', currentStatsPrize='primero';
 let useML=false;
 let trendChartInstance=null, volumeChartInstance=null, endingsTrendChartInstance=null;
@@ -190,8 +189,6 @@ function showSkeletons(){
   // Fill key containers with skeletons
   const recoEl=document.getElementById('recoContainer');
   if(recoEl)recoEl.innerHTML=`<div class="skel-grid">${skelCard(4)+skelCard(4)+skelCard(4)+skelCard(4)}</div>`;
-  const statEl=document.getElementById('statCounters');
-  if(statEl)statEl.innerHTML=`<div class="skel-grid">${skelCard(2)+skelCard(2)+skelCard(2)+skelCard(2)}</div>`;
   const decEl=document.getElementById('decenaContainer');
   if(decEl)decEl.innerHTML=`<div class="skel-grid">${skelCard(5)+skelCard(5)}</div>`;
 }
@@ -229,13 +226,13 @@ async function loadData(){
 
 function renderQuick(){
   // Immediate renders that only need sorteos data
-  renderLastUpdate();renderSorteos();renderPagination();
-  renderScatterChart();initFilters();
+  renderLastUpdate();
+  renderScatterChart();
 }
 
 function renderFull(){
   // Full renders once stats are available
-  renderLastUpdate();buildCategoryUI();renderStatCounters();
+  renderLastUpdate();buildCategoryUI();
   renderRecommendations('all');renderDecenas();renderStatsForPrize(currentStatsPrize);renderSeriesLetras();renderFormatos();
   renderRadarChart();renderScatterChart();
   renderPositionGrids();renderHeatmap();renderTrendChart();renderVolumeChart();
@@ -259,65 +256,6 @@ function buildCategoryUI(){
   cats.forEach(c=>{const b=document.createElement('button');b.className='cat-tab';b.dataset.cat=c;b.textContent=catLabel(c);tc.appendChild(b)});
   const te=document.getElementById('endCatTabs');
   if(te)cats.forEach(c=>{const b=document.createElement('button');b.className='cat-tab';b.dataset.cat=c;b.setAttribute('role','tab');b.setAttribute('aria-selected','false');b.textContent=catLabel(c);te.appendChild(b)});
-  const sel=document.getElementById('catFilter');
-  cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=catLabel(c);sel.appendChild(o)});
-}
-
-// STAT COUNTERS
-function renderStatCounters(){
-  const cats={};allSorteos.forEach(s=>{cats[s.cat]=(cats[s.cat]||0)+1});
-  let h=`<div class="stat-card"><div class="stat-value">${allSorteos.length.toLocaleString()}</div><div class="stat-label">Total Sorteos</div></div>`;
-  for(const[cat,count]of Object.entries(cats))h+=`<div class="stat-card"><div class="stat-value">${count.toLocaleString()}</div><div class="stat-label">${esc(catLabel(cat))}</div></div>`;
-  document.getElementById('statCounters').innerHTML=h;
-}
-
-// TABLE + PAGINATION
-function getFilteredSorteos(){
-  const q=document.getElementById('searchInput').value.trim(),cat=document.getElementById('catFilter').value,df=document.getElementById('dateFrom').value,dt=document.getElementById('dateTo').value;
-  let d=allSorteos;
-  if(cat!=='all')d=d.filter(s=>s.cat===cat);
-  if(q)d=d.filter(s=>[s.primero,s.segundo,s.tercero].some(n=>(n||'').includes(q)));
-  if(df)d=d.filter(s=>s.fecha>=df);if(dt)d=d.filter(s=>s.fecha<=dt);
-  return d;
-}
-function renderSorteos(){
-  const data=getFilteredSorteos(),start=(currentPage-1)*PER_PAGE,page=data.slice(start,start+PER_PAGE);
-  const prizeCell=(val,cls)=>val?`<span class="prize-chip ${cls}">${esc(val)}</span>`:'<span class="num-empty">—</span>';
-  const metaCell=val=>val?`<span class="meta-chip">${esc(val)}</span>`:'<span class="num-empty">—</span>';
-  document.getElementById('sorteosBody').innerHTML=page.map(s=>`<tr>
-    <td>${formatDate(s.fecha)}</td><td><span class="cat-pill cat-${catClase(s.cat)}">${esc(catLabel(s.cat))}</span></td>
-    <td class="num-cell">${prizeCell(s.primero,'prize-1')}</td><td class="num-cell">${prizeCell(s.segundo,'prize-2')}</td><td class="num-cell">${prizeCell(s.tercero,'prize-3')}</td>
-    <td>${metaCell(s.letra)}</td><td>${metaCell(s.serie)}</td><td>${metaCell(s.folio)}</td></tr>`).join('');
-  renderPagination();
-}
-function renderPagination(){
-  const total=getFilteredSorteos().length,tp=Math.ceil(total/PER_PAGE);
-  if(tp<=1){document.getElementById('pagination').innerHTML='';return}
-  let h=`<button class="page-btn" onclick="goPage(1)" ${currentPage===1?'disabled':''}>«</button><button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
-  let s=Math.max(1,currentPage-3),e=Math.min(tp,currentPage+3);
-  if(s>1)h+='<span class="page-info">…</span>';
-  for(let i=s;i<=e;i++)h+=`<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
-  if(e<tp)h+='<span class="page-info">…</span>';
-  h+=`<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage>=tp?'disabled':''}>›</button><button class="page-btn" onclick="goPage(${tp})" ${currentPage>=tp?'disabled':''}>»</button>`;
-  h+=`<span class="page-info">${total.toLocaleString()} resultados</span>`;
-  document.getElementById('pagination').innerHTML=h;
-}
-function goPage(p){const t=getFilteredSorteos().length,tp=Math.ceil(t/PER_PAGE);currentPage=Math.max(1,Math.min(p,tp));renderSorteos();document.querySelector('.table-wrap').scrollTop=0}
-
-// FILTERS
-function initFilters(){
-  const h=()=>{currentPage=1;renderSorteos()};
-  ['searchInput','catFilter','dateFrom','dateTo'].forEach(id=>document.getElementById(id).addEventListener(id==='searchInput'?'input':'change',h));
-}
-
-// CSV EXPORT
-function exportCSV(){
-  const data=getFilteredSorteos();
-  let csv='Fecha,Categoria,1er Premio,2do Premio,3er Premio,Letras,Serie,Folio\n';
-  data.forEach(s=>{csv+=`${s.fecha},${s.cat},${(s.primero||'')},${(s.segundo||'')},${(s.tercero||'')},${s.letra||''},${s.serie||''},${s.folio||''}\n`});
-  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`sorteos_panama_${new Date().toISOString().slice(0,10)}.csv`;a.click();
-  showToast(`CSV exportado: ${data.length} registros`);
 }
 
 // AUTO-UPDATE
