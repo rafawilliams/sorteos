@@ -2,7 +2,7 @@
 // aplicadas a `.cat-tabs` y `.prize-tabs`: `role="tablist"`/`tab`, `aria-selected`, orden de Tab móvil (solo la elegida está
 // en él) y navegación con flechas, Inicio y Fin. Como en el código antiguo, las flechas enfocan la pestaña y la activan, y
 // las flechas arriba y abajo hacen lo mismo que derecha e izquierda.
-import { useRef, type KeyboardEvent } from 'react'
+import { useRef, type CSSProperties, type KeyboardEvent } from 'react'
 
 export interface PestanaDeLista {
   id: string
@@ -22,9 +22,11 @@ export interface TablistProps {
   claseTab?: string
   /** `aria-controls` de cada pestaña; `undefined` lo omite (para listas que no controlan ningún panel con ese `id`). */
   controla?: (id: string) => string | undefined
+  /** Estilo en línea del contenedor (el código antiguo ponía `margin-bottom:0` al selector de premio). */
+  estilo?: CSSProperties
 }
 
-export function Tablist({ etiqueta, pestañas, valor, onCambio, idPrefijo, clase = 'cat-tabs', claseTab = 'cat-tab', controla }: TablistProps) {
+export function Tablist({ etiqueta, pestañas, valor, onCambio, idPrefijo, clase = 'cat-tabs', claseTab = 'cat-tab', controla, estilo }: TablistProps) {
   const botones = useRef<Array<HTMLButtonElement | null>>([])
   // Si el valor ya no está en la lista, la primera pestaña conserva el acceso con Tab: sin esto la lista quedaría inalcanzable.
   const hayElegida = pestañas.some((p) => p.id === valor)
@@ -47,7 +49,7 @@ export function Tablist({ etiqueta, pestañas, valor, onCambio, idPrefijo, clase
   }
 
   return (
-    <div className={clase} role="tablist" aria-label={etiqueta} onKeyDown={alTeclear}>
+    <div className={clase} style={estilo} role="tablist" aria-label={etiqueta} onKeyDown={alTeclear}>
       {pestañas.map((p, i) => {
         const elegida = p.id === valor
         const panel = controla ? controla(p.id) : `${idPrefijo}-panel-${p.id}`

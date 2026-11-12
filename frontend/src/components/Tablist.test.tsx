@@ -202,6 +202,16 @@ describe('Tablist: variantes de marcado', () => {
     expect(screen.getAllByRole('tab').every((t) => t.getAttribute('aria-controls') === 'unico')).toBe(true)
   })
 
+  it('aplica el estilo que se le pasa al contenedor', () => {
+    const { container } = render(<Tablist etiqueta="Con estilo" pestañas={PESTANAS.slice(0, 2)} valor="all" idPrefijo="e" estilo={{ marginBottom: 0 }} onCambio={() => {}} />)
+    expect((container.querySelector('[role="tablist"]') as HTMLElement).style.marginBottom).toBe('0px')
+  })
+
+  it('sin estilo no escribe el atributo style', () => {
+    const { container } = render(<Controlado />)
+    expect(container.querySelector('[role="tablist"]')?.hasAttribute('style')).toBe(false)
+  })
+
   it('con controla que devuelve undefined no pone aria-controls', () => {
     render(<Tablist etiqueta="Sin panel" pestañas={PESTANAS.slice(0, 2)} valor="all" idPrefijo="s" controla={() => undefined} onCambio={() => {}} />)
     expect(screen.getAllByRole('tab').every((t) => !t.hasAttribute('aria-controls'))).toBe(true)
