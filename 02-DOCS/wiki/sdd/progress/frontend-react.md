@@ -428,3 +428,11 @@ Isla Seguimiento, retirada del código antiguo con la guardia ampliada y referen
 
 ## Decision queue (adiciones — etapa 3)
 - [review-after] Q9 — T027/L13: nada obliga a quien use `Chart` a memorizar `datos` y `opciones`. Los próximos consumidores (T028, T029, T040, T048, T049) deben pasar `useCallback` o constantes de módulo; vale la pena que su revisión lo compruebe.
+
+## T025 — 2026-11-11
+- status: complete (commit 47dfc76)
+- red/green: la guardia ampliada falló en 20 aserciones sobre el `app.js` real antes de retirar el código; después 83 pruebas Python en verde (`test_ids_retirados` + `test_ui_assets`), 492 en la suite completa con base sembrada, 591 en el front. `node new Function(app.js)` sin error.
+- mutantes: reintroducir cada uno de los 6 ids nuevos y las 14 funciones/variables en app.js, un id en style.css y otro en index.html, y quitar el marcador de la isla: todos hacen fallar la guardia.
+- files: static/app.js (−224 líneas: bloques de Comparador y Favoritos y la llamada `renderFavorites()` de `renderFull`), tests/test_ids_retirados.py
+- risk: tier 1 — 1 revisor. review ronda 1 → VERDICT pass, 0 hallazgos (`chartOpts`, `esc`, `showToast`, `triggerReveals` y las clases compartidas siguen en uso; nadie más llamaba a `updateFavBadge`; la insignia la pone la isla).
+- controls: tests ✅ build ✅ security n/a traceability ✅ (AC10).
