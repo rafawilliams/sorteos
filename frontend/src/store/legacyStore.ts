@@ -15,6 +15,7 @@ export interface PuenteLP {
   setPrize(premio: Premio): void
   setStatsPrize(premio: Premio): void
   toast(mensaje: string, ms?: number): void
+  simular(numero: string): void
   reload(): Promise<void>
 }
 
@@ -36,6 +37,7 @@ export function crearLegacyStore(puente: PuenteLP | undefined = window.LP): Stor
       setPrize: (premio) => puente.setPrize(premio),
       setStatsPrize: (premio) => puente.setStatsPrize(premio),
       toast: (mensaje, ms) => puente.toast(mensaje, ms),
+      simularNumero: (numero) => puente.simular(numero),
       reload: () => puente.reload(),
     },
   }

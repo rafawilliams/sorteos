@@ -103,6 +103,14 @@ describe('de React a app.js', () => {
     expect(store.getSnapshot().prize).toBe('primero')
   })
 
+  it('simularNumero abre el Simulador con ese número y lanza la simulación', async () => {
+    store.actions.simularNumero('0042')
+    expect((document.getElementById('simNumero') as HTMLInputElement).value).toBe('0042')
+    expect(store.getSnapshot().activeTab).toBe('simulador')
+    expect(document.getElementById('sec-simulador')).toHaveClass('active')
+    await vi.waitFor(() => expect(legacy.peticiones).toContain('/api/simulador?numero=0042'))
+  })
+
   it('toast muestra el aviso de la página', () => {
     store.actions.toast('Hola')
     const t = document.getElementById('toast')!

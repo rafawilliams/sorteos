@@ -13,6 +13,7 @@ const puente = {
   setPrize() {},
   setStatsPrize() {},
   toast() {},
+  simular() {},
   reload: async () => {},
 }
 

@@ -85,6 +85,16 @@ describe('crearStoreFalso: acciones', () => {
     ])
   })
 
+  it('simularNumero se registra y deja el Simulador como pestaña activa', () => {
+    const store = crearStoreFalso({ activeTab: 'favoritos' })
+    const escucha = vi.fn()
+    store.subscribe(escucha)
+    store.actions.simularNumero('0042')
+    expect(store.llamadas).toEqual([{ accion: 'simularNumero', args: ['0042'] }])
+    expect(store.getSnapshot().activeTab).toBe('simulador')
+    expect(escucha).toHaveBeenCalled()
+  })
+
   it('toast se registra con su mensaje y su duración', () => {
     const store = crearStoreFalso()
     store.actions.toast('Copiado: 1234', 3000)
