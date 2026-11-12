@@ -447,3 +447,17 @@ Isla Seguimiento, retirada del código antiguo con la guardia ampliada y referen
 
 ## Etapa 3 (T023–T027) completa
 Islas Mis Números y Comparador, componente `Chart`, retirada del código antiguo con la guardia ampliada y capturas aprobadas. Pendiente de la etapa: abrir su PR contra `main` (apilada sobre la etapa 2, ya fusionada).
+
+## T028 — 2026-11-12 (rama `feat/react-etapa-4-simulador-mensual`; implementada, pendiente de riesgo y revisión)
+- status: in-review (todavía sin commit)
+- red/green: contrato `simulacion` — 6 fallos en rojo (`simulacion` llegaba `undefined` en el doble, `StoreManual`, la clase con flechas y `LegacyStore`), luego 115 en verde; isla — 38 fallos en rojo («Unable to find…») y 39 en verde; guardia — 16 fallos en rojo y 123 en verde al retirar el código; puente — 1 rojo (app.js aún simulaba por su cuenta) y verde.
+- hecho: campo `simulacion` en el Store (`tipos.ts`, `storeFalso.ts`, `hooks.ts` → `useSimulacion`, `contratoStore.ts`, `app.js`: `LP.simular` ya no toca `#simNumero` ni llama a `runSimulation`); isla `tabs/Simulador.tsx` (formulario, categorías desde `stats.by_category`, esqueleto con `stats` nulo y mientras busca, error con «Reintentar», respuestas viejas descartadas, petición desde Mis Números); plantilla con `<div data-react-root="simulador">`; retirados `initSimCats`, `runSimulation`, `renderSimResults`, `simChartInstance` y los ids `simNumero`, `simCat`, `simFrom`, `simTo`, `simBtn`, `simResults`; guardia ampliada.
+- pruebas: 40 de la isla; 643 en el front; 515 Python (1 omitida; base sembrada `sorteos_capturas`, nunca la real); `typecheck` 0; build correcto; `npm audit` 0; `pip-audit` sin vulnerabilidades.
+- mutantes: isla 24/24 detectados (uno sobrevivió y se cerró: el separador de miles de «Sorteos analizados», con una prueba de 9.296); contrato 5 almacenes rotos, todos rechazados por su defecto; puente en `app.js` 5/6 (el que sobrevive, `String(n)` frente a `n`, es equivalente: el contrato ya exige texto).
+- navegador real (Playwright, base sembrada en el 5002 desde este worktree, 600 sorteos): 10/10 comprobaciones y 0 errores de consola: formulario con «Todas» y las 4 categorías; «74» pide `numero=0074`; filtros en la URL; campo vacío avisa y no pide; Enter en el botón simula; «Simular 0042» desde Mis Números abre la pestaña, rellena el campo y simula; repetir el número simula otra vez; tema claro. Las tarjetas `.reveal` quedan en opacidad 1 al bajar (como en el resto de la app).
+- decisiones: «Simular» llega por `simulacion` y tres cambios de comportamiento (ver decisions.md, 2026-11-12). Q8 queda resuelta: `simularNumero` ya no es un puente temporal.
+- risk: **pendiente**: `rsc risk` no se ha podido ejecutar (el clasificador de permisos bloquea `npx`); el tier lo calcula la herramienta, no el agente. review: **pendiente** (un revisor de contexto fresco si el tier es 1).
+- controls: tests ✅ build ✅ security ✅ traceability ✅ (AC2 isla; AC10 retirada del código antiguo).
+
+## Decision queue (adiciones — etapa 4)
+- [review-after] Q10 — T028: `Snapshot.simulacion` es contrato nuevo del Store; `ReactStore` (T052) debe implementarlo y pasar la suite de contrato (`describirContratoDeStore`, comprobación `simulacion`).
