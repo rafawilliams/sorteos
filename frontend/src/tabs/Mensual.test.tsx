@@ -320,6 +320,21 @@ describe('perfiles mensuales detallados', () => {
     ])
   })
 
+  it('cada ficha escribe su texto en nodos enteros, como el código antiguo (React parte «(1)» en tres y Chromium los compone por separado)', () => {
+    montar()
+    const fichas = Array.from(tarjetas()[0]!.querySelectorAll(':scope > div > span'))
+    expect(fichas.length).toBeGreaterThan(0)
+    fichas.forEach((ficha) => {
+      const nodos = Array.from(ficha.childNodes)
+      // «4653 » en un solo nodo de texto y la cuenta «(1)» en un único nodo dentro de <small>: 2 hijos, no 5.
+      expect(nodos.map((n) => n.nodeName)).toEqual(['#text', 'SMALL'])
+      expect(nodos[0]!.textContent).toMatch(/^\d+ $/)
+      const cuenta = nodos[1] as HTMLElement
+      expect(cuenta.childNodes).toHaveLength(1)
+      expect(cuenta.textContent).toMatch(/^\(\d+\)$/)
+    })
+  })
+
   it('sin números calientes o sin terminaciones no aparece su bloque', () => {
     montar(conReco({ monthly_profiles: MR.monthly_profiles.map((p, i) => (i === 0 ? { ...p, hot: [], top_endings: [] } : p)) }))
     expect(within(tarjetas()[0]!).queryByText('Top números:')).not.toBeInTheDocument()
