@@ -550,3 +550,7 @@ Islas Mis Números y Comparador, componente `Chart`, retirada del código antigu
 - contraste (mínimo AA 4,5), idéntico en las dos versiones: la etiqueta de las cifras y la nota «Prob. prom.» usan `--text-muted` y quedan en 2,63 (oscuro) y 4,1 (claro), por debajo de AA; el resto pasa (4,8 a 17,99). Es el mismo valor que en Simulador y Mensual: una decisión de diseño aparte.
 - `/api/backtesting` está limitado a 5 peticiones por minuto (decisions.md).
 - controles tras la revisión (una sola pasada fresca): `typecheck` 0; 745 pruebas en el front (50 de la isla); 554 Python (1 omitida; base sembrada `sorteos_capturas`); build correcto; `npm audit` 0.
+
+## T034 — 2026-11-12 (aprobada por el dueño)
+- status: complete («apruebo todo»). Las 2 capturas de Precisión (0 píxeles de diferencia frente al código antiguo), la revisión de teclado y tema (17/17) y los arreglos de la revisión de T032 quedan como evidencia de la etapa 5. No se guardan en el repositorio.
+- etapa 5 (T032–T034): isla Precisión, retirada del código antiguo y de los ids `precision*` (T033 absorbida), guardia ampliada. Pendiente de la etapa: abrir su PR contra `main`.
