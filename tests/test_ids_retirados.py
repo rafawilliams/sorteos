@@ -17,9 +17,15 @@ ARCHIVOS = ("static/app.js", "static/style.css", "templates/index.html")
 # id retirado -> isla que lo sustituye (su marcador `data-react-root` debe existir en la plantilla)
 IDS_RETIRADOS = {
     "gapsContent": "gaps",
+    "segLoader": "seguimiento",
+    "segContent": "seguimiento",
+    "segSummary": "seguimiento",
+    "segPendientes": "seguimiento",
+    "segMarcador": "seguimiento",
+    "segHistorial": "seguimiento",
 }
 # funciones de app.js que ya no deben existir ni llamarse
-FUNCIONES_RETIRADAS = ("loadGaps", "renderGaps")
+FUNCIONES_RETIRADAS = ("loadGaps", "renderGaps", "loadSeguimiento", "renderSeguimiento", "segPct", "segNum", "SEG_METODOS")
 
 
 def menciones(texto: str, palabra: str) -> list[int]:

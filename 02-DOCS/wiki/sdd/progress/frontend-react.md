@@ -361,6 +361,24 @@ Todos sobre la suite de contrato, es decir, sobre lo que T015 y T052 tendrán qu
 ## Etapa 1 (T008–T019) completa
 Puente `window.LP`, `LegacyStore`, hooks, cliente de API, fixtures y contrato, montaje de islas y primera pestaña migrada (Gaps). Pendiente de la etapa: abrir su PR (apilado sobre #37, que aún espera el merge del dueño).
 
+## T020 — 2026-11-11
+- status: complete (commits 1dcd577 + 2a1b43b), rama `feat/react-etapa-2-seguimiento` desde main (tras fusionar #38)
+- red/green: 29 pruebas fallaron contra el esqueleto (por aserción); `Seguimiento.test.tsx` 34 pruebas; 398 en todo el front, `typecheck` 0, `npm audit` 0, 417 Python (base sembrada). 23 mutantes de la isla: 3 que sobrevivían se cerraron con pruebas (umbral exacto del 50/50, nota de peso ML, nota «sin ML»); sobrevive uno visual (segunda tarjeta del esqueleto).
+- files: frontend/src/tabs/{Seguimiento.tsx,Seguimiento.test.tsx}, templates/index.html (`<div data-react-root="seguimiento">` sustituye a segLoader/segContent y su contenido), static/app.js (solo se quita la llamada `loadSeguimiento()` de `activateNavTab`; sin los elementos lanzaría).
+- página real (5001, base sembrada): 1 petición por activación, 0 errores de consola, ningún id antiguo; esa base no tiene recomendaciones, ahí se ve el estado vacío.
+- risk: tier 1 — 1 revisor
+- review: ronda 1 → VERDICT pass, 5 nits. L2 (campo `clave` muerto), L3 (listas ausentes como vacías, igual que `app.js`) y L5 (prueba de marcado escapado sustituida por la de listas ausentes) arreglados; L1 (claves por categoría/id: un pendiente por categoría por diseño) y L4 (un frame con datos viejos antes del esqueleto) intencionales.
+- controls: tests ✅ build ✅ security ✅ traceability ✅ (AC2). Ronda 2 de 3.
+- desviación declarada: la ledger de `rsc` es local por worktree: aquí empieza en L1.
+
+## T021 — 2026-11-11
+- status: complete (commit 16886fb)
+- red/green: la guardia ampliada falló en 11 aserciones sobre el `app.js` real antes de retirar el código; después 49 pruebas Python en verde (`test_ids_retirados` + `test_ui_assets`), 441 en la suite completa con base sembrada, 398 en el front. `node new Function(app.js)` sin error.
+- mutantes: reintroducir cada uno de los 6 ids `seg*` y las 5 funciones en app.js, un id en style.css y otro en index.html, y quitar el marcador de la isla: los 14 casos hacen fallar la guardia.
+- files: static/app.js (−61 líneas: `loadSeguimiento`, `renderSeguimiento`, `segPct`, `segNum`, `SEG_METODOS`), tests/test_ids_retirados.py
+- risk: tier 1 — 1 revisor. review ronda 1 → VERDICT pass, 0 hallazgos (helpers compartidos `esc`, `formatDate`, `catLabel`, `triggerReveals` y las clases CSS siguen en uso; sin referencias colgantes ni estilos huérfanos).
+- controls: tests ✅ build ✅ security n/a traceability ✅ (AC10).
+
 ## Menú lateral — 2026-11-11 (rama `feat/react-menu-navegacion`, enmienda pedida por el dueño)
 - status: complete (commits cf4bad8 + c175128)
 - pedido: «pasa las tabs a menú» y «usa icono en el menú cuando se esconda la barra lateral». Decididos con el dueño: barra lateral, rama nueva desde `main` ahora. Spec enmendada (AC1 y criterio nuevo) y decisión en `decisions.md`.
@@ -370,3 +388,13 @@ Puente `window.LP`, `LegacyStore`, hooks, cliente de API, fixtures y contrato, m
 - fallos que solo salieron en navegador real (corregidos y con prueba): el fondo tapaba la barra (`.app` crea su propio contexto de apilamiento) y `transition: all` en las pestañas incluía `visibility` (el foco fallaba justo al abrir).
 - risk: tier 1 — 1 revisor. review ronda 1 → 9 hallazgos (4 should-fix, 4 nits, 1 pregunta): los 9 arreglados (el de la pregunta: las flechas no cierran el menú, Enter y clic sí). Ronda 2 de 3, sin segunda revisión aparte.
 - pendiente tras fusionar: renovar las 28 capturas de referencia (el ancho útil baja 248 px) y que el dueño las apruebe. Las ramas de etapa en curso (`feat/react-etapa-2-seguimiento`) tendrán que fusionar `main` y sacar sus capturas con el menú.
+
+## T022 — 2026-11-11
+- status: complete (aprobada por el dueño: «Aprobadas»)
+- referencia renovada: las 28 capturas de `02-DOCS/attachments/react-baseline/` se sustituyen por las sacadas de `main` con el menú lateral (el ancho útil bajó 248 px); aprobado por el dueño («Sí, sustitúyelas»). Gaps ya es isla (aprobada idéntica en T019); el resto es el código antiguo sin tocar. Las etapas siguientes comparan contra esta referencia.
+- capturas `seguimiento-oscuro` y `seguimiento-claro` con la isla frente a esa referencia: 0 píxeles de diferencia (>8/255) en los dos temas. Limitación: la base sembrada no tiene recomendaciones ni sorteos comparados, así que se compara el estado vacío; los estados con datos (aciertos marcados, método sin ML, `numeros_aplican` falso, listas ausentes) los cubren las 34 pruebas de la isla.
+- verificación con navegador real (Playwright, base sembrada, 0 errores de consola): flechas arriba/abajo, Inicio y Fin de la barra lateral desde Seguimiento, el contenido se recarga en cada activación (3 peticiones en 3 activaciones), el tema alterna (`window.LP` y `data-theme`; tarjeta blanca en claro), las regiones «Marcador por método» e «Historial del seguimiento» son enfocables. Seguimiento no tiene subpestañas.
+- risk: tier 1, sin código nuevo.
+
+## Etapa 2 (T020–T022) completa
+Isla Seguimiento, retirada del código antiguo con la guardia ampliada y referencia de capturas renovada con el menú. Pendiente de la etapa: abrir su PR contra `main`.
