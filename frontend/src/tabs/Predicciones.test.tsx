@@ -80,6 +80,15 @@ describe('isla Predicciones: estructura', () => {
     expect(screen.getAllByRole('tab').every((t) => t.getAttribute('aria-controls') === id)).toBe(true)
   })
 
+  it('el id que controlan los selectores existe también mientras llegan las estadísticas', () => {
+    montar({ stats: null })
+    const controlados = new Set(screen.getAllByRole('tab').map((t) => t.getAttribute('aria-controls')))
+    expect(controlados.size).toBe(1)
+    const [id] = [...controlados]
+    expect(id).toBeTruthy()
+    expect(document.getElementById(id!)).toBeTruthy()
+  })
+
   it('la región de recomendaciones es una región viva', () => {
     montar()
     expect(region().getAttribute('aria-live')).toBe('polite')

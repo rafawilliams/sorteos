@@ -1,25 +1,44 @@
 // Isla «Predicciones: resumen» (spec frontend-react, T043). Equivale a `renderDashboard` de static/app.js: la tarjeta del
 // último sorteo oficial (con esferas) y los cuatro indicadores (mejor recomendación estadística, mejor de ML, terminación
 // caliente del año y total de sorteos). Los premios se muestran tal como llegan (AC4).
+import { useRef } from 'react'
 import { Balls } from '../components/Balls'
 import { Skeleton } from '../components/Skeleton'
 import { catClase, catLabel, fmtLift, formatDate } from '../lib/formato'
 import { terminacionCaliente } from '../lib/predicciones'
-import { useSorteos, useStats } from '../store/hooks'
+import { useErrorSorteos, useReload, useSorteos, useStats } from '../store/hooks'
 
 export const nombre = 'predicciones-resumen'
 
 export function Componente() {
   const stats = useStats()
   const sorteos = useSorteos()
+  const errorSorteos = useErrorSorteos()
+  const recargar = useReload()
+  const zonaRef = useRef<HTMLDivElement>(null)
   const ultimo = sorteos[0]
   if (!stats || !ultimo) {
+    const reintentar = () => {
+      zonaRef.current?.focus() // el botón desaparece al reintentar: el foco pasa al contenedor, no a <body>
+      void recargar()
+    }
     return (
-      <div role="status" aria-label="Cargando resumen">
-        <div className="skel-grid">
-          <Skeleton lineas={4} />
-          <Skeleton lineas={4} />
-        </div>
+      <div ref={zonaRef} tabIndex={-1} style={{ outline: 'none' }}>
+        {errorSorteos && !ultimo ? (
+          <div role="alert">
+            <p style={{ color: '#f87171' }}>No se pudo cargar el último sorteo.</p>
+            <button type="button" className="btn" onClick={reintentar}>
+              Reintentar
+            </button>
+          </div>
+        ) : (
+          <div role="status" aria-label="Cargando resumen">
+            <div className="skel-grid">
+              <Skeleton lineas={4} />
+              <Skeleton lineas={4} />
+            </div>
+          </div>
+        )}
       </div>
     )
   }

@@ -133,8 +133,9 @@ function initTabs(){
   });
   initTablistKeyboard(navTabs);
 
-  // Prize tabs keyboard nav
-  document.querySelectorAll('.prize-tabs').forEach(pt=>initTablistKeyboard(pt));
+  // Prize tabs keyboard nav (solo el de Estadísticas: el de Predicciones es del componente Tablist de React)
+  const statsPrizeTabs=document.getElementById('statsPrizeTabs');
+  if(statsPrizeTabs)initTablistKeyboard(statsPrizeTabs);
 
   initMenu();
 }
@@ -288,7 +289,6 @@ function setUseMLLP(valor){
   if(useML&&info.trained)showToast(`ML: ${info.train_samples} muestras · Entrenado: ${info.train_date}`,3000);
 }
 
-// DECENA RECOMMENDATION
 // STATS FOR PRIZE
 function renderStatsForPrize(prize){
   const pd=(stats.prizes&&stats.prizes[prize])||{};
@@ -444,7 +444,6 @@ function renderVolumeChart(){
   volumeChartInstance=new Chart(ctx,{type:'bar',data:{labels:t.map(x=>x.month),datasets:[{label:'Sorteos por mes',data,backgroundColor:data.map((_,i)=>`rgba(${Math.round(212-50*i/data.length)},${Math.round(175-30*i/data.length)},${Math.round(55+100*i/data.length)},0.7)`),borderColor:'rgba(212,175,55,0.3)',borderWidth:1,borderRadius:6}]},options:chartOpts(false)});
 }
 
-// DASHBOARD SUMMARY
 // SCROLL REVEAL
 function triggerReveals(){
   const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})},{threshold:0.1});

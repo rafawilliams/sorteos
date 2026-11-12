@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
-import { render, screen, within } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Sorteo, Stats } from '../api/types'
 import { fmtLift, formatDate } from '../lib/formato'
@@ -16,11 +17,12 @@ const sorteo = (extra: Partial<Sorteo>): Sorteo => ({ ...ULTIMO, ...extra })
 
 function montar(estado: Partial<Snapshot> = {}) {
   const store = crearStoreFalso({ activeTab: 'predicciones' as never, stats: STATS, sorteos: SORTEOS, ready: true, ...estado })
-  return render(
+  const vista = render(
     <StoreProvider store={store}>
       <Componente />
     </StoreProvider>,
   )
+  return { store, ...vista }
 }
 const texto = (el: Element | null | undefined) => (el?.textContent ?? '').replace(/\s+/g, ' ').trim()
 const resumen = () => screen.getByRole('region', { name: 'Resumen rápido' })
@@ -48,6 +50,41 @@ describe('isla Predicciones: panel de resumen', () => {
   it('sin sorteos tampoco hay resumen: esqueleto', () => {
     montar({ sorteos: [], ready: false })
     expect(screen.getByRole('status', { name: 'Cargando resumen' })).toBeTruthy()
+  })
+
+  describe('error de carga de los sorteos', () => {
+    it('si /api/sorteos falla y no hay ninguno, avisa y ofrece reintentar en vez de quedarse en el esqueleto', () => {
+      montar({ sorteos: [], ready: false, errorSorteos: true })
+      expect(texto(screen.getByRole('alert'))).toContain('No se pudo cargar el último sorteo.')
+      expect(screen.getByRole('button', { name: 'Reintentar' })).toBeTruthy()
+      expect(screen.queryByRole('status', { name: 'Cargando resumen' })).toBeNull()
+    })
+
+    it('también avisa aunque las estadísticas no hayan llegado', () => {
+      montar({ stats: null, sorteos: [], ready: false, errorSorteos: true })
+      expect(screen.getByRole('alert')).toBeTruthy()
+    })
+
+    it('«Reintentar» pide recargar y deja el foco en el contenedor (el botón desaparece al reintentar)', async () => {
+      const { store } = montar({ sorteos: [], ready: false, errorSorteos: true })
+      await userEvent.click(screen.getByRole('button', { name: 'Reintentar' }))
+      expect(store.llamadas.filter((l) => l.accion === 'reload')).toHaveLength(1)
+      expect((document.activeElement as HTMLElement).getAttribute('tabindex')).toBe('-1')
+    })
+
+    it('al reintentar (errorSorteos vuelve a false) se ve el esqueleto y, al llegar los datos, el resumen', () => {
+      const { store } = montar({ sorteos: [], ready: false, errorSorteos: true })
+      act(() => store.cambiar({ errorSorteos: false }))
+      expect(screen.getByRole('status', { name: 'Cargando resumen' })).toBeTruthy()
+      act(() => store.cambiar({ sorteos: SORTEOS, ready: true }))
+      expect(screen.getByRole('region', { name: 'Resumen rápido' })).toBeTruthy()
+    })
+
+    it('con sorteos ya cargados el error se ignora (un fallo al recargar no tapa el resumen)', () => {
+      montar({ errorSorteos: true })
+      expect(screen.getByRole('region', { name: 'Resumen rápido' })).toBeTruthy()
+      expect(screen.queryByRole('alert')).toBeNull()
+    })
   })
 
   describe('último sorteo', () => {

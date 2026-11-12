@@ -89,7 +89,7 @@ export function Componente() {
       </div>
       <Tablist etiqueta="Filtrar por categoría" pestañas={pestañasCategoria} valor={catValida} onCambio={setCat} idPrefijo="recoCat" controla={controlaRegion} />
       {!stats ? (
-        <div role="status" aria-label="Cargando recomendaciones">
+        <div id={ID_REGION} role="status" aria-label="Cargando recomendaciones">
           <div className="skel-grid">
             <Skeleton lineas={4} />
             <Skeleton lineas={4} />
