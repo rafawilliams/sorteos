@@ -380,3 +380,15 @@ Puente `window.LP`, `LegacyStore`, hooks, cliente de API, fixtures y contrato, m
 
 ## Etapa 2 (T020–T022) completa
 Isla Seguimiento, retirada del código antiguo con la guardia ampliada y referencia de capturas renovada con el menú. Pendiente de la etapa: abrir su PR contra `main`.
+
+## T023 — 2026-11-11 (rama `feat/react-etapa-3-favoritos-comparador`, apilada sobre la etapa 2)
+- status: complete (commits 6139d82, 449f8a2, ee8f3b3 + arreglos de la ronda 2)
+- hecho: isla `tabs/Favoritos.tsx` (lista en `lp_favorites`, cruce con los 20 sorteos recientes y las recomendaciones, etiquetas y bordes como antes, insignia de la pestaña con `useInsignia`); `lib/favoritos.ts` (lógica pura y tolerante); `lib/numeroSimulador.ts` (`normalizarNumero` y `validarNumero`, antes de T028: lo necesita Mis Números); acción de Store `simularNumero` (puente `LP.simular`) para el botón «Simular».
+- pruebas: 517 en el front (37+ de la isla, lógica pura, contrato del Store con la acción nueva, puente), `typecheck` 0, `npm audit` 0, 458 Python. 38 mutantes (26 + 12 de la ronda 2): todos detectados tras cerrar dos huecos (límite exacto de 20 sorteos; borde dorado solo con ML).
+- página real (5001, base sembrada): alta, avisos de repetido y vacío, persistencia al recargar, insignia, «Simular» abre el Simulador con `0042` y lanza `/api/simulador?numero=0042`, 0 errores de consola.
+- risk: tier 1 — 1 revisor. review ronda 1 → 10 hallazgos (4 should-fix, 1 pregunta de proceso, 3 nits, 2 más): L1–L9 arreglados (almacén resuelto dentro del `try`; solo el aviso de fallo al guardar, sin tapar; evento `storage` para sincronizar pestañas; `key` por id de sorteo; decisión registrada en decisions.md; un solo nombre accesible en el campo; foco a la lista al quitar y «Simular {n}»; pruebas reforzadas; `simular` no actúa si falta la pestaña). L10 aparcado (Q8).
+- desviaciones declaradas: la plantilla ya sustituye la tarjeta «Agregar Número» y `#favContainer` por `<div data-react-root="favoritos">` (el JS antiguo queda muerto hasta T025).
+- controls: tests ✅ build ✅ security ✅ traceability ✅ (AC2). Ronda 2 de 3.
+
+## Decision queue (adiciones — etapa 3)
+- [review-after] Q8 — T023/L10: `simularNumero`/`LP.simular` es una acción puente temporal; T028 (isla Simulador) debe reimplementarla sobre la isla (o retirar el puente) y usar `validarNumero` para que el campo vacío no se rellene hasta «0000» (hoy `runSimulation` aún lo hace).
