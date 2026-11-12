@@ -37,7 +37,9 @@ class TestLottoBallsAndDashboardJS:
     def test_recommendations_and_heatmaps_use_new_ui_components(self):
         js = _read("static/app.js")
         assert "renderBalls(r.number,useML?'green':'gold','lg')" in js
-        assert "renderBalls(r.ending,useML?'green':'gold','md')" in js
+        # Las esferas de las terminaciones ya no están en app.js: las pinta la isla Terminaciones (T040). Lo cubren sus
+        # pruebas (frontend/src/tabs/Terminaciones.test.tsx: esferas doradas medianas en modo estadístico, verdes y
+        # con la marca reco-ml en modo ML).
         assert "heatmap-legend" in js
         assert "cell-peak" in js
         # `prize-chip` ya no está en app.js: lo pinta la isla Resultados (T035). Lo cubren sus pruebas

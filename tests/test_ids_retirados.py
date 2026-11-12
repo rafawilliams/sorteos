@@ -52,6 +52,17 @@ IDS_RETIRADOS = {
     "dateTo": "resultados",
     "sorteosBody": "resultados",
     "csvBtn": "resultados",
+    "decenaContainer": "decenas",
+    "endCatTabs": "terminaciones",
+    "endingsRecoContainer": "terminaciones",
+    "endingsBacktestNote": "terminaciones",
+    "endingsHotChart": "terminaciones",
+    "endingsColdChart": "terminaciones",
+    "endP1Chart": "terminaciones",
+    "endP2Chart": "terminaciones",
+    "endP3Chart": "terminaciones",
+    "endingsHeatmap": "terminaciones",
+    "endingsTrendChart": "terminaciones",
     # `pagination` (id) no se vigila: `.pagination` sigue siendo una clase de style.css que usa la isla.
     # `updateBtn` tampoco: el botón de actualizar es del armazón y se migra en T054.
 }
@@ -66,6 +77,8 @@ FUNCIONES_RETIRADAS = (
     "renderMonthlySection", "monthlyProfileChartInstance",
     "loadBacktesting", "renderBacktesting", "renderPrecisionTrend", "backtestData", "precisionChartInstance",
     "renderStatCounters", "getFilteredSorteos", "renderSorteos", "renderPagination", "goPage", "initFilters", "exportCSV", "currentPage", "PER_PAGE",
+    "renderDecenas", "renderEndingsSection", "renderPrizeEndings", "renderEndingsHeatmap", "renderEndingsTrendChart",
+    "initEndCatTabs", "endingsTrendChartInstance", "ENDING_COLORS",
 )
 
 
