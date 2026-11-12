@@ -313,6 +313,17 @@ describe('resultados', () => {
     expect(celdas(filaDe('Última Aparición')).slice(1)).toEqual(['Nunca'])
   })
 
+  it('las celdas de valores se ven como hoy: centradas y SIN fuente monoespaciada (el estilo antiguo estaba roto)', async () => {
+    montar()
+    agregar('1111')
+    const tabla = await screen.findByRole('table')
+    const celda = tabla.querySelector('tbody tr:first-child td:nth-child(2)') as HTMLElement
+    expect(celda.style.textAlign).toBe('center')
+    expect(celda.style.fontFamily).toBe('')
+    // las cabeceras de número sí llevan la monoespaciada
+    expect((within(tabla).getAllByRole('columnheader')[1] as HTMLElement).style.fontFamily).toContain('JetBrains Mono')
+  })
+
   it('la tabla se puede desplazar en horizontal', async () => {
     montar()
     agregar('1111')

@@ -81,7 +81,9 @@ function Resultados({ datos }: { datos: Comparacion }) {
                 <tr key={f.rotulo}>
                   <td style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{f.rotulo}</td>
                   {numeros.map((n) => (
-                    <td key={n.number} style={{ textAlign: 'center', fontFamily: MONO }}>
+                    // Sin fuente monoespaciada a propósito: en app.js el atributo `style` de estas celdas llevaba comillas dobles
+                    // dentro de comillas dobles y el navegador lo cortaba, así que hoy se ven con la fuente por defecto (AC1).
+                    <td key={n.number} style={{ textAlign: 'center' }}>
                       {f.valor(n)}
                     </td>
                   ))}
