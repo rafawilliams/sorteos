@@ -26,6 +26,7 @@ class StoreClaseConFlechas implements Store {
   private snapshot: Snapshot = crearStoreFalso().getSnapshot()
   private escuchas = new Set<() => void>()
   private fallaLaRecarga = false
+  private peticiones = 0
   getSnapshot() {
     return this.snapshot // se llama siempre como método del almacén
   }
@@ -50,7 +51,10 @@ class StoreClaseConFlechas implements Store {
     setPrize: (p: Snapshot['prize']) => this.poner({ prize: p }),
     setStatsPrize: (p: Snapshot['statsPrize']) => this.poner({ statsPrize: p }),
     toast: () => {},
-    simularNumero: (_n: string) => this.poner({ activeTab: 'simulador' }),
+    simularNumero: (n: string) => {
+      this.peticiones += 1
+      this.poner({ activeTab: 'simulador', simulacion: { numero: n, id: this.peticiones } })
+    },
     reload: async () => {
       this.fallaLaRecarga = false // un fallo se registra y se traga; los datos viejos se quedan
     },
@@ -96,6 +100,7 @@ class StoreManual implements Store {
   private escuchas = new Set<() => void>()
   fallosTragados = 0
   private fallosPendientes = 0
+  private peticiones = 0
   constructor(private opciones: { sinAvisarEn?: string[]; avisarAntes?: boolean; vaciaStatsSinAvisarEnReload?: boolean } = {}) {}
   getSnapshot() {
     return this.snapshot
@@ -125,7 +130,10 @@ class StoreManual implements Store {
     setPrize: (p: Snapshot['prize']) => this.poner('setPrize', { prize: p }),
     setStatsPrize: (p: Snapshot['statsPrize']) => this.poner('setStatsPrize', { statsPrize: p }),
     toast: () => {},
-    simularNumero: (_n: string) => this.poner('simularNumero', { activeTab: 'simulador' }),
+    simularNumero: (n: string) => {
+      this.peticiones += 1
+      this.poner('simularNumero', { activeTab: 'simulador', simulacion: { numero: n, id: this.peticiones } })
+    },
     reload: async () => {
       if (this.opciones.vaciaStatsSinAvisarEnReload) {
         // defecto: vacía `stats` un momento SIN avisar a nadie (solo se ve leyendo el estado a intervalos)
@@ -266,6 +274,64 @@ function sinCancelarSuscripcion(): Store {
 function sinAvisarTrasUnCambio(): Store {
   const base = crearStoreFalso()
   return { ...base, subscribe: () => () => {} } as Store
+}
+
+/** Defecto único: «simular» abre la pestaña pero no deja ninguna petición en `simulacion`. */
+function queNoFijaLaSimulacion(): Store {
+  const base = crearStoreFalso()
+  return { ...base, actions: { ...base.actions, simularNumero: () => base.cambiar({ activeTab: 'simulador' }) } } as Store
+}
+
+/** Defecto único: la petición queda, pero la pestaña activa no cambia al Simulador. */
+function queNoActivaElSimulador(): Store {
+  const base = crearStoreFalso()
+  let id = 0
+  return { ...base, actions: { ...base.actions, simularNumero: (numero: string) => base.cambiar({ simulacion: { numero, id: (id += 1) } }) } } as Store
+}
+
+/** Defecto único: pedir el MISMO número otra vez reutiliza la petición (misma referencia y mismo `id`). */
+function queIgnoraElNumeroRepetido(): Store {
+  const base = crearStoreFalso()
+  let id = 0
+  return {
+    ...base,
+    actions: {
+      ...base.actions,
+      simularNumero: (numero: string) => {
+        if (base.getSnapshot().simulacion?.numero === numero) return
+        base.cambiar({ activeTab: 'simulador', simulacion: { numero, id: (id += 1) } })
+      },
+    },
+  } as Store
+}
+
+/** Defecto único: el número repetido es una petición nueva (otra referencia) pero conserva el mismo `id`. */
+function queRepiteElIdDeLaPeticion(): Store {
+  const base = crearStoreFalso()
+  return {
+    ...base,
+    actions: { ...base.actions, simularNumero: (numero: string) => base.cambiar({ activeTab: 'simulador', simulacion: { numero, id: 1 } }) },
+  } as Store
+}
+
+/** Defecto único: avisa a los suscriptores ANTES de actualizar el estado: la escucha leería la petición vieja. */
+function queAvisaAntesDeLaSimulacion(): Store {
+  const base = crearStoreFalso()
+  const escuchas = new Set<() => void>()
+  return {
+    ...base,
+    subscribe: (escucha: () => void) => {
+      escuchas.add(escucha)
+      return () => escuchas.delete(escucha)
+    },
+    actions: {
+      ...base.actions,
+      simularNumero: (numero: string) => {
+        escuchas.forEach((e) => e()) // aviso con el estado todavía viejo
+        base.actions.simularNumero(numero)
+      },
+    },
+  } as Store
 }
 
 function queCambiaOtrosCamposSinMotivo(): Store {
@@ -514,6 +580,26 @@ describe('la suite de contrato detecta cada defecto por su causa', () => {
 
   it('un almacén que no avisa tras un cambio', async () => {
     await rechaza(() => comprobaciones.suscripcion!(sinAvisarTrasUnCambio, control), /no avisó/)
+  })
+
+  it('simularNumero que no deja la petición en `simulacion`', async () => {
+    await rechaza(() => comprobaciones.simulacion!(queNoFijaLaSimulacion, control), /no dejó el número en «simulacion»/)
+  })
+
+  it('simularNumero que no deja el Simulador como pestaña activa', async () => {
+    await rechaza(() => comprobaciones.simulacion!(queNoActivaElSimulador, control), /pestaña activa/)
+  })
+
+  it('simularNumero que ignora un número repetido: no es otra petición', async () => {
+    await rechaza(() => comprobaciones.simulacion!(queIgnoraElNumeroRepetido, control), /conserva la referencia/)
+  })
+
+  it('simularNumero que repite el `id` de la petición aunque cambie la referencia', async () => {
+    await rechaza(() => comprobaciones.simulacion!(queRepiteElIdDeLaPeticion, control), /no cambió el «id»/)
+  })
+
+  it('simularNumero que avisa antes de actualizar `simulacion`', async () => {
+    await rechaza(() => comprobaciones.simulacion!(queAvisaAntesDeLaSimulacion, control), /avisó antes de actualizar/)
   })
 
   it('acciones que cambian de identidad entre lecturas', async () => {

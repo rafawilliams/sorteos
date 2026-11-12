@@ -24,3 +24,6 @@ export function chartOptions(tema: Tema, leyenda = true): ChartOptions {
     },
   }
 }
+
+/** Un color por dígito (0-9) en los gráficos por dígito. Los mismos literales que `DIGIT_COLORS` de static/app.js. */
+export const DIGIT_COLORS: readonly string[] = ['#ffd700', '#ff4d4d', '#4dabff', '#34d399', '#c084fc', '#ff9f43', '#ee5a6f', '#0abde3', '#10ac84', '#f368e0']

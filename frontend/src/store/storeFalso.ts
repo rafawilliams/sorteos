@@ -24,6 +24,7 @@ const estadoInicial = (): Snapshot => ({
   theme: 'dark',
   activeTab: 'predicciones',
   ready: false,
+  simulacion: null,
 })
 
 export function crearStoreFalso(inicial: Partial<Snapshot> = {}): StoreFalso {
@@ -37,6 +38,7 @@ export function crearStoreFalso(inicial: Partial<Snapshot> = {}): StoreFalso {
   }
   const registrar = (accion: string, ...args: unknown[]) => llamadas.push({ accion, args })
   let fallaLaRecarga = false
+  let peticiones = 0 // contador de `simulacion.id`
 
   return {
     getSnapshot: () => snapshot,
@@ -64,7 +66,8 @@ export function crearStoreFalso(inicial: Partial<Snapshot> = {}): StoreFalso {
       },
       simularNumero(numero) {
         registrar('simularNumero', numero)
-        cambiar({ activeTab: 'simulador' })
+        peticiones += 1
+        cambiar({ activeTab: 'simulador', simulacion: { numero, id: peticiones } })
       },
       async reload() {
         registrar('reload')

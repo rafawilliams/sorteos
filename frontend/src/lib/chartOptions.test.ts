@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { chartOptions } from './chartOptions'
+import { chartOptions, DIGIT_COLORS } from './chartOptions'
 
 // Colores literales de `chartOpts()` de static/app.js (plan §0). Si cambian, los gráficos dejan de verse como hoy.
 const CLARO = { texto: '#5c554a', tenue: '#9a9189', rejilla: 'rgba(139,105,20,0.1)', fondoTooltip: '#ffffff', bordeTooltip: 'rgba(139,105,20,0.2)', tituloTooltip: '#1a1612' }
@@ -58,5 +58,11 @@ describe('chartOptions: lo que no depende del tema', () => {
     expect(a).toEqual(b)
     ;(a as unknown as Arbol).scales.x.grid.color = 'rojo'
     expect(opciones('dark').scales.x.grid.color).toBe(OSCURO.rejilla)
+  })
+})
+
+describe('DIGIT_COLORS', () => {
+  it('tiene los diez colores literales de static/app.js, uno por dígito', () => {
+    expect(DIGIT_COLORS).toEqual(['#ffd700', '#ff4d4d', '#4dabff', '#34d399', '#c084fc', '#ff9f43', '#ee5a6f', '#0abde3', '#10ac84', '#f368e0'])
   })
 })
