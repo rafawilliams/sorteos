@@ -30,6 +30,8 @@ export function Tablist({ etiqueta, pestañas, valor, onCambio, idPrefijo, clase
   const hayElegida = pestañas.some((p) => p.id === valor)
 
   const alTeclear = (e: KeyboardEvent<HTMLDivElement>) => {
+    // Con Alt, Ctrl o Meta la tecla es del navegador (Alt+← es «atrás», Ctrl+Inicio va al principio de la página): no se secuestra.
+    if (e.altKey || e.ctrlKey || e.metaKey) return
     const actual = botones.current.findIndex((b) => b !== null && b === document.activeElement)
     if (actual < 0 || pestañas.length === 0) return
     let siguiente = -1

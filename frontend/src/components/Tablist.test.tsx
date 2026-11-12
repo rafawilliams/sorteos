@@ -152,6 +152,19 @@ describe('Tablist: ratón y teclado', () => {
     expect(fireEvent.keyDown(document.activeElement!, { key: 'a' })).toBe(true)
   })
 
+  it('con Alt, Ctrl o Meta las flechas, Inicio y Fin son del navegador y no se tocan', () => {
+    const onCambio = vi.fn()
+    render(<Controlado onCambio={onCambio} />)
+    pestana('Dominical').focus()
+    for (const modificador of ['altKey', 'ctrlKey', 'metaKey']) {
+      for (const tecla of ['ArrowLeft', 'ArrowRight', 'Home', 'End']) {
+        expect(fireEvent.keyDown(document.activeElement!, { key: tecla, [modificador]: true }), `${modificador}+${tecla}`).toBe(true) // true = sin preventDefault
+      }
+    }
+    expect(onCambio).not.toHaveBeenCalled()
+    expect(document.activeElement).toBe(pestana('Dominical'))
+  })
+
   it('una tecla que no es de navegación no hace nada', async () => {
     const onCambio = vi.fn()
     render(<Controlado onCambio={onCambio} />)
