@@ -13,6 +13,7 @@ describe('crearStoreFalso: estado inicial', () => {
       theme: 'dark',
       activeTab: 'predicciones',
       ready: false,
+      simulacion: null,
     })
   })
 
@@ -93,6 +94,17 @@ describe('crearStoreFalso: acciones', () => {
     expect(store.llamadas).toEqual([{ accion: 'simularNumero', args: ['0042'] }])
     expect(store.getSnapshot().activeTab).toBe('simulador')
     expect(escucha).toHaveBeenCalled()
+  })
+
+  it('simularNumero deja la petición en `simulacion`; repetir el número es otra petición con otro id', () => {
+    const store = crearStoreFalso()
+    store.actions.simularNumero('0042')
+    const primera = store.getSnapshot().simulacion
+    expect(primera).toEqual({ numero: '0042', id: expect.any(Number) })
+    store.actions.simularNumero('0042')
+    const segunda = store.getSnapshot().simulacion
+    expect(segunda).not.toBe(primera)
+    expect(segunda!.id).toBeGreaterThan(primera!.id)
   })
 
   it('toast se registra con su mensaje y su duración', () => {

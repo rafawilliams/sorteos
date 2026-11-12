@@ -103,17 +103,31 @@ describe('de React a app.js', () => {
     expect(store.getSnapshot().prize).toBe('primero')
   })
 
-  it('simularNumero abre el Simulador con ese número y lanza la simulación', async () => {
+  it('simularNumero abre el Simulador y deja la petición en `simulacion`; es la isla quien simula, no app.js', async () => {
     store.actions.simularNumero('0042')
-    expect((document.getElementById('simNumero') as HTMLInputElement).value).toBe('0042')
     expect(store.getSnapshot().activeTab).toBe('simulador')
     expect(document.getElementById('sec-simulador')).toHaveClass('active')
-    await vi.waitFor(() => expect(legacy.peticiones).toContain('/api/simulador?numero=0042'))
+    expect(store.getSnapshot().simulacion).toEqual({ numero: '0042', id: 1 })
+    await new Promise((r) => setTimeout(r, 0)) // si app.js simulara por su cuenta, la petición saldría ya
+    expect(legacy.peticiones.filter((u) => u.startsWith('/api/simulador'))).toEqual([])
   })
 
-  it('simularNumero sin la pestaña del Simulador en la página no lanza ninguna simulación', () => {
+  it('pedir el mismo número otra vez es otra petición con otro id, y avisa a los suscriptores', () => {
+    const escucha = vi.fn()
+    store.actions.simularNumero('0042')
+    const primera = store.getSnapshot().simulacion
+    store.subscribe(escucha)
+    store.actions.simularNumero('0042')
+    expect(store.getSnapshot().simulacion).toEqual({ numero: '0042', id: 2 })
+    expect(store.getSnapshot().simulacion).not.toBe(primera)
+    expect(escucha).toHaveBeenCalled()
+  })
+
+  it('simularNumero sin la pestaña del Simulador en la página no deja ninguna petición', async () => {
     document.querySelector('#navTabs [data-tab="simulador"]')!.remove()
     store.actions.simularNumero('0042')
+    expect(store.getSnapshot().simulacion).toBeNull()
+    await new Promise((r) => setTimeout(r, 0))
     expect(legacy.peticiones.filter((u) => u.startsWith('/api/simulador'))).toEqual([])
   })
 

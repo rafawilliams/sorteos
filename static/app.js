@@ -1,7 +1,7 @@
 // PUENTE PARA LAS ISLAS REACT (frontend/src/store/legacyStore.ts)
 // Va el primero: applyTheme corre antes de las declaraciones `let` de abajo, así que _lpEmit no puede leer el estado
 // mientras no exista la caché (nadie ha pedido aún una instantánea).
-var _lpListeners=new Set(), _lpCache=null, _lpStatsBueno=null;
+var _lpListeners=new Set(), _lpCache=null, _lpStatsBueno=null, _lpSim=null, _lpSimId=0;
 function _lpStatsOk(x){return !!x&&typeof x==='object'&&typeof x.total_sorteos==='number'}
 function _lpLeer(campo){
   switch(campo){
@@ -13,12 +13,13 @@ function _lpLeer(campo){
     case 'statsPrize': return currentStatsPrize;
     case 'theme': return document.documentElement.getAttribute('data-theme')==='light'?'light':'dark';
     case 'activeTab': {const t=document.querySelector('#navTabs .nav-tab.active');return t&&t.dataset.tab?t.dataset.tab:'predicciones'}
+    case 'simulacion': return _lpSim;
   }
 }
 function _lpSnapshot(){
   if(!_lpCache){
     _lpCache={};
-    ['sorteos','ready','stats','useML','prize','statsPrize','theme','activeTab'].forEach(c=>{_lpCache[c]=_lpLeer(c)});
+    ['sorteos','ready','stats','useML','prize','statsPrize','theme','activeTab','simulacion'].forEach(c=>{_lpCache[c]=_lpLeer(c)});
   }
   return _lpCache;
 }
@@ -45,7 +46,12 @@ window.LP={
   setPrize(p){const tab=_lpTabPremio('#prizeTabs',p);if(tab)selectPrize(tab)},
   setStatsPrize(p){const tab=_lpTabPremio('#statsPrizeTabs',p);if(tab)selectStatsPrize(tab)},
   toast(msg,ms){showToast(msg,ms)},
-  simular(n){const i=document.getElementById('simNumero');if(!i)return;i.value=String(n);const t=document.querySelector('#navTabs [data-tab="simulador"]');if(!t)return;t.click();runSimulation()},
+  simular(n){
+    const t=document.querySelector('#navTabs [data-tab="simulador"]');if(!t)return;
+    _lpSim={numero:String(n),id:++_lpSimId};
+    t.click();
+    _lpEmit('simulacion')
+  },
   reload(){return loadData().catch(e=>{console.error('Error reloading:',e)})}
 };
 
@@ -234,7 +240,7 @@ function renderFull(){
   renderRecommendations('all');renderDecenas();renderStatsForPrize(currentStatsPrize);renderSeriesLetras();renderFormatos();
   renderRadarChart();renderScatterChart();
   renderPositionGrids();renderHeatmap();renderTrendChart();renderVolumeChart();
-  renderEndingsSection();renderMonthlySection();initSimCats();renderDashboard();
+  renderEndingsSection();renderMonthlySection();renderDashboard();
   initRecoCatTabs();initEndCatTabs();initPrizeTabs();initStatsPrizeTabs();
 }
 
@@ -937,111 +943,6 @@ function renderMonthlySection(){
     cards+='</div>';
   });
   document.getElementById('monthlyCards').innerHTML=cards;
-}
-
-// SIMULADOR
-function initSimCats(){
-  const sel=document.getElementById('simCat');if(!sel||!stats)return;
-  const cats=Object.keys(stats.by_category||{});
-  sel.innerHTML='<option value="">Todas</option>';
-  // DOM, not innerHTML: the category comes from the data (external API)
-  cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=catLabel(c);sel.appendChild(o);});
-}
-let simChartInstance=null;
-async function runSimulation(){
-  const num=document.getElementById('simNumero').value.trim().padStart(4,'0');
-  if(!/^\d{4}$/.test(num)){showToast('Ingresa un número de 4 dígitos',3000);return;}
-  const cat=document.getElementById('simCat').value;
-  const from=document.getElementById('simFrom').value;
-  const to=document.getElementById('simTo').value;
-  let url=`/api/simulador?numero=${num}`;
-  if(cat)url+=`&cat=${encodeURIComponent(cat)}`;
-  if(from)url+=`&from=${from}`;
-  if(to)url+=`&to=${to}`;
-
-  document.getElementById('simResults').innerHTML='<div class="loader-wrap" style="padding:40px;"><div class="spinner"></div><p>Buscando...</p></div>';
-  try{
-    const res=await fetch(url);
-    const d=await res.json();
-    if(d.error){showToast(d.error,3000);document.getElementById('simResults').innerHTML='';return;}
-    renderSimResults(d);
-  }catch(e){showToast('Error en simulación',3000);console.error(e);}
-}
-
-function renderSimResults(d){
-  const ex=d.exact;const en=d.ending;
-  const hasExact=ex.total>0;
-
-  let h=`<div class="stat-cards" style="margin-top:20px;">
-    <div class="stat-card"><div class="stat-value" style="font-family:'JetBrains Mono';font-size:2rem;color:var(--gold-400);">${d.numero}</div><div class="stat-label">Número buscado</div></div>
-    <div class="stat-card"><div class="stat-value">${d.total_sorteos.toLocaleString()}</div><div class="stat-label">Sorteos analizados</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:${hasExact?'#4ade80':'var(--text-muted)'};">${ex.total}</div><div class="stat-label">Veces que salió (exacto)</div></div>
-    <div class="stat-card"><div class="stat-value">${en.total}</div><div class="stat-label">Coincidencia terminación (${d.terminacion})</div></div>
-  </div>`;
-
-  // Detail cards
-  h+='<div class="grid-3" style="margin-top:20px;">';
-
-  // Exact matches breakdown
-  h+=`<div class="card reveal">
-    <div class="card-header"><h3 class="card-title">Aciertos Exactos</h3><span class="card-badge ${hasExact?'badge-hot':'badge-cold'}">${ex.total}</span></div>
-    <div style="display:flex;justify-content:space-around;padding:12px 0;">
-      <div style="text-align:center;"><div style="font-size:1.8rem;font-weight:700;color:var(--gold-400);">${ex.primero}</div><div style="font-size:0.75rem;color:var(--text-muted);">1er Premio</div></div>
-      <div style="text-align:center;"><div style="font-size:1.8rem;font-weight:700;color:#4ade80;">${ex.segundo}</div><div style="font-size:0.75rem;color:var(--text-muted);">2do Premio</div></div>
-      <div style="text-align:center;"><div style="font-size:1.8rem;font-weight:700;color:#c084fc;">${ex.tercero}</div><div style="font-size:0.75rem;color:var(--text-muted);">3er Premio</div></div>
-    </div>
-    <div style="font-size:0.85rem;color:var(--text-secondary);text-align:center;">Frecuencia: ${ex.frequency_pct}% de sorteos</div>
-  </div>`;
-
-  // Ending matches
-  h+=`<div class="card reveal">
-    <div class="card-header"><h3 class="card-title">Terminación "${d.terminacion}"</h3><span class="card-badge badge-green">${en.total}</span></div>
-    <div style="display:flex;justify-content:space-around;padding:12px 0;">
-      <div style="text-align:center;"><div style="font-size:1.8rem;font-weight:700;color:var(--gold-400);">${en.primero}</div><div style="font-size:0.75rem;color:var(--text-muted);">1er Premio</div></div>
-      <div style="text-align:center;"><div style="font-size:1.8rem;font-weight:700;color:#4ade80;">${en.segundo}</div><div style="font-size:0.75rem;color:var(--text-muted);">2do Premio</div></div>
-      <div style="text-align:center;"><div style="font-size:1.8rem;font-weight:700;color:#c084fc;">${en.tercero}</div><div style="font-size:0.75rem;color:var(--text-muted);">3er Premio</div></div>
-    </div>
-    <div style="font-size:0.85rem;color:var(--text-secondary);text-align:center;">Frecuencia: ${en.frequency_pct}% de sorteos</div>
-  </div>`;
-
-  // Gap & last appearance
-  h+=`<div class="card reveal">
-    <div class="card-header"><h3 class="card-title">Última Aparición</h3><span class="card-badge badge-purple">Gap</span></div>
-    <div style="text-align:center;padding:12px 0;">
-      <div style="font-size:1.1rem;color:var(--gold-300);font-weight:600;">${ex.last_appearance||'Nunca ha salido'}</div>
-      ${ex.gap_draws!==null?`<div style="margin-top:12px;font-size:2rem;font-weight:700;color:var(--text-primary);">${ex.gap_draws}</div><div style="font-size:0.8rem;color:var(--text-muted);">sorteos sin aparecer</div>`
-      :'<div style="margin-top:12px;font-size:0.9rem;color:var(--text-muted);">Sin registro en el rango seleccionado</div>'}
-    </div>
-  </div>`;
-  h+='</div>';
-
-  // By category
-  const cats=d.by_category||{};
-  const catKeys=Object.keys(cats);
-  if(catKeys.length){
-    h+='<div class="card reveal" style="margin-top:20px;"><div class="card-header"><h3 class="card-title">Distribución por Categoría</h3></div><div class="bar-chart">';
-    const maxCat=Math.max(...Object.values(cats));
-    catKeys.sort((a,b)=>cats[b]-cats[a]);
-    catKeys.forEach(k=>{
-      const pct=Math.round(cats[k]/maxCat*100);
-      h+=`<div class="bar-row"><span class="bar-label">${k}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><span class="bar-value">${cats[k]}</span></div>`;
-    });
-    h+='</div></div>';
-  }
-
-  // Match history table
-  const matches=ex.matches||[];
-  if(matches.length){
-    h+='<div class="card reveal" style="margin-top:20px;"><div class="card-header"><h3 class="card-title">Historial de Aciertos</h3><span class="card-badge badge-gold">Últimos '+matches.length+'</span></div>';
-    h+='<div class="table-wrap"><table role="table"><thead><tr><th>Fecha</th><th>Categoría</th></tr></thead><tbody>';
-    matches.forEach(m=>{
-      h+=`<tr><td>${esc(m.fecha)}</td><td><span class="cat-badge">${esc(m.cat)}</span></td></tr>`;
-    });
-    h+='</tbody></table></div></div>';
-  }
-
-  document.getElementById('simResults').innerHTML=h;
-  triggerReveals();
 }
 
 // BACKTESTING / PRECISION

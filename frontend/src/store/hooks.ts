@@ -55,6 +55,11 @@ export function useActiveTab(): TabId {
   return useCampo('activeTab')
 }
 
+/** La última petición de «simular este número» (`null` si no hubo ninguna): la isla Simulador simula por cada `id` nuevo. */
+export function useSimulacion(): Snapshot['simulacion'] {
+  return useCampo('simulacion')
+}
+
 /** Aviso emergente de la página. */
 export function useToast(): (mensaje: string, ms?: number) => void {
   return useStore().actions.toast
