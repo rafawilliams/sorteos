@@ -35,6 +35,10 @@ IDS_RETIRADOS = {
     "simTo": "simulador",
     "simBtn": "simulador",
     "simResults": "simulador",
+    "monthlyTarget": "mensual",
+    "monthlyAdvantage": "mensual",
+    "monthlyProfileChart": "mensual",
+    "monthlyCards": "mensual",
 }
 # funciones de app.js que ya no deben existir ni llamarse
 FUNCIONES_RETIRADAS = (
@@ -44,6 +48,7 @@ FUNCIONES_RETIRADAS = (
     "addCompNumber", "removeCompNumber", "clearCompNumbers", "renderCompTags", "runComparison", "renderCompResults",
     "compNumbers", "compChartInstance",
     "initSimCats", "runSimulation", "renderSimResults", "simChartInstance",
+    "renderMonthlySection", "monthlyProfileChartInstance",
 )
 
 

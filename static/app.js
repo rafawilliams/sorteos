@@ -240,7 +240,7 @@ function renderFull(){
   renderRecommendations('all');renderDecenas();renderStatsForPrize(currentStatsPrize);renderSeriesLetras();renderFormatos();
   renderRadarChart();renderScatterChart();
   renderPositionGrids();renderHeatmap();renderTrendChart();renderVolumeChart();
-  renderEndingsSection();renderMonthlySection();renderDashboard();
+  renderEndingsSection();renderDashboard();
   initRecoCatTabs();initEndCatTabs();initPrizeTabs();initStatsPrizeTabs();
 }
 
@@ -829,120 +829,6 @@ function renderDashboard(){
     </div>
   </div>`;
   document.getElementById('dashboardSummary').innerHTML=h;
-}
-
-// MONTHLY RECOMMENDATION
-let monthlyProfileChartInstance=null;
-function renderMonthlySection(){
-  const mr=stats.monthly_reco;if(!mr)return;
-
-  // --- Target month hero card ---
-  const target=mr.target_month_name;
-  const recs=mr.recommendations||[];
-  let h=`<div class="card reveal" style="border:2px solid var(--gold-400);">
-    <div class="card-header">
-      <h3 class="card-title">📅 ${target} ${mr.target_year}</h3>
-      <span class="card-badge badge-gold">${mr.target_draws_historical} sorteos históricos</span>
-    </div>
-    <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:16px;">
-      Basado en <strong style="color:var(--gold-300)">${mr.target_numbers_historical.toLocaleString()}</strong> números que salieron en <strong style="color:var(--gold-300)">${target}</strong> desde 1995.
-    </p>`;
-  if(recs.length){
-    h+='<div class="reco-grid">';
-    recs.forEach((r,i)=>{
-      const rank=i===0?'1RO':i===1?'2DO':i===2?'3RO':`${i+1}TO`;
-      h+=`<div class="reco-card">
-        <button class="copy-btn" data-num="${r.number}" onclick="copyNumber('${r.number}')">Copiar</button>
-        <div class="reco-rank">${rank} RECOMENDADO</div>
-        <div class="reco-number">${renderBalls(r.number,'gold','lg')}</div>
-        <div class="reco-confidence" title="Veces más probable que un número al azar (×1.00 = azar)"><div class="conf-bar"><div class="conf-bar-fill" style="width:${liftBar(r.confidence)}%"></div></div>${fmtLift(r.confidence)}</div>
-      </div>`;
-    });
-    h+='</div>';
-  }
-  h+='</div>';
-  document.getElementById('monthlyTarget').innerHTML=h;
-
-  // --- Digit advantage table ---
-  const adv=mr.digit_advantage||[];
-  if(adv.length===4){
-    let t=`<div style="overflow-x:auto;"><table class="heatmap-table" role="table">
-      <thead><tr><th>Pos</th>`;
-    for(let d=0;d<10;d++)t+=`<th>${d}</th>`;
-    t+='</tr></thead><tbody>';
-    for(let pos=0;pos<4;pos++){
-      t+=`<tr><td style="font-weight:700;">P${pos+1}</td>`;
-      for(let d=0;d<10;d++){
-        const v=adv[pos][String(d)]||0;
-        const color=v>0?`rgba(74,222,128,${Math.min(Math.abs(v)/5,1)*0.7})`
-                       :v<0?`rgba(248,113,113,${Math.min(Math.abs(v)/5,1)*0.7})`
-                       :'transparent';
-        const sign=v>0?'+':'';
-        t+=`<td style="background:${color};text-align:center;font-family:'JetBrains Mono';font-size:0.8rem;">${sign}${v}</td>`;
-      }
-      t+='</tr>';
-    }
-    t+='</tbody></table></div>';
-    document.getElementById('monthlyAdvantage').innerHTML=t;
-  }
-
-  // --- Profile chart: top digit per month (stacked bar) ---
-  const profiles=mr.monthly_profiles||[];
-  if(profiles.length===12){
-    const labels=profiles.map(p=>p.name.substring(0,3));
-    const datasets=[];
-    for(let d=0;d<10;d++){
-      datasets.push({
-        label:'Dígito '+d,
-        data:profiles.map(p=>{
-          if(!p.position_freq||!p.position_freq.length)return 0;
-          // Average across 4 positions
-          let sum=0;
-          p.position_freq.forEach(pf=>{sum+=(pf[String(d)]||0);});
-          return Math.round(sum/4*10)/10;
-        }),
-        backgroundColor:DIGIT_COLORS[d]+'99',
-        borderColor:DIGIT_COLORS[d],
-        borderWidth:1,
-        borderRadius:3,
-      });
-    }
-    const ctx=document.getElementById('monthlyProfileChart').getContext('2d');
-    if(monthlyProfileChartInstance)monthlyProfileChartInstance.destroy();
-    const opts=chartOpts();
-    opts.scales.x.stacked=true;opts.scales.y.stacked=true;
-    opts.plugins.legend.display=true;
-    monthlyProfileChartInstance=new Chart(ctx,{type:'bar',data:{labels,datasets},options:opts});
-  }
-
-  // --- Monthly detail cards ---
-  let cards='';
-  profiles.forEach(p=>{
-    const isTarget=p.month===mr.target_month;
-    const border=isTarget?'border:2px solid var(--gold-400);':'';
-    const badge=isTarget?'<span class="card-badge badge-gold">Próximo</span>':'';
-    cards+=`<div class="card reveal" style="${border}">
-      <div class="card-header"><h3 class="card-title">${p.name}</h3>${badge}</div>
-      <div style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:8px;">
-        ${p.draws} sorteos · ${p.numbers.toLocaleString()} números
-      </div>`;
-    if(p.hot&&p.hot.length){
-      cards+='<div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:4px;">Top números:</div><div style="display:flex;flex-wrap:wrap;gap:6px;">';
-      p.hot.slice(0,5).forEach(n=>{
-        cards+=`<span style="background:var(--surface-2);padding:2px 8px;border-radius:8px;font-family:'JetBrains Mono';font-size:0.85rem;">${n.number} <small style="color:var(--text-muted);">(${n.count})</small></span>`;
-      });
-      cards+='</div>';
-    }
-    if(p.top_endings&&p.top_endings.length){
-      cards+='<div style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;margin-bottom:4px;">Top terminaciones:</div><div style="display:flex;flex-wrap:wrap;gap:6px;">';
-      p.top_endings.slice(0,5).forEach(e=>{
-        cards+=`<span style="background:var(--surface-2);padding:2px 8px;border-radius:8px;font-family:'JetBrains Mono';font-size:0.85rem;">${e.ending} <small style="color:var(--text-muted);">(${e.count})</small></span>`;
-      });
-      cards+='</div>';
-    }
-    cards+='</div>';
-  });
-  document.getElementById('monthlyCards').innerHTML=cards;
 }
 
 // BACKTESTING / PRECISION

@@ -472,3 +472,14 @@ Islas Mis Números y Comparador, componente `Chart`, retirada del código antigu
 
 ## Decision queue (adiciones — etapa 4)
 - [review-after] Q11 — T028/L2: con `stats` nulo, el Simulador entero es un esqueleto. Recomendación: mostrar el formulario siempre (con «Todas» como única categoría hasta que lleguen las categorías) y dejar el esqueleto solo para el selector; exigiría matizar el done-check «`stats` nulo → esqueleto» de T028.
+
+## T029 — 2026-11-12 (implementada, pendiente de riesgo y revisión)
+- status: in-review (todavía sin commit)
+- red/green: `DIGIT_COLORS`, `BotonCopiar` e isla Mensual escritos tras sus pruebas en rojo (39 fallos de «Unable to find…», `datos` indefinido, `DIGIT_COLORS` vacío); la guardia de ids retirados falló en 11 pruebas antes de retirar el código y pasa después.
+- hecho: `lib/chartOptions.ts` → `DIGIT_COLORS`; `components/BotonCopiar.tsx`; `tabs/Mensual.tsx` (recomendación del mes objetivo con esferas y «×N azar», tabla de ventaja de dígitos con su color, gráfico apilado de los 12 meses con `Chart`, tarjeta por mes con top de números y terminaciones); plantilla con `<div data-react-root="mensual">`; retirados de `app.js` el bloque `renderMonthlySection`, `monthlyProfileChartInstance` y su llamada, y de la plantilla los ids `monthlyTarget`, `monthlyAdvantage`, `monthlyProfileChart` y `monthlyCards`; guardia ampliada. Con esto T030 queda absorbida (ver decisions.md).
+- pruebas: 36 de la isla, 8 de `BotonCopiar`, 1 de `DIGIT_COLORS`; 689 en el front; 530 Python (1 omitida; base sembrada `sorteos_capturas`); `typecheck` 0; build correcto (448 kB); `npm audit` 0; `pip-audit` sin vulnerabilidades.
+- mutantes: 37 (27 de la isla y 10 de `BotonCopiar`): 34 detectados a la primera y los 3 supervivientes eran huecos de mis pruebas, ya cerrados y detectados (repintado con elemento nuevo para la identidad de `datos`, variante de las esferas, botón desmontado con la copia en vuelo). Dos pruebas se reescribieron por cómo mide jsdom (no resuelve `var()` en estilos calculados y convierte `rem` a px): se lee el estilo en línea.
+- navegador real (Playwright, base sembrada, 5003): 11/11 y 0 errores de consola: título del mes («Diciembre 2026»), 5 recomendaciones con esferas y «×N azar», tabla 4×11 con celdas verdes y rojas, gráfico de Chart.js realmente pintado (147 colores), 12 tarjetas con una sola «Próximo», «Copiar» con ratón y con Enter (copia, avisa, «OK» y vuelve a «Copiar» a los 1,5 s), tema claro con el gráfico recreado.
+- decisiones: `BotonCopiar` compartido y T030 absorbida (decisions.md).
+- risk: **pendiente** (`rsc risk` sin ejecutar); review: **pendiente**.
+- controls: tests ✅ build ✅ security ✅ traceability ✅ (AC2 isla; AC10 retirada del código antiguo).
