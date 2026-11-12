@@ -34,7 +34,7 @@ Partir el archivo actual en varios módulos nativos del navegador, sin framework
 
 ## Non-goals / out of scope
 - Cambiar la API, la base de datos, el ML o cualquier cálculo estadístico del backend.
-- Rediseñar la interfaz, añadir pestañas, datos o funciones nuevas: el resultado es el mismo que hoy.
+- Rediseñar la interfaz, añadir pestañas, datos o funciones nuevas: el resultado es el mismo que hoy. **Única excepción** (enmienda 2026-11-11): la navegación, que pasa de barra horizontal de pestañas a menú lateral.
 - Cambiar el diseño visual (esferas, temas, paleta) más allá de lo que exija reproducirlo.
 - Añadir enrutado por URL, renderizado en servidor, PWA, internacionalización o estado remoto con librerías extra «por si acaso».
 - Cambiar la librería de gráficos o el modelo de seguridad de `POST /api/actualizar`.
@@ -74,9 +74,10 @@ Cada pestaña migrada muestra los mismos datos, con la misma estructura y estilo
 - Convivencia: mientras haya pestañas sin migrar, ambas versiones coexisten en la misma página con el mismo estado compartido (modo ML, premio, tema) y sin duplicar peticiones a la API.
 
 ## Acceptance criteria
-- Given la app migrada, When se abre cada una de las 14 pestañas con los mismos datos que en `main`, Then sus capturas coinciden con la referencia aprobada en tema oscuro y claro.
+- Given la app migrada, When se abre cada una de las 14 pestañas con los mismos datos que en `main`, Then sus capturas coinciden con la referencia aprobada (renovada tras el menú lateral, ver Revisions) en tema oscuro y claro.
 - Given una etapa a medias, When se carga la página, Then todas las pestañas, migradas o no, funcionan y comparten modo ML, premio y tema.
 - Given la pestaña activa, When se usan flecha izquierda/derecha, Inicio y Fin, Then el foco y la selección cambian como en la versión actual y los roles ARIA se conservan.
+- Given una ventana ancha (más de 900 px), When se abre la página, Then las 14 secciones aparecen en una barra lateral fija, en grupos separados, y la sección activa está marcada; con 900 px o menos la barra se esconde y aparece un botón con el icono de menú (☰) que la abre (✕ para cerrar), se cierra con Escape, pulsando fuera o eligiendo una sección, y con ella escondida sus pestañas no reciben el foco del teclado.
 - Given cualquier respuesta de la API con premios de 2, 4, 5 cifras o vacíos, When se muestran, Then el texto es idéntico al recibido (sin ceros añadidos).
 - Given el token de actualización, When se introduce, Then solo se conserva durante la sesión del navegador y la actualización se comporta como hoy (401, 503, 502 y 500 con mensajes opacos).
 - Given un cambio que rompe el tipo de una respuesta de la API, When corre el CI, Then falla la compilación.
@@ -105,3 +106,4 @@ Cada pestaña migrada muestra los mismos datos, con la misma estructura y estilo
 
 ## Revisions
 - 2026-11-11 — La suposición del orden de migración se cambia de «armazón primero» a «armazón al final», para reflejar la decisión del plan (hallazgo 4 del análisis). Sin otros cambios de alcance ni de criterios.
+- 2026-11-11 — Enmienda pedida por el dueño: la barra de 14 pestañas pasa a **menú lateral** (barra fija en escritorio; en pantallas de 900 px o menos se esconde y la abre un botón con el icono ☰). Cambia el criterio AC1 solo en lo visual de la navegación: las 28 capturas de referencia se renuevan una vez fusionado el menú (el ancho útil del contenido baja 248 px) y las aprueba el dueño. El menú sigue siendo el mismo `<nav role="tablist">` (ahora `aria-orientation="vertical"`), así que el puente, el teclado y las islas no cambian. Rama: `feat/react-menu-navegacion`.

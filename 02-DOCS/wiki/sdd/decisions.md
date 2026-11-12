@@ -70,3 +70,9 @@ Context   — al migrar Gaps, el autor añadió un spinner propio y textos de va
 Options    — (a) conservar spinner y textos nuevos; (b) seguir el plan: `Skeleton` en la carga, vacío sin mensajes nuevos.
 Decision   — (b). La carga se anuncia con `role="status"` y `aria-label` alrededor de los esqueletos, sin `aria-busy`; al reintentar el foco pasa a la región.
 Why        — el plan está aprobado y mantiene la equivalencia visual con la referencia (AC1); un cambio de texto o de marcado se decide aparte, no se cuela en una migración.
+
+## 2026-11-11 — La barra de pestañas pasa a menú lateral  (feature: frontend-react, rama feat/react-menu-navegacion)
+Context   — el dueño pidió convertir las pestañas en un menú y, cuando la barra lateral se esconda, mostrar un icono de menú. La spec aprobada decía «mismo aspecto» (AC1) y excluía rediseñar.
+Options    — (a) barra lateral fija con botón ☰ en pantallas estrechas; (b) menú desplegable arriba; (c) hamburguesa en todas las pantallas. Dónde: rama nueva ahora, después de la migración o dentro de la etapa 2.
+Decision   — (a) en una rama nueva desde `main`, ahora. Se mantiene el mismo `<nav role="tablist">` (vertical) en vez de reescribirlo: el teclado, los ARIA, el puente y las islas no cambian; solo CSS, 3 marcas de grupo, un botón con icono y ~25 líneas de `app.js`. Punto de corte a 900 px, el mismo que ya usaba la hoja de estilos.
+Why        — escala si se añaden secciones, agrupa las 14 por tipo y es el cambio de menor riesgo. Coste asumido: renovar las 28 capturas de referencia (cambia el ancho útil) con aprobación del dueño. Dos fallos que solo se vieron en un navegador real: el fondo oscuro tapaba la barra (`.app` crea su propio contexto de apilamiento) y `transition: all` en las pestañas incluía `visibility`, de modo que el foco fallaba justo al abrir.
