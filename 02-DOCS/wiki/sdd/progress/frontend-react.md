@@ -388,3 +388,13 @@ Puente `window.LP`, `LegacyStore`, hooks, cliente de API, fixtures y contrato, m
 - fallos que solo salieron en navegador real (corregidos y con prueba): el fondo tapaba la barra (`.app` crea su propio contexto de apilamiento) y `transition: all` en las pestañas incluía `visibility` (el foco fallaba justo al abrir).
 - risk: tier 1 — 1 revisor. review ronda 1 → 9 hallazgos (4 should-fix, 4 nits, 1 pregunta): los 9 arreglados (el de la pregunta: las flechas no cierran el menú, Enter y clic sí). Ronda 2 de 3, sin segunda revisión aparte.
 - pendiente tras fusionar: renovar las 28 capturas de referencia (el ancho útil baja 248 px) y que el dueño las apruebe. Las ramas de etapa en curso (`feat/react-etapa-2-seguimiento`) tendrán que fusionar `main` y sacar sus capturas con el menú.
+
+## T022 — 2026-11-11
+- status: complete (aprobada por el dueño: «Aprobadas»)
+- referencia renovada: las 28 capturas de `02-DOCS/attachments/react-baseline/` se sustituyen por las sacadas de `main` con el menú lateral (el ancho útil bajó 248 px); aprobado por el dueño («Sí, sustitúyelas»). Gaps ya es isla (aprobada idéntica en T019); el resto es el código antiguo sin tocar. Las etapas siguientes comparan contra esta referencia.
+- capturas `seguimiento-oscuro` y `seguimiento-claro` con la isla frente a esa referencia: 0 píxeles de diferencia (>8/255) en los dos temas. Limitación: la base sembrada no tiene recomendaciones ni sorteos comparados, así que se compara el estado vacío; los estados con datos (aciertos marcados, método sin ML, `numeros_aplican` falso, listas ausentes) los cubren las 34 pruebas de la isla.
+- verificación con navegador real (Playwright, base sembrada, 0 errores de consola): flechas arriba/abajo, Inicio y Fin de la barra lateral desde Seguimiento, el contenido se recarga en cada activación (3 peticiones en 3 activaciones), el tema alterna (`window.LP` y `data-theme`; tarjeta blanca en claro), las regiones «Marcador por método» e «Historial del seguimiento» son enfocables. Seguimiento no tiene subpestañas.
+- risk: tier 1, sin código nuevo.
+
+## Etapa 2 (T020–T022) completa
+Isla Seguimiento, retirada del código antiguo con la guardia ampliada y referencia de capturas renovada con el menú. Pendiente de la etapa: abrir su PR contra `main`.
