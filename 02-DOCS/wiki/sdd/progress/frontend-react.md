@@ -572,3 +572,16 @@ Islas Mis Números y Comparador, componente `Chart`, retirada del código antigu
 - diferencia con el antiguo (a favor de la isla): al cambiar de página con Enter, en el código antiguo el foco se pierde (la paginación se repinta entera y el foco cae en `<body>`); en la isla el botón es el mismo elemento y el foco se queda en él. Además los botones de paginación tienen nombre accesible («Página 2») y `aria-current`.
 - contraste (mínimo AA 4,5), **idéntico en las dos versiones**: por debajo de AA la etiqueta de los contadores (2,63 oscuro / 4,1 claro), la cabecera de la tabla (2,51 / 3,38), el total de resultados (2,76 / 3,67) y la ficha de 2.º premio en claro (3,77); el resto pasa (4,8 a 17,99). Mismo valor `--text-muted` que en Simulador, Mensual y Precisión: una decisión de diseño aparte.
 - no se guardan en el repositorio. Pendiente: que el dueño las apruebe; revisor de T035; `rsc risk` de la rama; PR.
+
+## Decision queue (adiciones — seguimiento de la etapa 6)
+- [review-after] Q12 — T035/L1: `Snapshot.errorSorteos` es contrato nuevo del Store; `ReactStore` (T052) debe implementarlo (`true` si la carga de sorteos falla sin datos, `false` al reintentar, sin tocarlo si falla una recarga con datos) y pasar la comprobación `errorDeCargaDeSorteos` de `describirContratoDeStore`. Las islas que lean `sorteos` (Mis Números, Comparador, Gaps, Seguimiento…) pueden adoptarlo cuando lo necesiten; hoy solo lo usa Resultados.
+
+## T035 — seguimiento de la revisión (rama fix/resultados-revision) — 2026-11-12
+- status: complete
+- origen: el revisor de T035 (pass con cambios) halló 1 should-fix: si `/api/sorteos` falla, Resultados se quedaba en el esqueleto para siempre (verificado en navegador real); el código antiguo enseñaba una página vacía. Más 3 nits.
+- arreglo: `Snapshot.errorSorteos` (contrato nuevo del Store, ver Q12) en `tipos.ts`, `app.js` (puente), `storeFalso`, `hooks`, `contratoStore`; la isla enseña «No se pudieron cargar los sorteos.» con «Reintentar» (recarga, el foco pasa al contenedor), y lo ignora si ya hay datos. Nits: liberar la URL del CSV a los 40 s, categoría elegida que desaparece vuelve a «Todas», prueba vacua de cambio de pestaña retirada y `.replace` de BOM muerto.
+- pruebas: nuevo `puente-error-sorteos.test.ts` (8, contra el `app.js` real) y casos nuevos en contratoStore, storeFalso, hooks y Resultados.
+- mutación: 19/20 detectados; el superviviente (`value={filtros.cat}` en el selector) es equivalente porque React elige la primera opción cuando ninguna coincide.
+- controles (una sola pasada tras la última edición): typecheck ✅ · pruebas del front 870/870 ✅ · build ✅ · npm audit 0 vulnerabilidades ✅ · pytest 585 passed, 1 skipped ✅ · pip-audit sin vulnerabilidades (1 ignorada: PYSEC-2026-217, la de siempre) ✅.
+- navegador real (puerto 5009, base sembrada de 600): 8/8 — con `/api/sorteos` fallando sale el aviso y el botón de exportar queda desactivado; un reintento que falla vuelve al aviso; uno que funciona pasa por el esqueleto con el foco en el contenedor y llega a 50 filas y 600 en total; un fallo al recargar con datos conserva la tabla; 0 errores de consola.
+- no ejecutado: capturas píxel a píxel (el estado normal no cambia; solo se añade el estado de error).
