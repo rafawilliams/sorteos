@@ -23,9 +23,21 @@ IDS_RETIRADOS = {
     "segPendientes": "seguimiento",
     "segMarcador": "seguimiento",
     "segHistorial": "seguimiento",
+    "favInput": "favoritos",
+    "favContainer": "favoritos",
+    "compInput": "comparador",
+    "compTags": "comparador",
+    "compResults": "comparador",
+    "compMonthlyChart": "comparador",
 }
 # funciones de app.js que ya no deben existir ni llamarse
-FUNCIONES_RETIRADAS = ("loadGaps", "renderGaps", "loadSeguimiento", "renderSeguimiento", "segPct", "segNum", "SEG_METODOS")
+FUNCIONES_RETIRADAS = (
+    "loadGaps", "renderGaps",
+    "loadSeguimiento", "renderSeguimiento", "segPct", "segNum", "SEG_METODOS",
+    "getFavorites", "saveFavorites", "addFavorite", "removeFavorite", "renderFavorites", "updateFavBadge",
+    "addCompNumber", "removeCompNumber", "clearCompNumbers", "renderCompTags", "runComparison", "renderCompResults",
+    "compNumbers", "compChartInstance",
+)
 
 
 def menciones(texto: str, palabra: str) -> list[int]:
