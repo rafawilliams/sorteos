@@ -248,19 +248,7 @@
       <h2 class="section-title">Comparador de Números</h2>
       <p class="section-subtitle">Ingresa hasta 5 números y compara su historial, frecuencia, última aparición y meses favorables.</p>
 
-      <div class="card reveal">
-        <div class="card-header"><h3 class="card-title">Números a Comparar</h3><span class="card-badge badge-gold">Máx 5</span></div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-top:12px;">
-          <div style="flex:1;min-width:140px;">
-            <input class="filter-input" id="compInput" type="text" maxlength="4" placeholder="Número…" aria-label="Agregar número a comparar" style="font-family:'JetBrains Mono';font-size:1.2rem;text-align:center;letter-spacing:4px;">
-          </div>
-          <button class="btn btn-gold" onclick="addCompNumber()" style="height:42px;">+ Agregar</button>
-          <button class="btn" onclick="clearCompNumbers()" style="height:42px;">Limpiar</button>
-        </div>
-        <div id="compTags" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;"></div>
-      </div>
-
-      <div id="compResults" role="region" aria-label="Resultados de comparación" aria-live="polite"></div>
+      <div data-react-root="comparador"></div>
     </section>
 
     <!-- ==================== GAPS ==================== -->
