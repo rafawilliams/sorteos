@@ -156,26 +156,12 @@
           <p class="section-subtitle">Historial completo de sorteos de la Lotería de Panamá.</p>
         </div>
         <div style="display:flex;gap:8px;">
-          <button class="btn" id="csvBtn" onclick="exportCSV()" aria-label="Exportar resultados a CSV">⬇ Exportar CSV</button>
+          <span id="resultadosCsv" style="display:contents"></span>
           <button class="btn btn-gold" id="updateBtn" onclick="runUpdate()" aria-label="Actualizar datos de sorteos">↻ Actualizar datos</button>
         </div>
       </div>
 
-      <div class="stat-cards" id="statCounters" role="region" aria-label="Contadores por categoría"></div>
-
-      <div class="filter-bar" role="search" aria-label="Filtros de búsqueda">
-        <input class="filter-input" id="searchInput" type="search" placeholder="Buscar número…" aria-label="Buscar número">
-        <select class="filter-select" id="catFilter" aria-label="Filtrar por categoría"><option value="all">Todas las categorías</option></select>
-        <input class="filter-date" id="dateFrom" type="date" aria-label="Fecha desde">
-        <input class="filter-date" id="dateTo" type="date" aria-label="Fecha hasta">
-      </div>
-
-      <div class="table-wrap" role="region" aria-label="Tabla de resultados" tabindex="0">
-        <table role="table" aria-label="Sorteos de la Lotería de Panamá"><thead><tr>
-          <th scope="col">Fecha</th><th scope="col">Categoría</th><th scope="col">1er Premio</th><th scope="col">2do Premio</th><th scope="col">3er Premio</th><th scope="col">Letras</th><th scope="col">Serie</th><th scope="col">Folio</th>
-        </tr></thead><tbody id="sorteosBody"></tbody></table>
-      </div>
-      <nav class="pagination" id="pagination" role="navigation" aria-label="Paginación de resultados"></nav>
+      <div data-react-root="resultados"></div>
     </section>
 
     <!-- ==================== ESTADÍSTICAS ==================== -->
@@ -296,33 +282,7 @@
       <h2 class="section-title">Precisión Histórica</h2>
       <p class="section-subtitle">Backtesting: comparamos las predicciones del modelo contra los resultados reales para medir su rendimiento.</p>
 
-      <div id="precisionLoader" class="loader-wrap" role="status" aria-label="Calculando backtesting"><div class="spinner" aria-hidden="true"></div><p>Calculando backtesting…</p></div>
-      <div id="precisionContent" style="display:none;">
-
-        <div class="stat-cards" id="precisionSummary" role="region" aria-label="Resumen de precisión"></div>
-
-        <h3 class="section-title" style="font-size:1.2rem;margin:28px 0 12px;">Precisión por Posición</h3>
-        <div class="grid-4" id="precisionPositions" role="region" aria-label="Precisión por posición de dígito"></div>
-
-        <h3 class="section-title" style="font-size:1.2rem;margin:28px 0 12px;">ML vs Estadístico</h3>
-        <div class="grid-2" id="precisionComparison" role="region" aria-label="Comparación ML vs Estadístico"></div>
-
-        <div class="card reveal" style="margin-top:28px;">
-          <div class="card-header"><h3 class="card-title">Precisión Mensual (Top-1 por Posición)</h3><span class="card-badge badge-green">Tendencia</span></div>
-          <div class="chart-container"><canvas id="precisionTrendChart" aria-label="Gráfico de precisión mensual" role="img"></canvas></div>
-        </div>
-
-        <div class="card reveal" style="margin-top:20px;">
-          <div class="card-header"><h3 class="card-title">¿Cómo interpretarlo?</h3><span class="card-badge badge-gold">Info</span></div>
-          <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.7;">
-            El <strong style="color:var(--gold-300)">baseline aleatorio</strong> para cada posición es 10% (1 de 10 dígitos).
-            Un modelo útil debe superar este umbral consistentemente.
-            <strong style="color:var(--gold-300)">Top-1</strong> = ¿el dígito más probable acertó?
-            <strong style="color:var(--gold-300)">Top-3</strong> = ¿el dígito real estaba entre los 3 más probables?
-            <br><br><span style="color:var(--text-muted);font-size:0.8rem;">⚠ Nota: Estas métricas son evaluaciones in-sample. La lotería es un juego de azar puro — ningún modelo puede predecir con certeza.</span>
-          </p>
-        </div>
-      </div>
+      <div data-react-root="precision"></div>
     </section>
 
   </main>

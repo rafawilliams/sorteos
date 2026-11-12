@@ -39,6 +39,21 @@ IDS_RETIRADOS = {
     "monthlyAdvantage": "mensual",
     "monthlyProfileChart": "mensual",
     "monthlyCards": "mensual",
+    "precisionLoader": "precision",
+    "precisionContent": "precision",
+    "precisionSummary": "precision",
+    "precisionPositions": "precision",
+    "precisionComparison": "precision",
+    "precisionTrendChart": "precision",
+    "statCounters": "resultados",
+    "searchInput": "resultados",
+    "catFilter": "resultados",
+    "dateFrom": "resultados",
+    "dateTo": "resultados",
+    "sorteosBody": "resultados",
+    "csvBtn": "resultados",
+    # `pagination` (id) no se vigila: `.pagination` sigue siendo una clase de style.css que usa la isla.
+    # `updateBtn` tampoco: el botón de actualizar es del armazón y se migra en T054.
 }
 # funciones de app.js que ya no deben existir ni llamarse
 FUNCIONES_RETIRADAS = (
@@ -49,6 +64,8 @@ FUNCIONES_RETIRADAS = (
     "compNumbers", "compChartInstance",
     "initSimCats", "runSimulation", "renderSimResults", "simChartInstance",
     "renderMonthlySection", "monthlyProfileChartInstance",
+    "loadBacktesting", "renderBacktesting", "renderPrecisionTrend", "backtestData", "precisionChartInstance",
+    "renderStatCounters", "getFilteredSorteos", "renderSorteos", "renderPagination", "goPage", "initFilters", "exportCSV", "currentPage", "PER_PAGE",
 )
 
 

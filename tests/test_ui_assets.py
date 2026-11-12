@@ -40,7 +40,9 @@ class TestLottoBallsAndDashboardJS:
         assert "renderBalls(r.ending,useML?'green':'gold','md')" in js
         assert "heatmap-legend" in js
         assert "cell-peak" in js
-        assert "prize-chip" in js
+        # `prize-chip` ya no está en app.js: lo pinta la isla Resultados (T035). Lo cubren sus pruebas
+        # (frontend/src/tabs/Resultados.test.tsx: clases prize-1/2/3, guion de «sin dato» y premios tal como llegan);
+        # que la clase exista en la hoja de estilos lo sigue comprobando TestStyleCSSCompleteness.
 
 
 class TestStyleCSSCompleteness:

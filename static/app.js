@@ -76,8 +76,7 @@ function toggleTheme(){
 (function(){const saved=localStorage.getItem('theme');if(saved)applyTheme(saved)})();
 
 // STATE
-let allSorteos=[], stats={}, currentPage=1;
-const PER_PAGE=50;
+let allSorteos=[], stats={};
 let currentPrize='primero', currentStatsPrize='primero';
 let useML=false;
 let trendChartInstance=null, volumeChartInstance=null, endingsTrendChartInstance=null;
@@ -136,7 +135,6 @@ function activateNavTab(tab){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.getElementById('sec-'+tab.dataset.tab).classList.add('active');
   _lpEmit('activeTab');
-  if(tab.dataset.tab==='precision') loadBacktesting();
   triggerReveals();
 }
 
@@ -191,8 +189,6 @@ function showSkeletons(){
   // Fill key containers with skeletons
   const recoEl=document.getElementById('recoContainer');
   if(recoEl)recoEl.innerHTML=`<div class="skel-grid">${skelCard(4)+skelCard(4)+skelCard(4)+skelCard(4)}</div>`;
-  const statEl=document.getElementById('statCounters');
-  if(statEl)statEl.innerHTML=`<div class="skel-grid">${skelCard(2)+skelCard(2)+skelCard(2)+skelCard(2)}</div>`;
   const decEl=document.getElementById('decenaContainer');
   if(decEl)decEl.innerHTML=`<div class="skel-grid">${skelCard(5)+skelCard(5)}</div>`;
 }
@@ -230,13 +226,13 @@ async function loadData(){
 
 function renderQuick(){
   // Immediate renders that only need sorteos data
-  renderLastUpdate();renderSorteos();renderPagination();
-  renderScatterChart();initFilters();
+  renderLastUpdate();
+  renderScatterChart();
 }
 
 function renderFull(){
   // Full renders once stats are available
-  renderLastUpdate();buildCategoryUI();renderStatCounters();
+  renderLastUpdate();buildCategoryUI();
   renderRecommendations('all');renderDecenas();renderStatsForPrize(currentStatsPrize);renderSeriesLetras();renderFormatos();
   renderRadarChart();renderScatterChart();
   renderPositionGrids();renderHeatmap();renderTrendChart();renderVolumeChart();
@@ -260,65 +256,6 @@ function buildCategoryUI(){
   cats.forEach(c=>{const b=document.createElement('button');b.className='cat-tab';b.dataset.cat=c;b.textContent=catLabel(c);tc.appendChild(b)});
   const te=document.getElementById('endCatTabs');
   if(te)cats.forEach(c=>{const b=document.createElement('button');b.className='cat-tab';b.dataset.cat=c;b.setAttribute('role','tab');b.setAttribute('aria-selected','false');b.textContent=catLabel(c);te.appendChild(b)});
-  const sel=document.getElementById('catFilter');
-  cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=catLabel(c);sel.appendChild(o)});
-}
-
-// STAT COUNTERS
-function renderStatCounters(){
-  const cats={};allSorteos.forEach(s=>{cats[s.cat]=(cats[s.cat]||0)+1});
-  let h=`<div class="stat-card"><div class="stat-value">${allSorteos.length.toLocaleString()}</div><div class="stat-label">Total Sorteos</div></div>`;
-  for(const[cat,count]of Object.entries(cats))h+=`<div class="stat-card"><div class="stat-value">${count.toLocaleString()}</div><div class="stat-label">${esc(catLabel(cat))}</div></div>`;
-  document.getElementById('statCounters').innerHTML=h;
-}
-
-// TABLE + PAGINATION
-function getFilteredSorteos(){
-  const q=document.getElementById('searchInput').value.trim(),cat=document.getElementById('catFilter').value,df=document.getElementById('dateFrom').value,dt=document.getElementById('dateTo').value;
-  let d=allSorteos;
-  if(cat!=='all')d=d.filter(s=>s.cat===cat);
-  if(q)d=d.filter(s=>[s.primero,s.segundo,s.tercero].some(n=>(n||'').includes(q)));
-  if(df)d=d.filter(s=>s.fecha>=df);if(dt)d=d.filter(s=>s.fecha<=dt);
-  return d;
-}
-function renderSorteos(){
-  const data=getFilteredSorteos(),start=(currentPage-1)*PER_PAGE,page=data.slice(start,start+PER_PAGE);
-  const prizeCell=(val,cls)=>val?`<span class="prize-chip ${cls}">${esc(val)}</span>`:'<span class="num-empty">—</span>';
-  const metaCell=val=>val?`<span class="meta-chip">${esc(val)}</span>`:'<span class="num-empty">—</span>';
-  document.getElementById('sorteosBody').innerHTML=page.map(s=>`<tr>
-    <td>${formatDate(s.fecha)}</td><td><span class="cat-pill cat-${catClase(s.cat)}">${esc(catLabel(s.cat))}</span></td>
-    <td class="num-cell">${prizeCell(s.primero,'prize-1')}</td><td class="num-cell">${prizeCell(s.segundo,'prize-2')}</td><td class="num-cell">${prizeCell(s.tercero,'prize-3')}</td>
-    <td>${metaCell(s.letra)}</td><td>${metaCell(s.serie)}</td><td>${metaCell(s.folio)}</td></tr>`).join('');
-  renderPagination();
-}
-function renderPagination(){
-  const total=getFilteredSorteos().length,tp=Math.ceil(total/PER_PAGE);
-  if(tp<=1){document.getElementById('pagination').innerHTML='';return}
-  let h=`<button class="page-btn" onclick="goPage(1)" ${currentPage===1?'disabled':''}>«</button><button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
-  let s=Math.max(1,currentPage-3),e=Math.min(tp,currentPage+3);
-  if(s>1)h+='<span class="page-info">…</span>';
-  for(let i=s;i<=e;i++)h+=`<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
-  if(e<tp)h+='<span class="page-info">…</span>';
-  h+=`<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage>=tp?'disabled':''}>›</button><button class="page-btn" onclick="goPage(${tp})" ${currentPage>=tp?'disabled':''}>»</button>`;
-  h+=`<span class="page-info">${total.toLocaleString()} resultados</span>`;
-  document.getElementById('pagination').innerHTML=h;
-}
-function goPage(p){const t=getFilteredSorteos().length,tp=Math.ceil(t/PER_PAGE);currentPage=Math.max(1,Math.min(p,tp));renderSorteos();document.querySelector('.table-wrap').scrollTop=0}
-
-// FILTERS
-function initFilters(){
-  const h=()=>{currentPage=1;renderSorteos()};
-  ['searchInput','catFilter','dateFrom','dateTo'].forEach(id=>document.getElementById(id).addEventListener(id==='searchInput'?'input':'change',h));
-}
-
-// CSV EXPORT
-function exportCSV(){
-  const data=getFilteredSorteos();
-  let csv='Fecha,Categoria,1er Premio,2do Premio,3er Premio,Letras,Serie,Folio\n';
-  data.forEach(s=>{csv+=`${s.fecha},${s.cat},${(s.primero||'')},${(s.segundo||'')},${(s.tercero||'')},${s.letra||''},${s.serie||''},${s.folio||''}\n`});
-  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`sorteos_panama_${new Date().toISOString().slice(0,10)}.csv`;a.click();
-  showToast(`CSV exportado: ${data.length} registros`);
 }
 
 // AUTO-UPDATE
@@ -829,114 +766,6 @@ function renderDashboard(){
     </div>
   </div>`;
   document.getElementById('dashboardSummary').innerHTML=h;
-}
-
-// BACKTESTING / PRECISION
-let backtestData=null;
-
-let precisionChartInstance=null;
-
-async function loadBacktesting(){
-  if(backtestData){renderBacktesting();return;}
-  document.getElementById('precisionLoader').style.display='flex';
-  document.getElementById('precisionContent').style.display='none';
-  try{
-    const res=await fetch('/api/backtesting?last_n=500');
-    backtestData=await res.json();
-  }catch(e){console.error('Backtest error:',e)}
-  document.getElementById('precisionLoader').style.display='none';
-  document.getElementById('precisionContent').style.display='block';
-  renderBacktesting();
-  triggerReveals();
-}
-
-function renderBacktesting(){
-  if(!backtestData)return;
-  const ml=backtestData.ml||{};
-  const st=backtestData.statistical||{};
-  const cmp=backtestData.comparison||{};
-
-  // Summary cards
-  document.getElementById('precisionSummary').innerHTML=`
-    <div class="stat-card"><div class="stat-value">${ml.avg_top1_accuracy||'—'}%</div><div class="stat-label">ML Top-1 Precisión</div></div>
-    <div class="stat-card"><div class="stat-value">${ml.avg_top3_accuracy||'—'}%</div><div class="stat-label">ML Top-3 Precisión</div></div>
-    <div class="stat-card"><div class="stat-value">${ml.avg_lift_top1||'—'}x</div><div class="stat-label">ML Lift vs Azar</div></div>
-    <div class="stat-card"><div class="stat-value">${ml.total_evaluated||0}</div><div class="stat-label">Sorteos Evaluados</div></div>
-  `;
-
-  // Per-position cards
-  const posLabels=['Millares (pos 0)','Centenas (pos 1)','Decenas (pos 2)','Unidades (pos 3)'];
-  const mlPos=ml.per_position||[];
-  document.getElementById('precisionPositions').innerHTML=mlPos.map((p,i)=>{
-    const t1w=Math.min(p.top1_accuracy/25*100,100);
-    const t3w=Math.min(p.top3_accuracy/60*100,100);
-    const liftColor=p.lift_top1>=1.2?'var(--accent-green)':p.lift_top1>=1.0?'var(--gold-300)':'var(--accent-hot)';
-    return`<div class="card reveal">
-      <div class="card-header"><div class="card-title" style="font-size:0.95rem;">${posLabels[i]}</div><span class="card-badge" style="background:${liftColor}20;color:${liftColor};">${p.lift_top1}x</span></div>
-      <div style="margin-bottom:12px;">
-        <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:var(--text-secondary);margin-bottom:4px;"><span>Top-1</span><span style="color:var(--gold-300);font-weight:600;">${p.top1_accuracy}%</span></div>
-        <div class="bar-track" style="height:14px;position:relative;">
-          <div class="bar-fill gold" style="width:${t1w}%;min-width:0;"></div>
-          <div style="position:absolute;left:${10/25*100}%;top:0;height:100%;width:2px;background:var(--accent-hot);opacity:0.7;" title="Azar: 10%"></div>
-        </div>
-      </div>
-      <div style="margin-bottom:12px;">
-        <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:var(--text-secondary);margin-bottom:4px;"><span>Top-3</span><span style="color:var(--accent-green);font-weight:600;">${p.top3_accuracy}%</span></div>
-        <div class="bar-track" style="height:14px;position:relative;">
-          <div class="bar-fill green" style="width:${t3w}%;min-width:0;"></div>
-          <div style="position:absolute;left:${30/60*100}%;top:0;height:100%;width:2px;background:var(--accent-hot);opacity:0.7;" title="Azar: 30%"></div>
-        </div>
-      </div>
-      <div style="font-size:0.75rem;color:var(--text-muted);">Prob. prom. dígito real: <strong style="color:var(--text-secondary);">${p.avg_prob_actual}%</strong></div>
-    </div>`;
-  }).join('');
-
-  // ML vs Statistical comparison
-  const stPos=st.per_position||[];
-  let compHTML='';
-  // ML card
-  compHTML+=`<div class="card reveal"><div class="card-header"><div class="card-title">🤖 Machine Learning</div><span class="card-badge badge-green">${cmp.ml_better?'Mejor':'—'}</span></div><div class="bar-chart">`;
-  mlPos.forEach((p,i)=>{
-    const w=Math.min(p.top1_accuracy/20*100,100);
-    compHTML+=`<div class="bar-row"><div class="bar-label">P${i}</div><div class="bar-track"><div class="bar-fill green" style="width:${w}%">${p.top1_accuracy}%</div></div></div>`;
-  });
-  if(ml.ending_top10_hit_rate!==undefined){
-    const ew=Math.min(ml.ending_top10_hit_rate/20*100,100);
-    compHTML+=`<div class="bar-row"><div class="bar-label" style="font-size:0.7rem;">Term</div><div class="bar-track"><div class="bar-fill purple" style="width:${ew}%">${ml.ending_top10_hit_rate}%</div></div></div>`;
-  }
-  compHTML+=`</div></div>`;
-
-  // Statistical card
-  compHTML+=`<div class="card reveal"><div class="card-header"><div class="card-title">📊 Estadístico</div><span class="card-badge badge-gold">${!cmp.ml_better?'Mejor':'—'}</span></div><div class="bar-chart">`;
-  stPos.forEach((p,i)=>{
-    const w=Math.min(p.top1_accuracy/20*100,100);
-    compHTML+=`<div class="bar-row"><div class="bar-label">P${i}</div><div class="bar-track"><div class="bar-fill gold" style="width:${w}%">${p.top1_accuracy}%</div></div></div>`;
-  });
-  compHTML+=`</div></div>`;
-  document.getElementById('precisionComparison').innerHTML=compHTML;
-
-  // Rolling accuracy trend chart
-  renderPrecisionTrend(ml.rolling_accuracy||[]);
-}
-
-function renderPrecisionTrend(rolling){
-  if(!rolling.length)return;
-  const labels=rolling.map(r=>r.month);
-  const ctx=document.getElementById('precisionTrendChart').getContext('2d');
-  if(precisionChartInstance)precisionChartInstance.destroy();
-  precisionChartInstance=new Chart(ctx,{
-    type:'line',
-    data:{
-      labels,
-      datasets:[
-        {label:'Top-1 Promedio',data:rolling.map(r=>r.top1_avg),borderColor:'#ffd700',backgroundColor:'rgba(255,215,0,0.1)',tension:0.4,borderWidth:2,pointRadius:3,fill:true},
-        {label:'Top-3 Promedio',data:rolling.map(r=>r.top3_avg),borderColor:'#34d399',backgroundColor:'rgba(52,211,153,0.1)',tension:0.4,borderWidth:2,pointRadius:3,fill:true},
-        {label:'Azar Top-1 (10%)',data:labels.map(()=>10),borderColor:'rgba(255,77,77,0.5)',borderDash:[6,4],borderWidth:1,pointRadius:0,fill:false},
-        {label:'Azar Top-3 (30%)',data:labels.map(()=>30),borderColor:'rgba(255,77,77,0.3)',borderDash:[6,4],borderWidth:1,pointRadius:0,fill:false},
-      ]
-    },
-    options:chartOpts()
-  });
 }
 
 // SCROLL REVEAL
