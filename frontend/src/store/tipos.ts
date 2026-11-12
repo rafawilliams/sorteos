@@ -52,6 +52,17 @@ export interface Snapshot {
   activeTab: TabId
   /** `true` cuando ya llegó la lista de sorteos (primera fase de la carga). No depende de `stats`. Si esa fase falla, sigue en `false`. */
   ready: boolean
+  /**
+   * Última petición «simula este número» (botón «Simular» de Mis Números), o `null` si nadie ha pedido ninguna.
+   * La isla Simulador lanza una simulación por cada `id` nuevo, así que pedir el mismo número otra vez es otra petición.
+   */
+  simulacion: PeticionSimulacion | null
+}
+
+/** Una petición de simulación: el número (ya normalizado a 4 cifras) y un contador que crece con cada petición. */
+export interface PeticionSimulacion {
+  numero: string
+  id: number
 }
 
 export interface AccionesStore {
@@ -62,7 +73,8 @@ export interface AccionesStore {
   toast(mensaje: string, ms?: number): void
   /**
    * Abre el Simulador con ese número (ya normalizado a 4 cifras) y lanza la simulación: el botón «Simular» de Mis
-   * Números. Deja `activeTab` en `'simulador'`.
+   * Números. Deja `activeTab` en `'simulador'` y una petición nueva en `simulacion` (con otro `id` aunque el número se
+   * repita): la isla Simulador la ve y simula.
    */
   simularNumero(numero: string): void
   /**

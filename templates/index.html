@@ -264,30 +264,7 @@
       <h2 class="section-title">Simulador: ¿Cuánto habría ganado?</h2>
       <p class="section-subtitle">Ingresa un número y descubre cuántas veces ha salido en toda la historia de la lotería.</p>
 
-      <div class="card reveal">
-        <div class="card-header"><h3 class="card-title">Buscar Número</h3><span class="card-badge badge-gold">Histórico</span></div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-top:12px;">
-          <div style="flex:1;min-width:140px;">
-            <label style="display:block;font-size:0.8rem;color:var(--text-muted);margin-bottom:4px;">Número (4 dígitos)</label>
-            <input class="filter-input" id="simNumero" type="text" maxlength="4" pattern="[0-9]{4}" placeholder="0042" aria-label="Número a simular" style="font-family:'JetBrains Mono';font-size:1.4rem;text-align:center;letter-spacing:6px;">
-          </div>
-          <div style="min-width:120px;">
-            <label style="display:block;font-size:0.8rem;color:var(--text-muted);margin-bottom:4px;">Categoría</label>
-            <select class="filter-select" id="simCat" aria-label="Categoría para simulación"><option value="">Todas</option></select>
-          </div>
-          <div style="min-width:120px;">
-            <label style="display:block;font-size:0.8rem;color:var(--text-muted);margin-bottom:4px;">Desde</label>
-            <input class="filter-date" id="simFrom" type="date" aria-label="Fecha desde">
-          </div>
-          <div style="min-width:120px;">
-            <label style="display:block;font-size:0.8rem;color:var(--text-muted);margin-bottom:4px;">Hasta</label>
-            <input class="filter-date" id="simTo" type="date" aria-label="Fecha hasta">
-          </div>
-          <button class="btn btn-gold" id="simBtn" onclick="runSimulation()" aria-label="Ejecutar simulación" style="height:42px;">🔍 Simular</button>
-        </div>
-      </div>
-
-      <div id="simResults" role="region" aria-label="Resultados de simulación" aria-live="polite"></div>
+      <div data-react-root="simulador"></div>
     </section>
 
     <!-- ==================== MIS NÚMEROS (WATCHLIST) ==================== -->
@@ -303,20 +280,7 @@
       <h2 class="section-title">Recomendación Mensual</h2>
       <p class="section-subtitle">Análisis histórico por mes del año: descubre qué números, dígitos y terminaciones son más frecuentes en cada mes.</p>
 
-      <div id="monthlyTarget" role="region" aria-label="Recomendación para el próximo mes"></div>
-
-      <div class="card reveal" style="margin-top:24px;">
-        <div class="card-header"><h3 class="card-title">Ventaja de Dígitos por Posición</h3><span class="card-badge badge-gold">vs Promedio</span></div>
-        <p class="section-subtitle" style="margin-bottom:12px;">Diferencia porcentual de cada dígito en el mes objetivo respecto al promedio general. <span style="color:#4ade80;">Verde</span> = más frecuente, <span style="color:#f87171;">Rojo</span> = menos frecuente.</p>
-        <div id="monthlyAdvantage" role="img" aria-label="Tabla de ventaja de dígitos por posición"></div>
-      </div>
-
-      <div class="card reveal" style="margin-top:24px;">
-        <div class="card-header"><h3 class="card-title">Perfil de los 12 Meses</h3><span class="card-badge badge-purple">Histórico</span></div>
-        <div class="chart-container"><canvas id="monthlyProfileChart" aria-label="Gráfico comparativo de perfil mensual" role="img"></canvas></div>
-      </div>
-
-      <div id="monthlyCards" class="grid-3" role="region" aria-label="Perfiles mensuales detallados" style="margin-top:24px;"></div>
+      <div data-react-root="mensual"></div>
     </section>
 
     <!-- ==================== SEGUIMIENTO ==================== -->

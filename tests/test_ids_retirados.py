@@ -29,6 +29,16 @@ IDS_RETIRADOS = {
     "compTags": "comparador",
     "compResults": "comparador",
     "compMonthlyChart": "comparador",
+    "simNumero": "simulador",
+    "simCat": "simulador",
+    "simFrom": "simulador",
+    "simTo": "simulador",
+    "simBtn": "simulador",
+    "simResults": "simulador",
+    "monthlyTarget": "mensual",
+    "monthlyAdvantage": "mensual",
+    "monthlyProfileChart": "mensual",
+    "monthlyCards": "mensual",
 }
 # funciones de app.js que ya no deben existir ni llamarse
 FUNCIONES_RETIRADAS = (
@@ -37,6 +47,8 @@ FUNCIONES_RETIRADAS = (
     "getFavorites", "saveFavorites", "addFavorite", "removeFavorite", "renderFavorites", "updateFavBadge",
     "addCompNumber", "removeCompNumber", "clearCompNumbers", "renderCompTags", "runComparison", "renderCompResults",
     "compNumbers", "compChartInstance",
+    "initSimCats", "runSimulation", "renderSimResults", "simChartInstance",
+    "renderMonthlySection", "monthlyProfileChartInstance",
 )
 
 

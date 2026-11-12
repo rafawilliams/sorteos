@@ -12,7 +12,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { Snapshot, Store } from './tipos'
 
-const CAMPOS = ['sorteos', 'stats', 'useML', 'prize', 'statsPrize', 'theme', 'activeTab', 'ready'] as const satisfies readonly (keyof Snapshot)[]
+const CAMPOS = ['sorteos', 'stats', 'useML', 'prize', 'statsPrize', 'theme', 'activeTab', 'ready', 'simulacion'] as const satisfies readonly (keyof Snapshot)[]
 const ACCIONES = ['setUseML', 'setPrize', 'setStatsPrize', 'toast', 'simularNumero', 'reload'] as const
 
 /** Cómo llevar a un almacén concreto a un estado cargado y cómo hacer que falle su siguiente recarga. */
@@ -162,6 +162,35 @@ export const comprobaciones: Record<string, Comprobacion> = {
     cancelar()
   },
 
+  /**
+   * «Simular» de Mis Números (`tipos.ts`, `simulacion`): sin petición es `null`; tras `simularNumero(n)` el Simulador
+   * queda activo y `simulacion` lleva ese número; pedir el MISMO número otra vez es otra petición (otro `id`, otra
+   * referencia), porque la isla lanza una simulación por cada `id` nuevo; y la escucha de `subscribe` ya ve el
+   * estado nuevo (si avisara antes, `useSyncExternalStore` leería la petición vieja).
+   */
+  async simulacion(crear, control) {
+    await enEstados(crear, control, (store, momento) => {
+      expect(store.getSnapshot().simulacion, `sin pedir nada, «simulacion» debe ser null (${momento})`).toBeNull()
+      // `LegacyStore` solo tiene enganchadas las pestañas tras el arranque de app.js (`DOMContentLoaded`), y nadie
+      // puede pulsar «Simular» antes de que lleguen los datos: lo demás se exige con el almacén ya cargado.
+      if (momento === 'recién creado') return
+      const vistos: Snapshot[] = []
+      const cancelar = store.subscribe(() => vistos.push(store.getSnapshot()))
+      store.actions.simularNumero('0042')
+      const primera = store.getSnapshot()
+      expect(primera.simulacion?.numero, `simularNumero('0042') no dejó el número en «simulacion» (${momento})`).toBe('0042')
+      expect(primera.activeTab, `simularNumero no dejó el Simulador como pestaña activa (${momento})`).toBe('simulador')
+      expect(vistos.at(-1)?.simulacion?.numero, `simularNumero avisó antes de actualizar «simulacion»: la escucha leyó la petición vieja (${momento})`).toBe('0042')
+      store.actions.simularNumero('0042')
+      const segunda = store.getSnapshot()
+      expect(segunda.simulacion, `repetir el mismo número no es otra petición: «simulacion» conserva la referencia (${momento})`).not.toBe(primera.simulacion)
+      expect(segunda.simulacion?.id, `repetir el mismo número no cambió el «id» de la petición (${momento})`).not.toBe(primera.simulacion?.id)
+      store.actions.simularNumero('9614')
+      expect(store.getSnapshot().simulacion?.numero, `un número distinto no reemplazó la petición (${momento})`).toBe('9614')
+      cancelar()
+    })
+  },
+
   /** Las acciones y `subscribe` van en dependencias de efectos: deben ser la misma función siempre, también tras cambios. */
   async identidadDeAcciones(crear, control) {
     const store = crear()
@@ -218,6 +247,7 @@ export function describirContratoDeStore(nombre: string, crear: () => Store, con
     it('devuelve las mismas referencias mientras no cambie el estado, vacío y cargado', () => comprobaciones.referenciaEstable!(crear, control))
     it('cambiar un campo no toca la referencia de los demás, vacío y cargado', () => comprobaciones.camposIndependientes!(crear, control))
     it('subscribe avisa tras un cambio y deja de avisar al cancelar', () => comprobaciones.suscripcion!(crear, control))
+    it('simularNumero deja el Simulador activo y una petición nueva en `simulacion`, también al repetir el número', () => comprobaciones.simulacion!(crear, control))
     it('subscribe y las acciones funcionan sueltas, sin depender de this', () => comprobaciones.sinDependerDeThis!(crear, control))
     it('las acciones y subscribe conservan su identidad, también tras cambios de estado', () => comprobaciones.identidadDeAcciones!(crear, control))
     it('reload conserva los datos viejos, se resuelve y nunca rechaza, ni aunque falle', () => comprobaciones.recarga!(crear, control))

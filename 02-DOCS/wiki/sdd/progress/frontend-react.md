@@ -447,3 +447,60 @@ Isla Seguimiento, retirada del código antiguo con la guardia ampliada y referen
 
 ## Etapa 3 (T023–T027) completa
 Islas Mis Números y Comparador, componente `Chart`, retirada del código antiguo con la guardia ampliada y capturas aprobadas. Pendiente de la etapa: abrir su PR contra `main` (apilada sobre la etapa 2, ya fusionada).
+
+## T028 — 2026-11-12 (rama `feat/react-etapa-4-simulador-mensual`; implementada, pendiente de riesgo y revisión)
+- status: in-review (todavía sin commit)
+- red/green: contrato `simulacion` — 6 fallos en rojo (`simulacion` llegaba `undefined` en el doble, `StoreManual`, la clase con flechas y `LegacyStore`), luego 115 en verde; isla — 38 fallos en rojo («Unable to find…») y 39 en verde; guardia — 16 fallos en rojo y 123 en verde al retirar el código; puente — 1 rojo (app.js aún simulaba por su cuenta) y verde.
+- hecho: campo `simulacion` en el Store (`tipos.ts`, `storeFalso.ts`, `hooks.ts` → `useSimulacion`, `contratoStore.ts`, `app.js`: `LP.simular` ya no toca `#simNumero` ni llama a `runSimulation`); isla `tabs/Simulador.tsx` (formulario, categorías desde `stats.by_category`, esqueleto con `stats` nulo y mientras busca, error con «Reintentar», respuestas viejas descartadas, petición desde Mis Números); plantilla con `<div data-react-root="simulador">`; retirados `initSimCats`, `runSimulation`, `renderSimResults`, `simChartInstance` y los ids `simNumero`, `simCat`, `simFrom`, `simTo`, `simBtn`, `simResults`; guardia ampliada.
+- pruebas: 40 de la isla; 643 en el front; 515 Python (1 omitida; base sembrada `sorteos_capturas`, nunca la real); `typecheck` 0; build correcto; `npm audit` 0; `pip-audit` sin vulnerabilidades.
+- mutantes: isla 24/24 detectados (uno sobrevivió y se cerró: el separador de miles de «Sorteos analizados», con una prueba de 9.296); contrato 5 almacenes rotos, todos rechazados por su defecto; puente en `app.js` 5/6 (el que sobrevive, `String(n)` frente a `n`, es equivalente: el contrato ya exige texto).
+- navegador real (Playwright, base sembrada en el 5002 desde este worktree, 600 sorteos): 10/10 comprobaciones y 0 errores de consola: formulario con «Todas» y las 4 categorías; «74» pide `numero=0074`; filtros en la URL; campo vacío avisa y no pide; Enter en el botón simula; «Simular 0042» desde Mis Números abre la pestaña, rellena el campo y simula; repetir el número simula otra vez; tema claro. Las tarjetas `.reveal` quedan en opacidad 1 al bajar (como en el resto de la app).
+- decisiones: «Simular» llega por `simulacion` y tres cambios de comportamiento (ver decisions.md, 2026-11-12). Q8 queda resuelta: `simularNumero` ya no es un puente temporal.
+- risk: **pendiente**: `rsc risk` no se ha podido ejecutar (el clasificador de permisos bloquea `npx`); el tier lo calcula la herramienta, no el agente. review: **pendiente** (un revisor de contexto fresco si el tier es 1).
+- controls: tests ✅ build ✅ security ✅ traceability ✅ (AC2 isla; AC10 retirada del código antiguo).
+
+## Decision queue (adiciones — etapa 4)
+- [review-after] Q10 — T028: `Snapshot.simulacion` es contrato nuevo del Store; `ReactStore` (T052) debe implementarlo y pasar la suite de contrato (`describirContratoDeStore`, comprobación `simulacion`).
+
+## T028 — revisión, ronda 1 (2026-11-12)
+- review: un revisor de contexto fresco (informe en `.scratch/review-T028-r1.md`, no se versiona) → 0 bloqueantes, 0 should-fix, 1 nit, 1 pregunta; sin hallazgos que verificar (`finding-verifier` solo aplica a bloqueantes y should-fix). Como `npx` está bloqueado, `review consolidate` y `review ledger` no se han podido ejecutar: el recuento y los cierres se anotan aquí a mano.
+- L1 (nit, `Simulador.tsx`): con todas las categorías a 0 el ancho de barra daba `NaN%` → **arreglado** (`|| 1`), con prueba que fallaba antes (41 en la isla). El servidor no devuelve categorías con 0 y el código antiguo hacía lo mismo: arreglo de clase «división por cero sin guardia».
+- L2 (pregunta, `Simulador.tsx`): si `/api/stats` falla o tarda minutos (primera carga sin modelo: 50-100 s) el formulario entero queda en esqueleto aunque `/api/simulador` no depende de `stats`; el código antiguo lo dejaba usable. El done-check del plan dice «`stats` nulo → esqueleto», así que **no se cambia por cuenta del agente**: aparcada (Q11).
+- «Extra» señalado por el revisor: el campo vacío se rechaza en vez de rellenarse hasta «0000». Es la corrección pedida en Q8 y está en `decisions.md`: **intencional**.
+- nit sin ficha: los `<label>` no llevan `htmlFor` y no hay `<form>`, de modo que Enter no lanza la búsqueda; el código antiguo era igual (paridad).
+- risk: sigue **pendiente** (`rsc risk` sin ejecutar); el revisor se lanzó por indicación de la persona, no por un tier calculado.
+
+## Decision queue (adiciones — etapa 4)
+- [review-after] Q11 — T028/L2: con `stats` nulo, el Simulador entero es un esqueleto. Recomendación: mostrar el formulario siempre (con «Todas» como única categoría hasta que lleguen las categorías) y dejar el esqueleto solo para el selector; exigiría matizar el done-check «`stats` nulo → esqueleto» de T028.
+
+## T029 — 2026-11-12 (implementada, pendiente de riesgo y revisión)
+- status: in-review (todavía sin commit)
+- red/green: `DIGIT_COLORS`, `BotonCopiar` e isla Mensual escritos tras sus pruebas en rojo (39 fallos de «Unable to find…», `datos` indefinido, `DIGIT_COLORS` vacío); la guardia de ids retirados falló en 11 pruebas antes de retirar el código y pasa después.
+- hecho: `lib/chartOptions.ts` → `DIGIT_COLORS`; `components/BotonCopiar.tsx`; `tabs/Mensual.tsx` (recomendación del mes objetivo con esferas y «×N azar», tabla de ventaja de dígitos con su color, gráfico apilado de los 12 meses con `Chart`, tarjeta por mes con top de números y terminaciones); plantilla con `<div data-react-root="mensual">`; retirados de `app.js` el bloque `renderMonthlySection`, `monthlyProfileChartInstance` y su llamada, y de la plantilla los ids `monthlyTarget`, `monthlyAdvantage`, `monthlyProfileChart` y `monthlyCards`; guardia ampliada. Con esto T030 queda absorbida (ver decisions.md).
+- pruebas: 36 de la isla, 8 de `BotonCopiar`, 1 de `DIGIT_COLORS`; 689 en el front; 530 Python (1 omitida; base sembrada `sorteos_capturas`); `typecheck` 0; build correcto (448 kB); `npm audit` 0; `pip-audit` sin vulnerabilidades.
+- mutantes: 37 (27 de la isla y 10 de `BotonCopiar`): 34 detectados a la primera y los 3 supervivientes eran huecos de mis pruebas, ya cerrados y detectados (repintado con elemento nuevo para la identidad de `datos`, variante de las esferas, botón desmontado con la copia en vuelo). Dos pruebas se reescribieron por cómo mide jsdom (no resuelve `var()` en estilos calculados y convierte `rem` a px): se lee el estilo en línea.
+- navegador real (Playwright, base sembrada, 5003): 11/11 y 0 errores de consola: título del mes («Diciembre 2026»), 5 recomendaciones con esferas y «×N azar», tabla 4×11 con celdas verdes y rojas, gráfico de Chart.js realmente pintado (147 colores), 12 tarjetas con una sola «Próximo», «Copiar» con ratón y con Enter (copia, avisa, «OK» y vuelve a «Copiar» a los 1,5 s), tema claro con el gráfico recreado.
+- decisiones: `BotonCopiar` compartido y T030 absorbida (decisions.md).
+- risk: **pendiente** (`rsc risk` sin ejecutar); review: **pendiente**.
+- controls: tests ✅ build ✅ security ✅ traceability ✅ (AC2 isla; AC10 retirada del código antiguo).
+
+## T028 — revisión, cierre de Q11 (2026-11-12)
+- L2/Q11 **resuelta** por decisión del dueño (opción B): con `stats` nulo el Simulador muestra el formulario con «Todas» como única categoría y se puede simular; el esqueleto de toda la pestaña desaparece. Done-check de T028 enmendado en el plan; decisión en decisions.md.
+- red/green: 4 fallos en rojo («Unable to find» el campo de texto) y 44 en verde en la isla. Mutantes del cambio: 3/3 detectados (vuelve el esqueleto, el selector no ofrece categorías, el selector ignora categorías).
+- navegador real (Playwright, 5003, `/api/stats` retenida con `page.route`): 5/5 y 0 errores de consola: formulario visible y solo «Todas»; se simula; al soltar `/api/stats` el selector gana las 4 categorías y se conserva lo tecleado y el resultado.
+- risk: sigue **pendiente** (`rsc risk` sin ejecutar).
+
+## T029 — revisión, ronda 1 (2026-11-12)
+- review: un revisor de contexto fresco (informe en `.scratch/review-T029-r1.md`, no se versiona) → 0 bloqueantes, 1 should-fix, 3 nits, 1 pregunta. Sin `npx` no se pudo ejecutar `review consolidate` ni el libro de revisiones: el recuento y los cierres van aquí a mano. El should-fix no pasó por un `finding-verifier` (la autorización cubría solo al revisor): lo verifiqué yo (ver decisions.md).
+- L1 (should-fix, `Mensual.tsx`): `role="img"` sobre el contenedor de la tabla de ventaja → **arreglado**: se quita el contenedor, la tabla lleva su `aria-label` y sin 4 filas no se pinta nada. Verificación: la regla ARIA es de la especificación; en el árbol real de Chromium (CDP) las filas seguían expuestas, así que el efecto en un lector depende de la plataforma y no se pudo medir; el caso sin tabla (imagen vacía) sí era seguro. Clase: «rol ARIA que vuelve presentacional contenido estructural».
+- L2 (nit, `Mensual.test.tsx`): la prueba «cambiar de pestaña y volver» no podía fallar (la isla no lee `activeTab`) → **borrada**; la identidad de `datos` y `opciones` la cubre otra prueba.
+- L3 (nit, `BotonCopiar.tsx`): tras desmontar, el fallo avisaba y el éxito no → **arreglado**: se avisa siempre (la copia se hizo) y solo se omiten el estado y el temporizador; dos pruebas.
+- L4 (nit, `BotonCopiar.tsx`): el nombre accesible fijo ocultaba el cambio a «OK» → **arreglado**: «Copiar 9541» → «Copiado 9541».
+- L5 (pregunta, `BotonCopiar.tsx`): `copyNumber` de `app.js` reescribe el texto de todo `.copy-btn[data-num]`, también el de los botones de React → **resuelta** en vez de aceptarla: el botón lleva `data-numero` y no `data-num`.
+- pruebas: 46 entre isla y botón; mutantes 42/42 detectados (8 nuevos de esta ronda: el contenedor `role="img"` de vuelta, la tabla sin nombre, el nombre sin «Copiado», `data-num`, aviso tras desmontar…).
+- navegador real (Chromium, árbol de accesibilidad por CDP, 5003): 8/8 y 0 errores de consola: tabla con nombre y sin «imagen»; `data-numero`; nombre «Copiar N» → «Copiado N» → «Copiar N»; el portapapeles recibe el número.
+- no se ha lanzado una segunda ronda de revisión sobre estos arreglos; el riesgo calculado (`rsc risk`) sigue **pendiente**.
+
+## Etapa 4 — riesgo calculado (2026-11-12)
+- risk: **tier 1** (calculado con `npx @ericrisco/rsc risk --base fff6728 --json` sobre todo el diff de la etapa): `reviewers: 1`, `humanApproval: false`, `escalate: null`; clases `default` y `docs`; no toca auth, facturación, CI, migraciones ni secretos. Sustituye al «pendiente» de las entradas de T028 y T029, y coincide con lo que se hizo: un revisor de contexto fresco por tarea (T028 y T029).
+- corrección: las entradas anteriores decían que `rsc risk` «no se ha podido ejecutar porque `npx` está bloqueado». Era una suposición: solo se había intentado `rsc doctor` una vez y se extrapoló a toda la familia de comandos. Al intentar `rsc risk` por primera vez (a petición de la persona) se ejecutó sin problema. `review consolidate` y `review ledger` siguen sin haberse ejecutado; no se han probado.
