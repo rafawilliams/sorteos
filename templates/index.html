@@ -21,7 +21,10 @@
 <div class="build-notice" role="alert">La interfaz React no está construida. Ejecuta <code>npm --prefix frontend ci &amp;&amp; npm --prefix frontend run build</code> y recarga la página.</div>
 {% endif %}
 
+<button class="menu-toggle" id="menuToggle" type="button" aria-label="Abrir menú de secciones" aria-expanded="false" aria-controls="navTabs"><svg class="ic-menu" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg><svg class="ic-close" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+
 <div class="app">
+  <div class="menu-backdrop" id="menuBackdrop" hidden></div>
   <header class="hero" style="position:relative;">
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Cambiar tema claro/oscuro"><span id="themeIcon" aria-hidden="true">☀️</span> <span class="label" id="themeLabel">Claro</span></button>
     <div class="hero-badge" aria-hidden="true"><span class="dot"></span> En vivo — Lotería de Panamá</div>
@@ -30,20 +33,20 @@
     <div class="last-update" id="lastUpdate" role="status" aria-live="polite"></div>
   </header>
 
-  <nav class="nav-tabs" id="navTabs" role="tablist" aria-label="Secciones principales">
+  <nav class="nav-tabs" id="navTabs" role="tablist" aria-orientation="vertical" aria-label="Secciones principales">
     <button class="nav-tab active" data-tab="predicciones" role="tab" aria-selected="true" aria-controls="sec-predicciones" id="tab-predicciones">★ Predicciones</button>
     <button class="nav-tab" data-tab="decenas" role="tab" aria-selected="false" aria-controls="sec-decenas" id="tab-decenas">Decenas</button>
     <button class="nav-tab" data-tab="terminaciones" role="tab" aria-selected="false" aria-controls="sec-terminaciones" id="tab-terminaciones">Terminaciones</button>
-    <button class="nav-tab" data-tab="resultados" role="tab" aria-selected="false" aria-controls="sec-resultados" id="tab-resultados">Resultados</button>
+    <button class="nav-tab nav-tab-group" data-tab="resultados" role="tab" aria-selected="false" aria-controls="sec-resultados" id="tab-resultados">Resultados</button>
     <button class="nav-tab" data-tab="estadisticas" role="tab" aria-selected="false" aria-controls="sec-estadisticas" id="tab-estadisticas">Estadísticas</button>
     <button class="nav-tab" data-tab="tendencias" role="tab" aria-selected="false" aria-controls="sec-tendencias" id="tab-tendencias">Tendencias</button>
     <button class="nav-tab" data-tab="analisis" role="tab" aria-selected="false" aria-controls="sec-analisis" id="tab-analisis">Análisis</button>
-    <button class="nav-tab" data-tab="comparador" role="tab" aria-selected="false" aria-controls="sec-comparador" id="tab-comparador">⚖ Comparador</button>
+    <button class="nav-tab nav-tab-group" data-tab="comparador" role="tab" aria-selected="false" aria-controls="sec-comparador" id="tab-comparador">⚖ Comparador</button>
     <button class="nav-tab" data-tab="gaps" role="tab" aria-selected="false" aria-controls="sec-gaps" id="tab-gaps">⏳ Gaps</button>
     <button class="nav-tab" data-tab="simulador" role="tab" aria-selected="false" aria-controls="sec-simulador" id="tab-simulador">🎰 Simulador</button>
     <button class="nav-tab" data-tab="favoritos" role="tab" aria-selected="false" aria-controls="sec-favoritos" id="tab-favoritos">⭐ Mis Números</button>
     <button class="nav-tab" data-tab="mensual" role="tab" aria-selected="false" aria-controls="sec-mensual" id="tab-mensual">📅 Mensual</button>
-    <button class="nav-tab" data-tab="precision" role="tab" aria-selected="false" aria-controls="sec-precision" id="tab-precision">Precisión</button>
+    <button class="nav-tab nav-tab-group" data-tab="precision" role="tab" aria-selected="false" aria-controls="sec-precision" id="tab-precision">Precisión</button>
     <button class="nav-tab" data-tab="seguimiento" role="tab" aria-selected="false" aria-controls="sec-seguimiento" id="tab-seguimiento">🎯 Seguimiento</button>
   </nav>
 
