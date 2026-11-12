@@ -44,7 +44,7 @@ window.LP={
   getSnapshot:_lpSnapshot,
   subscribe(fn){_lpListeners.add(fn);return()=>{_lpListeners.delete(fn)}},
   setUseML(v){setUseMLLP(!!v)},
-  setPrize(p){const tab=_lpTabPremio('#prizeTabs',p);if(tab)selectPrize(tab)},
+  setPrize(p){if(!['primero','segundo','tercero'].includes(p))return;currentPrize=p;_lpEmit('prize')},
   setStatsPrize(p){const tab=_lpTabPremio('#statsPrizeTabs',p);if(tab)selectStatsPrize(tab)},
   toast(msg,ms){showToast(msg,ms)},
   simular(n){
@@ -83,21 +83,9 @@ let trendChartInstance=null, volumeChartInstance=null;
 
 const CAT_LABELS={dominical:'Dominical',miercolito:'Miercolito',gordito:'Gordito del Zodiaco',extraordinario:'Extraordinario'};
 function catLabel(k){return CAT_LABELS[k]||k.charAt(0).toUpperCase()+k.slice(1)}
-// Category as a CSS class suffix: only [a-z0-9_-], so a raw API value cannot break out of class="…".
-function catClase(k){return String(k??'').toLowerCase().replace(/[^a-z0-9_-]/g,'')}
 function formatDate(d){if(!d)return'—';return new Date(d+'T00:00:00').toLocaleDateString('es-PA',{year:'numeric',month:'short',day:'numeric'})}
-function renderBalls(val,variant='gold',size='lg'){
-  const s=String(val??'').trim();
-  if(!s)return'<span class="num-empty">—</span>';
-  const balls=Array.from(s).map(ch=>`<span class="lotto-ball ball-${variant}" aria-hidden="true">${esc(ch)}</span>`).join('');
-  return`<span class="lotto-balls lotto-balls-${size}" aria-label="${esc(s)}">${balls}</span>`;
-}
-
 // TOAST
 function showToast(msg,ms=2500){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),ms)}
-
-// COPY
-function copyNumber(num){navigator.clipboard.writeText(num).then(()=>{showToast('Copiado: '+num);document.querySelectorAll(`.copy-btn[data-num="${num}"]`).forEach(b=>{b.classList.add('copied');b.textContent='OK';setTimeout(()=>{b.classList.remove('copied');b.textContent='Copiar'},1500)})})}
 
 // INIT
 document.addEventListener('DOMContentLoaded',async()=>{initTabs();await loadData()});
@@ -148,9 +136,6 @@ function initTabs(){
   // Prize tabs keyboard nav
   document.querySelectorAll('.prize-tabs').forEach(pt=>initTablistKeyboard(pt));
 
-  // Cat tabs keyboard nav
-  const catTabs=document.getElementById('recoCatTabs');
-  if(catTabs)initTablistKeyboard(catTabs);
   initMenu();
 }
 
@@ -179,16 +164,9 @@ function initMenu(){
   if(window.matchMedia){const ancho=matchMedia('(min-width:901px)');if(ancho.addEventListener)ancho.addEventListener('change',e=>{if(e.matches)poner(false)})}
 }
 
-function skelCard(lines=3){
-  const ls=Array.from({length:lines},(_,i)=>`<div class="skel-line ${i===0?'thick w60':i%2===0?'w80':'w40'}"></div>`).join('');
-  return`<div class="skeleton">${ls}</div>`;
-}
 function showSkeletons(){
   document.getElementById('loader').style.display='none';
   document.getElementById('content').style.display='block';
-  // Fill key containers with skeletons
-  const recoEl=document.getElementById('recoContainer');
-  if(recoEl)recoEl.innerHTML=`<div class="skel-grid">${skelCard(4)+skelCard(4)+skelCard(4)+skelCard(4)}</div>`;
 }
 
 async function loadData(){
@@ -235,12 +213,11 @@ function renderQuick(){
 
 function renderFull(){
   // Full renders once stats are available
-  renderLastUpdate();buildCategoryUI();
-  renderRecommendations('all');renderStatsForPrize(currentStatsPrize);renderSeriesLetras();renderFormatos();
+  renderLastUpdate();
+  renderStatsForPrize(currentStatsPrize);renderSeriesLetras();renderFormatos();
   renderRadarChart();renderScatterChart();
   renderPositionGrids();renderHeatmap();renderTrendChart();renderVolumeChart();
-  renderDashboard();
-  initRecoCatTabs();initPrizeTabs();initStatsPrizeTabs();
+  initStatsPrizeTabs();
 }
 
 // LAST UPDATE
@@ -250,13 +227,6 @@ function renderLastUpdate(){
     document.getElementById('lastUpdate').textContent='Última actualización: '+formatDate(lu);
     document.getElementById('footerText').innerHTML=`Lotería de Panamá — Análisis Estadístico © 2026 &nbsp;·&nbsp; ${allSorteos.length.toLocaleString()} sorteos históricos &nbsp;·&nbsp; Actualizado: ${formatDate(lu)}`;
   }
-}
-
-// CATEGORY UI
-function buildCategoryUI(){
-  const cats=[...new Set(allSorteos.map(s=>s.cat).filter(Boolean))];
-  const tc=document.getElementById('recoCatTabs');
-  cats.forEach(c=>{const b=document.createElement('button');b.className='cat-tab';b.dataset.cat=c;b.textContent=catLabel(c);tc.appendChild(b)});
 }
 
 // AUTO-UPDATE
@@ -291,90 +261,31 @@ function _setAriaTab(container,active){
   active.setAttribute('tabindex','0');
 }
 function _statsListas(){return _lpStatsOk(stats)}
-function selectPrize(tab){
-  _setAriaTab(document.getElementById('prizeTabs'),tab);currentPrize=tab.dataset.prize;
-  _lpEmit('prize');
-  const cat=document.querySelector('#recoCatTabs .cat-tab.active');
-  if(_statsListas()&&cat)renderRecommendations(cat.dataset.cat);
-}
 function selectStatsPrize(tab){
   _setAriaTab(document.getElementById('statsPrizeTabs'),tab);currentStatsPrize=tab.dataset.prize;
   _lpEmit('statsPrize');
   if(_statsListas()){renderStatsForPrize(currentStatsPrize);triggerReveals()}
-}
-function initPrizeTabs(){
-  document.getElementById('prizeTabs').querySelectorAll('.prize-tab').forEach(tab=>{
-    tab.addEventListener('click',()=>selectPrize(tab));
-  });
 }
 function initStatsPrizeTabs(){
   document.getElementById('statsPrizeTabs').querySelectorAll('.prize-tab').forEach(tab=>{
     tab.addEventListener('click',()=>selectStatsPrize(tab));
   });
 }
-function initRecoCatTabs(){
-  const wrap=document.getElementById('recoCatTabs');
-  wrap.querySelectorAll('.cat-tab').forEach(tab=>{
-    tab.addEventListener('click',()=>{
-      _setAriaTab(wrap,tab);renderRecommendations(tab.dataset.cat);
-    });
-  });
-}
-
 // ML TOGGLE
 function toggleML(){setUseMLLP(!useML)}
 function setUseMLLP(valor){
   if(valor===useML)return;
   useML=valor;
-  document.querySelectorAll('.ml-toggle').forEach(b=>{
+  document.querySelectorAll('.ml-toggle:not([data-isla])').forEach(b=>{
     b.classList.toggle('active',useML);
     b.textContent=useML?'🤖 ML Activo':'📊 Estadístico';
     b.setAttribute('aria-pressed',String(useML));
   });
   _lpEmit('useML');
-  const cat=document.querySelector('#recoCatTabs .cat-tab.active');
-  if(!_statsListas()||!cat)return; // aún no hay estadísticas: solo cambia el modo; renderFull lo usará al llegar
-  renderRecommendations(cat.dataset.cat);
+  if(!_statsListas())return; // aún no hay estadísticas: solo cambia el modo
   // Show ML info badge
   const info=stats.ml_info||{};
   if(useML&&info.trained)showToast(`ML: ${info.train_samples} muestras · Entrenado: ${info.train_date}`,3000);
-}
-
-// Number confidence (statistical and ML) is "times more likely than chance": 1.0 = pure chance, capped at 15.
-function fmtLift(x){return x==null?'—':`×${Number(x).toFixed(2)} azar`}
-function liftBar(x){return Math.min((x||0)/2*100,100)}  // 2× chance fills the bar
-
-// RECOMMENDATIONS
-function renderRecommendations(cat){
-  const container=document.getElementById('recoContainer');
-  let recos;
-  if(useML){
-    // ML recommendations
-    if(cat==='all'){
-      const mlp=stats.ml_prizes&&stats.ml_prizes[currentPrize];
-      recos=mlp||stats.ml_recommendations||[];
-    }else{
-      recos=(stats.by_category&&stats.by_category[cat]&&stats.by_category[cat].ml_recommendations)||[];
-    }
-  }else{
-    // Statistical recommendations
-    const pd=stats.prizes&&stats.prizes[currentPrize];
-    if(cat==='all')recos=(pd&&pd.recommendations)||stats.recommendations||[];
-    else recos=(stats.by_category&&stats.by_category[cat]&&stats.by_category[cat].recommendations)||[];
-  }
-  if(!recos.length){container.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:40px;">No hay suficientes datos para esta combinación.</p>';return}
-  // Per-category recommendations cover every 4-digit prize (1st, 2nd and 3rd), whatever prize is selected.
-  const pl=cat==='all'?{primero:'1er Premio',segundo:'2do Premio',tercero:'3er Premio'}[currentPrize]:'cualquier premio de 4 cifras';
-  const method=useML?'🤖 Machine Learning':'📊 Estadístico';
-  const ranks=['1ro','2do','3ro','4to','5to'];
-  container.innerHTML=`<div style="margin-bottom:12px;font-size:0.8rem;color:var(--text-muted);">Recomendaciones para <strong style="color:var(--gold-300)">${pl}</strong> — <span style="color:${useML?'var(--accent-green)':'var(--gold-400)'};">${method}</span></div>
-    <div class="reco-grid">${recos.map((r,i)=>`<div class="reco-card${useML?' reco-ml':''}">
-      <button class="copy-btn" data-num="${r.number}" onclick="copyNumber('${r.number}')">Copiar</button>
-      <div class="reco-rank">${ranks[i]||(i+1)+'to'} Recomendado</div>
-      <div class="reco-number">${renderBalls(r.number,useML?'green':'gold','lg')}</div>
-      <div class="reco-confidence" title="Veces más probable que un número al azar (×1.00 = azar)"><div class="conf-bar"><div class="conf-bar-fill" style="width:${liftBar(r.confidence)}%;${useML?'background:linear-gradient(90deg,var(--accent-green),#6ee7b7);':''}"></div></div>${fmtLift(r.confidence)}</div>
-    </div>`).join('')}</div>`;
-  requestAnimationFrame(()=>{container.querySelectorAll('.conf-bar-fill').forEach(b=>{const w=b.style.width;b.style.width='0%';requestAnimationFrame(()=>{b.style.width=w})})});
 }
 
 // DECENA RECOMMENDATION
@@ -534,88 +445,6 @@ function renderVolumeChart(){
 }
 
 // DASHBOARD SUMMARY
-function renderDashboard(){
-  if(!allSorteos||!allSorteos.length||!stats)return;
-  const last=allSorteos[0];
-  const recs=stats.recommendations||[];
-  const mlRecs=stats.ml_recommendations||[];
-  const topRec=recs[0];
-  const topML=mlRecs[0];
-
-  // Hot decena: most frequent last-2-digit ending from current year draws
-  const hotDecena=(()=>{
-    const year=new Date().getFullYear().toString();
-    const counter={};
-    (allSorteos||[]).forEach(s=>{
-      if(!s.fecha||!s.fecha.startsWith(year))return;
-      ['primero','segundo','tercero'].forEach(p=>{
-        const n=s[p]||'';
-        if(!n)return;
-        const ending=n.slice(-2);
-        counter[ending]=(counter[ending]||0)+1;
-      });
-    });
-    let best='00',bestC=0;
-    Object.entries(counter).forEach(([e,c])=>{if(c>bestC){bestC=c;best=e;}});
-    return {ending:best,count:bestC};
-  })();
-
-  const catKey=esc(last.cat||last.tipo||'');
-  const h=`<div class="dashboard-hero-grid">
-    <div class="last-draw-card">
-      <div class="last-draw-header">
-        <div class="last-draw-title">
-          <span class="cat-pill cat-${catKey}">${esc(catLabel(last.cat||last.tipo||''))}</span>
-          <span>Último Sorteo Oficial</span>
-        </div>
-        <span class="last-draw-date">${formatDate(last.fecha)}</span>
-      </div>
-      <div class="last-draw-prizes">
-        <div class="last-draw-prize-box prize-box-1" title="1er Premio">
-          <span class="last-draw-prize-label">1er Premio</span>
-          ${renderBalls(last.primero,'gold','md')}
-        </div>
-        <div class="last-draw-prize-box prize-box-2" title="2do Premio">
-          <span class="last-draw-prize-label">2do Premio</span>
-          ${renderBalls(last.segundo,'green','md')}
-        </div>
-        <div class="last-draw-prize-box prize-box-3" title="3er Premio">
-          <span class="last-draw-prize-label">3er Premio</span>
-          ${renderBalls(last.tercero,'purple','md')}
-        </div>
-      </div>
-      <div class="last-draw-meta">
-        <span>Letras: <strong>${esc(last.letra||'—')}</strong></span>
-        <span>Serie: <strong>${esc(last.serie||'—')}</strong></span>
-        <span>Folio: <strong>${esc(last.folio||'—')}</strong></span>
-      </div>
-    </div>
-    <div class="dashboard-kpis">
-      <div class="kpi-card">
-        <div class="kpi-label">Top Recomendación</div>
-        <div>${topRec?renderBalls(topRec.number,'gold','sm'):'<span class="num-empty">—</span>'}</div>
-        <div class="kpi-sub">📊 Estadístico · ${topRec?fmtLift(topRec.confidence):'—'}</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Top ML</div>
-        <div>${topML?renderBalls(topML.number,'green','sm'):'<span class="num-empty">—</span>'}</div>
-        <div class="kpi-sub">🤖 Machine Learning · ${topML?fmtLift(topML.confidence):'—'}</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Terminación Caliente</div>
-        <div>${renderBalls(hotDecena.ending,'hot','sm')}</div>
-        <div class="kpi-sub">🔥 ${hotDecena.count} veces en ${new Date().getFullYear()}</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Total Sorteos</div>
-        <div class="stat-value" style="font-size:1.75rem;line-height:1.1;">${stats.total_sorteos?.toLocaleString()||'—'}</div>
-        <div class="kpi-sub">Historial desde 1919</div>
-      </div>
-    </div>
-  </div>`;
-  document.getElementById('dashboardSummary').innerHTML=h;
-}
-
 // SCROLL REVEAL
 function triggerReveals(){
   const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})},{threshold:0.1});
