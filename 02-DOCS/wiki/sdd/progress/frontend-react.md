@@ -489,3 +489,14 @@ Islas Mis Números y Comparador, componente `Chart`, retirada del código antigu
 - red/green: 4 fallos en rojo («Unable to find» el campo de texto) y 44 en verde en la isla. Mutantes del cambio: 3/3 detectados (vuelve el esqueleto, el selector no ofrece categorías, el selector ignora categorías).
 - navegador real (Playwright, 5003, `/api/stats` retenida con `page.route`): 5/5 y 0 errores de consola: formulario visible y solo «Todas»; se simula; al soltar `/api/stats` el selector gana las 4 categorías y se conserva lo tecleado y el resultado.
 - risk: sigue **pendiente** (`rsc risk` sin ejecutar).
+
+## T029 — revisión, ronda 1 (2026-11-12)
+- review: un revisor de contexto fresco (informe en `.scratch/review-T029-r1.md`, no se versiona) → 0 bloqueantes, 1 should-fix, 3 nits, 1 pregunta. Sin `npx` no se pudo ejecutar `review consolidate` ni el libro de revisiones: el recuento y los cierres van aquí a mano. El should-fix no pasó por un `finding-verifier` (la autorización cubría solo al revisor): lo verifiqué yo (ver decisions.md).
+- L1 (should-fix, `Mensual.tsx`): `role="img"` sobre el contenedor de la tabla de ventaja → **arreglado**: se quita el contenedor, la tabla lleva su `aria-label` y sin 4 filas no se pinta nada. Verificación: la regla ARIA es de la especificación; en el árbol real de Chromium (CDP) las filas seguían expuestas, así que el efecto en un lector depende de la plataforma y no se pudo medir; el caso sin tabla (imagen vacía) sí era seguro. Clase: «rol ARIA que vuelve presentacional contenido estructural».
+- L2 (nit, `Mensual.test.tsx`): la prueba «cambiar de pestaña y volver» no podía fallar (la isla no lee `activeTab`) → **borrada**; la identidad de `datos` y `opciones` la cubre otra prueba.
+- L3 (nit, `BotonCopiar.tsx`): tras desmontar, el fallo avisaba y el éxito no → **arreglado**: se avisa siempre (la copia se hizo) y solo se omiten el estado y el temporizador; dos pruebas.
+- L4 (nit, `BotonCopiar.tsx`): el nombre accesible fijo ocultaba el cambio a «OK» → **arreglado**: «Copiar 9541» → «Copiado 9541».
+- L5 (pregunta, `BotonCopiar.tsx`): `copyNumber` de `app.js` reescribe el texto de todo `.copy-btn[data-num]`, también el de los botones de React → **resuelta** en vez de aceptarla: el botón lleva `data-numero` y no `data-num`.
+- pruebas: 46 entre isla y botón; mutantes 42/42 detectados (8 nuevos de esta ronda: el contenedor `role="img"` de vuelta, la tabla sin nombre, el nombre sin «Copiado», `data-num`, aviso tras desmontar…).
+- navegador real (Chromium, árbol de accesibilidad por CDP, 5003): 8/8 y 0 errores de consola: tabla con nombre y sin «imagen»; `data-numero`; nombre «Copiar N» → «Copiado N» → «Copiar N»; el portapapeles recibe el número.
+- no se ha lanzado una segunda ronda de revisión sobre estos arreglos; el riesgo calculado (`rsc risk`) sigue **pendiente**.
