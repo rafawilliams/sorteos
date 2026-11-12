@@ -461,3 +461,14 @@ Islas Mis Números y Comparador, componente `Chart`, retirada del código antigu
 
 ## Decision queue (adiciones — etapa 4)
 - [review-after] Q10 — T028: `Snapshot.simulacion` es contrato nuevo del Store; `ReactStore` (T052) debe implementarlo y pasar la suite de contrato (`describirContratoDeStore`, comprobación `simulacion`).
+
+## T028 — revisión, ronda 1 (2026-11-12)
+- review: un revisor de contexto fresco (informe en `.scratch/review-T028-r1.md`, no se versiona) → 0 bloqueantes, 0 should-fix, 1 nit, 1 pregunta; sin hallazgos que verificar (`finding-verifier` solo aplica a bloqueantes y should-fix). Como `npx` está bloqueado, `review consolidate` y `review ledger` no se han podido ejecutar: el recuento y los cierres se anotan aquí a mano.
+- L1 (nit, `Simulador.tsx`): con todas las categorías a 0 el ancho de barra daba `NaN%` → **arreglado** (`|| 1`), con prueba que fallaba antes (41 en la isla). El servidor no devuelve categorías con 0 y el código antiguo hacía lo mismo: arreglo de clase «división por cero sin guardia».
+- L2 (pregunta, `Simulador.tsx`): si `/api/stats` falla o tarda minutos (primera carga sin modelo: 50-100 s) el formulario entero queda en esqueleto aunque `/api/simulador` no depende de `stats`; el código antiguo lo dejaba usable. El done-check del plan dice «`stats` nulo → esqueleto», así que **no se cambia por cuenta del agente**: aparcada (Q11).
+- «Extra» señalado por el revisor: el campo vacío se rechaza en vez de rellenarse hasta «0000». Es la corrección pedida en Q8 y está en `decisions.md`: **intencional**.
+- nit sin ficha: los `<label>` no llevan `htmlFor` y no hay `<form>`, de modo que Enter no lanza la búsqueda; el código antiguo era igual (paridad).
+- risk: sigue **pendiente** (`rsc risk` sin ejecutar); el revisor se lanzó por indicación de la persona, no por un tier calculado.
+
+## Decision queue (adiciones — etapa 4)
+- [review-after] Q11 — T028/L2: con `stats` nulo, el Simulador entero es un esqueleto. Recomendación: mostrar el formulario siempre (con «Todas» como única categoría hasta que lleguen las categorías) y dejar el esqueleto solo para el selector; exigiría matizar el done-check «`stats` nulo → esqueleto» de T028.
