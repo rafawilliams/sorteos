@@ -69,7 +69,6 @@ function toggleTheme(){
   applyTheme(current==='dark'?'light':'dark');
   // Rebuild charts and heatmaps with new theme colors
   if(stats.trends){renderTrendChart();renderVolumeChart()}
-  if(stats.endings)renderEndingsSection();
   if(stats.position_frequency){renderPositionGrids();renderHeatmap()}
   if(stats.by_category)renderRadarChart();
   if(allSorteos.length)renderScatterChart();
@@ -80,7 +79,7 @@ function toggleTheme(){
 let allSorteos=[], stats={};
 let currentPrize='primero', currentStatsPrize='primero';
 let useML=false;
-let trendChartInstance=null, volumeChartInstance=null, endingsTrendChartInstance=null;
+let trendChartInstance=null, volumeChartInstance=null;
 
 const CAT_LABELS={dominical:'Dominical',miercolito:'Miercolito',gordito:'Gordito del Zodiaco',extraordinario:'Extraordinario'};
 function catLabel(k){return CAT_LABELS[k]||k.charAt(0).toUpperCase()+k.slice(1)}
@@ -190,8 +189,6 @@ function showSkeletons(){
   // Fill key containers with skeletons
   const recoEl=document.getElementById('recoContainer');
   if(recoEl)recoEl.innerHTML=`<div class="skel-grid">${skelCard(4)+skelCard(4)+skelCard(4)+skelCard(4)}</div>`;
-  const decEl=document.getElementById('decenaContainer');
-  if(decEl)decEl.innerHTML=`<div class="skel-grid">${skelCard(5)+skelCard(5)}</div>`;
 }
 
 async function loadData(){
@@ -239,11 +236,11 @@ function renderQuick(){
 function renderFull(){
   // Full renders once stats are available
   renderLastUpdate();buildCategoryUI();
-  renderRecommendations('all');renderDecenas();renderStatsForPrize(currentStatsPrize);renderSeriesLetras();renderFormatos();
+  renderRecommendations('all');renderStatsForPrize(currentStatsPrize);renderSeriesLetras();renderFormatos();
   renderRadarChart();renderScatterChart();
   renderPositionGrids();renderHeatmap();renderTrendChart();renderVolumeChart();
-  renderEndingsSection();renderDashboard();
-  initRecoCatTabs();initEndCatTabs();initPrizeTabs();initStatsPrizeTabs();
+  renderDashboard();
+  initRecoCatTabs();initPrizeTabs();initStatsPrizeTabs();
 }
 
 // LAST UPDATE
@@ -260,8 +257,6 @@ function buildCategoryUI(){
   const cats=[...new Set(allSorteos.map(s=>s.cat).filter(Boolean))];
   const tc=document.getElementById('recoCatTabs');
   cats.forEach(c=>{const b=document.createElement('button');b.className='cat-tab';b.dataset.cat=c;b.textContent=catLabel(c);tc.appendChild(b)});
-  const te=document.getElementById('endCatTabs');
-  if(te)cats.forEach(c=>{const b=document.createElement('button');b.className='cat-tab';b.dataset.cat=c;b.setAttribute('role','tab');b.setAttribute('aria-selected','false');b.textContent=catLabel(c);te.appendChild(b)});
 }
 
 // AUTO-UPDATE
@@ -317,14 +312,6 @@ function initStatsPrizeTabs(){
     tab.addEventListener('click',()=>selectStatsPrize(tab));
   });
 }
-function initEndCatTabs(){
-  const wrap=document.getElementById('endCatTabs');
-  if(!wrap)return;
-  wrap.querySelectorAll('.cat-tab').forEach(tab=>{
-    tab.addEventListener('click',()=>{_setAriaTab(wrap,tab);renderEndingsSection();});
-  });
-  initTablistKeyboard(wrap);
-}
 function initRecoCatTabs(){
   const wrap=document.getElementById('recoCatTabs');
   wrap.querySelectorAll('.cat-tab').forEach(tab=>{
@@ -348,7 +335,6 @@ function setUseMLLP(valor){
   const cat=document.querySelector('#recoCatTabs .cat-tab.active');
   if(!_statsListas()||!cat)return; // aún no hay estadísticas: solo cambia el modo; renderFull lo usará al llegar
   renderRecommendations(cat.dataset.cat);
-  renderEndingsSection();
   // Show ML info badge
   const info=stats.ml_info||{};
   if(useML&&info.trained)showToast(`ML: ${info.train_samples} muestras · Entrenado: ${info.train_date}`,3000);
@@ -392,64 +378,6 @@ function renderRecommendations(cat){
 }
 
 // DECENA RECOMMENDATION
-function renderDecenas(){
-  const dr=stats.decena_recomendada||{};
-  const cats=Object.keys(dr);
-  if(!cats.length){document.getElementById('decenaContainer').innerHTML='<p style="color:var(--text-muted);text-align:center;padding:40px;">No hay suficientes datos para análisis de decenas.</p>';return}
-  const methodLabel={triple:'Patrón de 3 sorteos',pair:'Patrón de 2 sorteos',frecuencia:'Frecuencia general',fallback:'Frecuencia general'};
-  let h='<div class="decena-grid">';
-  cats.forEach(cat=>{
-    const d=dr[cat];
-    const dist=d.follower_distribution||{};
-    const maxDist=Math.max(...Object.values(dist),1);
-    h+=`<div class="card reveal decena-card">
-      <div class="card-header"><div class="card-title">${esc(catLabel(cat))}</div><span class="card-badge badge-gold">${esc(methodLabel[d.method]||d.method)}</span></div>
-      <div class="decena-body">
-        <div class="triangle-wrap">
-          <svg viewBox="0 0 200 190" class="triangle-svg">
-            <!-- Outer triangle -->
-            <polygon points="100,10 15,175 185,175" fill="none" stroke="var(--accent-cold)" stroke-width="3"/>
-            <!-- Inner triangle -->
-            <polygon points="100,50 45,155 155,155" fill="rgba(212,175,55,0.15)" stroke="var(--gold-400)" stroke-width="2.5"/>
-            <!-- Inner filled triangle for recommended -->
-            <polygon points="100,80 70,140 130,140" fill="rgba(212,175,55,0.3)" stroke="var(--gold-300)" stroke-width="2"/>
-            <!-- Last 3 decenas at corners -->
-            <circle cx="100" cy="10" r="18" fill="var(--accent-cold)"/>
-            <text x="100" y="16" text-anchor="middle" fill="#fff" font-size="18" font-weight="700" font-family="var(--font-mono)">${d.last_3[2]}</text>
-            <circle cx="15" cy="175" r="18" fill="var(--accent-cold)"/>
-            <text x="15" y="181" text-anchor="middle" fill="#fff" font-size="18" font-weight="700" font-family="var(--font-mono)">${d.last_3[0]}</text>
-            <circle cx="185" cy="175" r="18" fill="var(--accent-cold)"/>
-            <text x="185" y="181" text-anchor="middle" fill="#fff" font-size="18" font-weight="700" font-family="var(--font-mono)">${d.last_3[1]}</text>
-            <!-- Recommended in center -->
-            <circle cx="100" cy="120" r="24" fill="var(--gold-400)"/>
-            <text x="100" y="128" text-anchor="middle" fill="var(--bg-deep)" font-size="24" font-weight="900" font-family="var(--font-mono)">${d.recommended}</text>
-          </svg>
-          <div class="triangle-label">DECENAS</div>
-        </div>
-        <div class="decena-info">
-          <div class="decena-main">
-            <div class="decena-rec-label">Decena recomendada</div>
-            <div class="decena-rec-number">${d.recommended}</div>
-            <div class="decena-confidence" title="Veces más probable que una decena al azar (×1.00 = azar)">${fmtLift(d.confidence)} · ${d.method==='frecuencia'||d.method==='fallback'?`${d.match_count} sorteos (ningún patrón llega a ${d.minimo||20} coincidencias)`:`${d.match_count} sorteos coincidentes`} · ${d.muestras??'—'} decenas</div>
-            <div class="decena-confidence" style="opacity:0.85;">${d.backtest?`ℹ Prueba con los últimos ${d.backtest.sorteos} sorteos: la decena recomendada salió en algún premio el ${d.backtest.acierto_pct}% de las veces, frente al ${d.backtest.acierto_pct_azar}% del azar.`:'ℹ Muy pocos sorteos desde 1995 para comprobarlo.'}</div>
-          </div>
-          <div class="decena-last3">
-            <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:6px;">Últimos 3 sorteos:</div>
-            ${d.last_3.map((dec,i)=>`<div class="decena-last3-row"><span class="decena-fecha">${formatDate(d.last_3_fechas[i])}</span><span class="decena-val">${dec}</span></div>`).join('')}
-          </div>
-          <div class="decena-dist">
-            <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:6px;">Distribución:</div>
-            ${Object.entries(dist).map(([digit,count])=>`<div class="bar-row" style="gap:6px;"><span class="bar-label" style="width:20px;font-size:0.75rem;">${digit}</span><div class="bar-track" style="height:20px;"><div class="bar-fill ${digit===d.recommended?'gold':'green'}" style="width:${(count/maxDist*100).toFixed(1)}%">${count||''}</div></div></div>`).join('')}
-          </div>
-        </div>
-      </div>
-    </div>`;
-  });
-  h+='</div>';
-  document.getElementById('decenaContainer').innerHTML=h;
-  triggerReveals();
-}
-
 // STATS FOR PRIZE
 function renderStatsForPrize(prize){
   const pd=(stats.prizes&&stats.prizes[prize])||{};
@@ -564,92 +492,6 @@ function renderScatterChart(){
 }
 
 // ==================== ENDINGS SECTION ====================
-function renderEndingsSection(){
-  const ed=stats.endings||{};
-  // Recommendations — ML or Statistical, for "Todos" or one category (the ones Seguimiento freezes)
-  const endTab=document.querySelector('#endCatTabs .cat-tab.active');
-  const endCat=endTab?endTab.dataset.cat:'all';
-  const ec=endCat!=='all'?((stats.endings_by_category||{})[endCat]||{}):null;
-  const recos=ec?((useML?ec.ml_recommendations:ec.recommendations)||[]):(useML?(stats.ml_endings||[]):(ed.recommendations||[]));
-  const bt=ec&&ec.backtest;
-  document.getElementById('endingsBacktestNote').innerHTML=endCat==='all'
-    ?'ℹ En las pruebas por categoría con sorteos reales, las terminaciones aciertan como el azar. Elige una categoría para ver la suya.'
-    :bt?`ℹ Prueba del método estadístico con los últimos ${bt.sorteos} sorteos de ${esc(catLabel(endCat))}, recomendando solo con los sorteos anteriores: ${bt.aciertos} aciertos frente a ${bt.aciertos_azar} del azar; al menos 1 acierto en el ${bt.alguna_pct}% de los sorteos frente al ${bt.alguna_pct_azar}% del azar.${useML?' El ML no tiene prueba propia aquí (ver Seguimiento).':''}`
-    :`ℹ ${esc(catLabel(endCat))} tiene muy pocos sorteos para comprobarlo (${ec.total_endings||0} terminaciones): una cifra alta aquí es ruido de muestra pequeña.`;
-  const isEnding=!useML; // statistical uses 'ending' key, ML uses 'ending' key too
-  const ranks=['1ro','2do','3ro','4to','5to','6to','7mo','8vo','9no','10mo'];
-  const method=useML?'🤖 Machine Learning':'📊 Estadístico';
-  document.getElementById('endingsRecoContainer').innerHTML=`
-    <div style="margin-bottom:12px;font-size:0.8rem;color:var(--text-muted);">Terminaciones recomendadas — <span style="color:${useML?'var(--accent-green)':'var(--gold-400)'};">${method}</span></div>
-    <div class="reco-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));">${recos.map((r,i)=>`<div class="reco-card${useML?' reco-ml':''}" style="padding:20px 16px;">
-      <button class="copy-btn" data-num="${r.ending}" onclick="copyNumber('${r.ending}')">Copiar</button>
-      <div class="reco-rank">${ranks[i]||(i+1)+'to'} Terminación</div>
-      <div class="reco-number">${renderBalls(r.ending,useML?'green':'gold','md')}</div>
-      <div class="reco-confidence" title="Veces más probable que una terminación al azar (×1.00 = azar)"><div class="conf-bar"><div class="conf-bar-fill" style="width:${liftBar(r.confidence)}%;${useML?'background:linear-gradient(90deg,var(--accent-green),#6ee7b7);':''}"></div></div>${fmtLift(r.confidence)}</div>
-    </div>`).join('')}</div>`;
-  requestAnimationFrame(()=>{document.getElementById('endingsRecoContainer').querySelectorAll('.conf-bar-fill').forEach(b=>{const w=b.style.width;b.style.width='0%';requestAnimationFrame(()=>{b.style.width=w})})});
-
-  // Hot/Cold
-  const hc=ed.hot_cold||{hot:[],cold:[]};
-  const hMax=Math.max(...hc.hot.map(h=>h.count),1),cMax=Math.max(...hc.cold.map(h=>h.count),1);
-  document.getElementById('endingsHotChart').innerHTML=hc.hot.map(h=>`<div class="bar-row"><span class="bar-label">${h.ending}</span><div class="bar-track"><div class="bar-fill hot" style="width:${(h.count/hMax*100).toFixed(1)}%">${h.count}</div></div></div>`).join('');
-  document.getElementById('endingsColdChart').innerHTML=hc.cold.map(h=>`<div class="bar-row"><span class="bar-label">${h.ending}</span><div class="bar-track"><div class="bar-fill cold" style="width:${(h.count/cMax*100).toFixed(1)}%">${h.count}</div></div></div>`).join('');
-
-  // By prize
-  const bp=ed.by_prize||{};
-  renderPrizeEndings('endP1Chart',bp.primero||[],'gold');
-  renderPrizeEndings('endP2Chart',bp.segundo||[],'green');
-  renderPrizeEndings('endP3Chart',bp.tercero||[],'purple');
-
-  // Heatmap 10x10
-  renderEndingsHeatmap(ed.frequency||{});
-
-  // Trend chart
-  renderEndingsTrendChart(ed.trends||[]);
-}
-
-function renderPrizeEndings(id,data,cls){
-  const max=Math.max(...data.map(d=>d.count),1);
-  document.getElementById(id).innerHTML=data.slice(0,10).map(d=>`<div class="bar-row"><span class="bar-label">${d.ending}</span><div class="bar-track"><div class="bar-fill ${cls}" style="width:${(d.count/max*100).toFixed(1)}%">${d.count}</div></div></div>`).join('');
-}
-
-function renderEndingsHeatmap(freq){
-  const vals=Object.values(freq);const max=Math.max(...vals,1);
-  let h=`<div class="heatmap-legend" aria-hidden="true"><span>Menor frec.</span><span class="heatmap-scale"><span class="heatmap-swatch" style="background:rgba(212,175,55,0.08)"></span><span class="heatmap-swatch" style="background:rgba(212,175,55,0.28)"></span><span class="heatmap-swatch" style="background:rgba(212,175,55,0.5)"></span><span class="heatmap-swatch" style="background:rgba(212,175,55,0.75)"></span></span><span>Mayor frec. (máx: ${max})</span></div>`;
-  h+='<div style="display:flex;gap:4px;margin-bottom:6px;padding-left:28px;">';
-  for(let c=0;c<10;c++)h+=`<div style="flex:1;text-align:center;font-family:var(--font-mono);font-size:0.7rem;color:var(--text-muted);">x${c}</div>`;
-  h+='</div>';
-  for(let r=0;r<10;r++){
-    h+=`<div style="display:flex;align-items:center;gap:4px;margin-bottom:4px;">`;
-    h+=`<div style="width:24px;text-align:right;font-family:var(--font-mono);font-size:0.7rem;color:var(--text-muted);">${r}x</div>`;
-    for(let c=0;c<10;c++){
-      const key=String(r)+String(c);const v=freq[key]||0;const i=v/max;
-      const peak=i>=0.85?' cell-peak':'';
-      const bg=`rgba(212,175,55,${(i*0.65+0.04).toFixed(2)})`;
-      const col=i>0.4?(isLight()?'#fff':'#0a0a0f'):(isLight()?'#1a1612':'#f0ece2');
-      h+=`<div class="ending-cell${peak}" style="flex:1;background:${bg};color:${col}" title="${key}: ${v} veces">${key}<small style="font-size:0.55rem;opacity:0.75">${v}</small></div>`;
-    }
-    h+='</div>';
-  }
-  document.getElementById('endingsHeatmap').innerHTML=h;
-}
-
-const ENDING_COLORS=['#ffd700','#ff4d4d','#4dabff','#34d399','#c084fc','#ff9f43','#ee5a6f','#0abde3','#10ac84','#f368e0'];
-
-function renderEndingsTrendChart(trends){
-  if(!trends.length)return;
-  const labels=trends.map(t=>t.month);
-  const endings=Object.keys(trends[0].endings||{});
-  const datasets=endings.map((e,i)=>({
-    label:e,data:trends.map(t=>(t.endings||{})[e]||0),
-    borderColor:ENDING_COLORS[i%10],backgroundColor:ENDING_COLORS[i%10]+'20',
-    tension:0.4,borderWidth:2,pointRadius:3,pointHoverRadius:6,
-  }));
-  const ctx=document.getElementById('endingsTrendChart').getContext('2d');
-  if(endingsTrendChartInstance)endingsTrendChartInstance.destroy();
-  endingsTrendChartInstance=new Chart(ctx,{type:'line',data:{labels,datasets},options:chartOpts()});
-}
-
 // POSITION ANALYSIS
 function renderPositionGrids(){
   const pf=stats.position_frequency||[];const posLabels=['Millares','Centenas','Decenas','Unidades'];

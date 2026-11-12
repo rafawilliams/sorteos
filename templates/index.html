@@ -92,7 +92,7 @@
     <section class="section" id="sec-decenas" role="tabpanel" aria-labelledby="tab-decenas">
       <h2 class="section-title">Decena Recomendada</h2>
       <p class="section-subtitle">Decena (penúltimo dígito) más frecuente tras el patrón de los últimos sorteos de cada categoría, contando los 3 premios desde 1995. Si el patrón tiene menos de 20 coincidencias, se usa la frecuencia general. Cada tarjeta muestra su prueba frente al azar: las decenas aciertan como el azar.</p>
-      <div id="decenaContainer" role="region" aria-label="Decenas recomendadas"></div>
+      <div data-react-root="decenas"></div>
     </section>
 
     <!-- ==================== TERMINACIONES ==================== -->
@@ -105,47 +105,7 @@
         <button class="ml-toggle" onclick="toggleML()" aria-pressed="false" aria-label="Alternar entre modelo ML y Estadístico">📊 Estadístico</button>
       </div>
 
-      <div class="cat-tabs" id="endCatTabs" role="tablist" aria-label="Categoría de las terminaciones recomendadas">
-        <button class="cat-tab active" data-cat="all" role="tab" aria-selected="true">Todos</button>
-      </div>
-      <div id="endingsRecoContainer" role="region" aria-label="Terminaciones recomendadas" aria-live="polite"></div>
-      <p id="endingsBacktestNote" class="section-subtitle" style="margin-top:10px;font-size:0.82rem;" aria-live="polite"></p>
-
-      <div class="grid-2">
-        <div class="card reveal">
-          <div class="card-header"><h3 class="card-title">Terminaciones Calientes</h3><span class="card-badge badge-hot">Hot</span></div>
-          <div class="bar-chart" id="endingsHotChart" role="img" aria-label="Gráfico de terminaciones calientes"></div>
-        </div>
-        <div class="card reveal">
-          <div class="card-header"><h3 class="card-title">Terminaciones Frías</h3><span class="card-badge badge-cold">Cold</span></div>
-          <div class="bar-chart" id="endingsColdChart" role="img" aria-label="Gráfico de terminaciones frías"></div>
-        </div>
-      </div>
-
-      <div class="grid-3">
-        <div class="card reveal">
-          <div class="card-header"><h3 class="card-title">Top — 1er Premio</h3><span class="card-badge badge-gold">Primero</span></div>
-          <div class="bar-chart" id="endP1Chart" role="img" aria-label="Terminaciones frecuentes 1er premio"></div>
-        </div>
-        <div class="card reveal">
-          <div class="card-header"><h3 class="card-title">Top — 2do Premio</h3><span class="card-badge badge-green">Segundo</span></div>
-          <div class="bar-chart" id="endP2Chart" role="img" aria-label="Terminaciones frecuentes 2do premio"></div>
-        </div>
-        <div class="card reveal">
-          <div class="card-header"><h3 class="card-title">Top — 3er Premio</h3><span class="card-badge badge-purple">Tercero</span></div>
-          <div class="bar-chart" id="endP3Chart" role="img" aria-label="Terminaciones frecuentes 3er premio"></div>
-        </div>
-      </div>
-
-      <div class="card reveal">
-        <div class="card-header"><h3 class="card-title">Mapa de Calor — 100 Terminaciones</h3><span class="card-badge badge-gold">00–99</span></div>
-        <div id="endingsHeatmap" role="img" aria-label="Mapa de calor de 100 terminaciones"></div>
-      </div>
-
-      <div class="card reveal" style="margin-top:20px;">
-        <div class="card-header"><h3 class="card-title">Tendencia de Terminaciones por Mes</h3><span class="card-badge badge-green">Top 10</span></div>
-        <div class="chart-container"><canvas id="endingsTrendChart" aria-label="Gráfico de tendencia de terminaciones" role="img"></canvas></div>
-      </div>
+      <div data-react-root="terminaciones"></div>
     </section>
 
     <!-- ==================== RESULTADOS ==================== -->
