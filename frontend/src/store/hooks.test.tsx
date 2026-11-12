@@ -2,7 +2,7 @@ import { act, renderHook } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { describe, expect, it } from 'vitest'
 import type { Sorteo, Stats } from '../api/types'
-import { useActiveTab, useML, usePrize, useReady, useReload, useSorteos, useStats, useStatsPrize, useTheme, useToast } from './hooks'
+import { useActiveTab, useErrorSorteos, useML, usePrize, useReady, useReload, useSorteos, useStats, useStatsPrize, useTheme, useToast } from './hooks'
 import { StoreProvider } from './StoreProvider'
 import { crearStoreFalso, type StoreFalso } from './storeFalso'
 
@@ -36,6 +36,18 @@ describe('hooks de lectura', () => {
     expect(result.current).toBe('dark')
     act(() => store.cambiar({ theme: 'light' }))
     expect(result.current).toBe('light')
+  })
+
+  it('useErrorSorteos dice si la carga de sorteos falló y se actualiza al reintentar', () => {
+    const store = crearStoreFalso({ errorSorteos: true })
+    const { result } = montar(() => useErrorSorteos(), store)
+    expect(result.current).toBe(true)
+    act(() => store.cambiar({ errorSorteos: false }))
+    expect(result.current).toBe(false)
+  })
+
+  it('useErrorSorteos vale false mientras no haya fallado nada', () => {
+    expect(montar(() => useErrorSorteos(), crearStoreFalso()).result.current).toBe(false)
   })
 
   it('un componente no se vuelve a pintar por cambios de campos que no lee', () => {

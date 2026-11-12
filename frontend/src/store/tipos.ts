@@ -57,6 +57,13 @@ export interface Snapshot {
    * La isla Simulador lanza una simulación por cada `id` nuevo, así que pedir el mismo número otra vez es otra petición.
    */
   simulacion: PeticionSimulacion | null
+  /**
+   * `true` cuando la carga de sorteos ha fallado y NO hay ninguno (red caída, un 500, un cuerpo que no es una lista): en
+   * ese caso `ready` se queda en `false` y una isla que dependa de los sorteos no puede distinguir «todavía cargando» de
+   * «no va a llegar». Un fallo al RECARGAR con datos ya cargados no lo marca (se conservan los viejos, ver `reload`), y
+   * volver a pedir los sorteos lo devuelve a `false` mientras dura el intento. Vale `false` si no ha fallado nada.
+   */
+  errorSorteos: boolean
 }
 
 /** Una petición de simulación: el número (ya normalizado a 4 cifras) y un contador que crece con cada petición. */

@@ -60,6 +60,11 @@ export function useSimulacion(): Snapshot['simulacion'] {
   return useCampo('simulacion')
 }
 
+/** `true` cuando la carga de sorteos ha fallado y no hay ninguno (la isla debe decirlo en vez de quedarse en su esqueleto). */
+export function useErrorSorteos(): boolean {
+  return useCampo('errorSorteos')
+}
+
 /** Aviso emergente de la página. */
 export function useToast(): (mensaje: string, ms?: number) => void {
   return useStore().actions.toast
