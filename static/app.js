@@ -136,7 +136,6 @@ function activateNavTab(tab){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.getElementById('sec-'+tab.dataset.tab).classList.add('active');
   _lpEmit('activeTab');
-  if(tab.dataset.tab==='precision') loadBacktesting();
   triggerReveals();
 }
 
@@ -829,114 +828,6 @@ function renderDashboard(){
     </div>
   </div>`;
   document.getElementById('dashboardSummary').innerHTML=h;
-}
-
-// BACKTESTING / PRECISION
-let backtestData=null;
-
-let precisionChartInstance=null;
-
-async function loadBacktesting(){
-  if(backtestData){renderBacktesting();return;}
-  document.getElementById('precisionLoader').style.display='flex';
-  document.getElementById('precisionContent').style.display='none';
-  try{
-    const res=await fetch('/api/backtesting?last_n=500');
-    backtestData=await res.json();
-  }catch(e){console.error('Backtest error:',e)}
-  document.getElementById('precisionLoader').style.display='none';
-  document.getElementById('precisionContent').style.display='block';
-  renderBacktesting();
-  triggerReveals();
-}
-
-function renderBacktesting(){
-  if(!backtestData)return;
-  const ml=backtestData.ml||{};
-  const st=backtestData.statistical||{};
-  const cmp=backtestData.comparison||{};
-
-  // Summary cards
-  document.getElementById('precisionSummary').innerHTML=`
-    <div class="stat-card"><div class="stat-value">${ml.avg_top1_accuracy||'—'}%</div><div class="stat-label">ML Top-1 Precisión</div></div>
-    <div class="stat-card"><div class="stat-value">${ml.avg_top3_accuracy||'—'}%</div><div class="stat-label">ML Top-3 Precisión</div></div>
-    <div class="stat-card"><div class="stat-value">${ml.avg_lift_top1||'—'}x</div><div class="stat-label">ML Lift vs Azar</div></div>
-    <div class="stat-card"><div class="stat-value">${ml.total_evaluated||0}</div><div class="stat-label">Sorteos Evaluados</div></div>
-  `;
-
-  // Per-position cards
-  const posLabels=['Millares (pos 0)','Centenas (pos 1)','Decenas (pos 2)','Unidades (pos 3)'];
-  const mlPos=ml.per_position||[];
-  document.getElementById('precisionPositions').innerHTML=mlPos.map((p,i)=>{
-    const t1w=Math.min(p.top1_accuracy/25*100,100);
-    const t3w=Math.min(p.top3_accuracy/60*100,100);
-    const liftColor=p.lift_top1>=1.2?'var(--accent-green)':p.lift_top1>=1.0?'var(--gold-300)':'var(--accent-hot)';
-    return`<div class="card reveal">
-      <div class="card-header"><div class="card-title" style="font-size:0.95rem;">${posLabels[i]}</div><span class="card-badge" style="background:${liftColor}20;color:${liftColor};">${p.lift_top1}x</span></div>
-      <div style="margin-bottom:12px;">
-        <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:var(--text-secondary);margin-bottom:4px;"><span>Top-1</span><span style="color:var(--gold-300);font-weight:600;">${p.top1_accuracy}%</span></div>
-        <div class="bar-track" style="height:14px;position:relative;">
-          <div class="bar-fill gold" style="width:${t1w}%;min-width:0;"></div>
-          <div style="position:absolute;left:${10/25*100}%;top:0;height:100%;width:2px;background:var(--accent-hot);opacity:0.7;" title="Azar: 10%"></div>
-        </div>
-      </div>
-      <div style="margin-bottom:12px;">
-        <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:var(--text-secondary);margin-bottom:4px;"><span>Top-3</span><span style="color:var(--accent-green);font-weight:600;">${p.top3_accuracy}%</span></div>
-        <div class="bar-track" style="height:14px;position:relative;">
-          <div class="bar-fill green" style="width:${t3w}%;min-width:0;"></div>
-          <div style="position:absolute;left:${30/60*100}%;top:0;height:100%;width:2px;background:var(--accent-hot);opacity:0.7;" title="Azar: 30%"></div>
-        </div>
-      </div>
-      <div style="font-size:0.75rem;color:var(--text-muted);">Prob. prom. dígito real: <strong style="color:var(--text-secondary);">${p.avg_prob_actual}%</strong></div>
-    </div>`;
-  }).join('');
-
-  // ML vs Statistical comparison
-  const stPos=st.per_position||[];
-  let compHTML='';
-  // ML card
-  compHTML+=`<div class="card reveal"><div class="card-header"><div class="card-title">🤖 Machine Learning</div><span class="card-badge badge-green">${cmp.ml_better?'Mejor':'—'}</span></div><div class="bar-chart">`;
-  mlPos.forEach((p,i)=>{
-    const w=Math.min(p.top1_accuracy/20*100,100);
-    compHTML+=`<div class="bar-row"><div class="bar-label">P${i}</div><div class="bar-track"><div class="bar-fill green" style="width:${w}%">${p.top1_accuracy}%</div></div></div>`;
-  });
-  if(ml.ending_top10_hit_rate!==undefined){
-    const ew=Math.min(ml.ending_top10_hit_rate/20*100,100);
-    compHTML+=`<div class="bar-row"><div class="bar-label" style="font-size:0.7rem;">Term</div><div class="bar-track"><div class="bar-fill purple" style="width:${ew}%">${ml.ending_top10_hit_rate}%</div></div></div>`;
-  }
-  compHTML+=`</div></div>`;
-
-  // Statistical card
-  compHTML+=`<div class="card reveal"><div class="card-header"><div class="card-title">📊 Estadístico</div><span class="card-badge badge-gold">${!cmp.ml_better?'Mejor':'—'}</span></div><div class="bar-chart">`;
-  stPos.forEach((p,i)=>{
-    const w=Math.min(p.top1_accuracy/20*100,100);
-    compHTML+=`<div class="bar-row"><div class="bar-label">P${i}</div><div class="bar-track"><div class="bar-fill gold" style="width:${w}%">${p.top1_accuracy}%</div></div></div>`;
-  });
-  compHTML+=`</div></div>`;
-  document.getElementById('precisionComparison').innerHTML=compHTML;
-
-  // Rolling accuracy trend chart
-  renderPrecisionTrend(ml.rolling_accuracy||[]);
-}
-
-function renderPrecisionTrend(rolling){
-  if(!rolling.length)return;
-  const labels=rolling.map(r=>r.month);
-  const ctx=document.getElementById('precisionTrendChart').getContext('2d');
-  if(precisionChartInstance)precisionChartInstance.destroy();
-  precisionChartInstance=new Chart(ctx,{
-    type:'line',
-    data:{
-      labels,
-      datasets:[
-        {label:'Top-1 Promedio',data:rolling.map(r=>r.top1_avg),borderColor:'#ffd700',backgroundColor:'rgba(255,215,0,0.1)',tension:0.4,borderWidth:2,pointRadius:3,fill:true},
-        {label:'Top-3 Promedio',data:rolling.map(r=>r.top3_avg),borderColor:'#34d399',backgroundColor:'rgba(52,211,153,0.1)',tension:0.4,borderWidth:2,pointRadius:3,fill:true},
-        {label:'Azar Top-1 (10%)',data:labels.map(()=>10),borderColor:'rgba(255,77,77,0.5)',borderDash:[6,4],borderWidth:1,pointRadius:0,fill:false},
-        {label:'Azar Top-3 (30%)',data:labels.map(()=>30),borderColor:'rgba(255,77,77,0.3)',borderDash:[6,4],borderWidth:1,pointRadius:0,fill:false},
-      ]
-    },
-    options:chartOpts()
-  });
 }
 
 // SCROLL REVEAL

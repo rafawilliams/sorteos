@@ -39,6 +39,12 @@ IDS_RETIRADOS = {
     "monthlyAdvantage": "mensual",
     "monthlyProfileChart": "mensual",
     "monthlyCards": "mensual",
+    "precisionLoader": "precision",
+    "precisionContent": "precision",
+    "precisionSummary": "precision",
+    "precisionPositions": "precision",
+    "precisionComparison": "precision",
+    "precisionTrendChart": "precision",
 }
 # funciones de app.js que ya no deben existir ni llamarse
 FUNCIONES_RETIRADAS = (
@@ -49,6 +55,7 @@ FUNCIONES_RETIRADAS = (
     "compNumbers", "compChartInstance",
     "initSimCats", "runSimulation", "renderSimResults", "simChartInstance",
     "renderMonthlySection", "monthlyProfileChartInstance",
+    "loadBacktesting", "renderBacktesting", "renderPrecisionTrend", "backtestData", "precisionChartInstance",
 )
 
 
