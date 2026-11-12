@@ -21,7 +21,7 @@ import {
   type ChartOptions,
   type ChartType,
 } from 'chart.js'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useSyncExternalStore } from 'react'
 import { useTheme } from '../store/hooks'
 import type { Tema } from '../store/tipos'
 
@@ -39,19 +39,34 @@ export interface ChartProps {
   etiqueta?: string
 }
 
-const prefiereMenosMovimiento = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches
+const MENOS_MOVIMIENTO = '(prefers-reduced-motion: reduce)'
+
+/** `true` si la persona pide menos movimiento; se actualiza si lo cambia con la página abierta. */
+function useMenosMovimiento(): boolean {
+  return useSyncExternalStore(
+    (aviso) => {
+      if (typeof matchMedia !== 'function') return () => {}
+      const lista = matchMedia(MENOS_MOVIMIENTO)
+      lista.addEventListener?.('change', aviso)
+      return () => lista.removeEventListener?.('change', aviso)
+    },
+    () => typeof matchMedia === 'function' && matchMedia(MENOS_MOVIMIENTO).matches,
+    () => false,
+  )
+}
 
 export function Chart({ type, datos, opciones, altura, etiqueta }: ChartProps) {
   const tema = useTheme()
+  const sinMovimiento = useMenosMovimiento()
   const canvas = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
     const el = canvas.current
     if (!el) return
     const base = opciones(tema)
-    const grafico = new ChartJS(el, { type, data: datos(tema), options: prefiereMenosMovimiento() ? { ...base, animation: false } : base })
+    const grafico = new ChartJS(el, { type, data: datos(tema), options: sinMovimiento ? { ...base, animation: false } : base })
     return () => grafico.destroy()
-  }, [type, datos, opciones, tema])
+  }, [type, datos, opciones, tema, sinMovimiento])
 
   return (
     <div className="chart-container" style={altura ? { height: altura } : undefined}>

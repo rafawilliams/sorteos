@@ -148,6 +148,20 @@ describe('agregar', () => {
   })
 })
 
+describe('cambiar de pestaña', () => {
+  it('la lista y los resultados se conservan al ir a otra pestaña y volver (como compNumbers global)', async () => {
+    const { store } = montar()
+    agregar('1111')
+    agregar('2222')
+    await screen.findByText('2 números')
+    act(() => store.cambiar({ activeTab: 'gaps' }))
+    act(() => store.cambiar({ activeTab: 'comparador' }))
+    expect(etiquetas()).toEqual(['1111', '2222'])
+    expect(screen.getByText('2 números')).toBeInTheDocument()
+    expect(control.comparar).toHaveBeenCalledTimes(2)
+  })
+})
+
 describe('quitar y limpiar', () => {
   it('quitar uno con otros restantes vuelve a comparar con los que quedan', async () => {
     montar()

@@ -36,10 +36,11 @@ const FILAS: Fila[] = [
 ]
 
 const opcionesGrafico = (tema: Tema) => chartOptions(tema)
+const SIN_NUMEROS: Comparacion['numbers'] = []
 
 function Resultados({ datos }: { datos: Comparacion }) {
   const revelar = useReveal()
-  const numeros = datos.numbers ?? []
+  const numeros = datos.numbers ?? SIN_NUMEROS // constante: una lista nueva en cada render recrearía el gráfico
   // Memorizadas: el gráfico se destruye y se recrea cuando cambia la identidad de estas funciones.
   const datosGrafico = useCallback(
     () => ({

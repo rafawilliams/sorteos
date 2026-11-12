@@ -10,9 +10,12 @@ import { Chart } from './Chart'
 
 // Chart.js no pinta en jsdom (no hay <canvas>): se sustituye por un doble que registra lo que recibe y lo que se destruye.
 const doble = vi.hoisted(() => {
+  const registrados: unknown[] = []
   const creados: Array<{ canvas: unknown; config: { type: string; data: unknown; options: Record<string, unknown> }; destruido: boolean }> = []
   class ChartFalso {
-    static register = () => {}
+    static register = (...cosas: unknown[]) => {
+      registrados.push(...cosas)
+    }
     destruido = false
     constructor(canvas: unknown, config: { type: string; data: unknown; options: Record<string, unknown> }) {
       creados.push(Object.assign(this, { canvas, config }) as never)
@@ -21,13 +24,13 @@ const doble = vi.hoisted(() => {
       this.destruido = true
     }
   }
-  return { creados, ChartFalso }
+  return { creados, registrados, ChartFalso }
 })
 vi.mock('chart.js', () => ({
   Chart: doble.ChartFalso,
-  BarController: {}, LineController: {}, RadarController: {}, ScatterController: {},
-  CategoryScale: {}, LinearScale: {}, RadialLinearScale: {},
-  BarElement: {}, LineElement: {}, PointElement: {}, Tooltip: {}, Legend: {}, Filler: {},
+  BarController: 'BarController', LineController: 'LineController', RadarController: 'RadarController', ScatterController: 'ScatterController',
+  CategoryScale: 'CategoryScale', LinearScale: 'LinearScale', RadialLinearScale: 'RadialLinearScale',
+  BarElement: 'BarElement', LineElement: 'LineElement', PointElement: 'PointElement', Tooltip: 'Tooltip', Legend: 'Legend', Filler: 'Filler',
 }))
 
 const vivos = () => doble.creados.filter((c) => !c.destruido)
@@ -53,11 +56,39 @@ function montar(props: Partial<React.ComponentProps<typeof Chart>> = {}, tema: T
 const mediaReducida = (reducida: boolean) =>
   vi.stubGlobal('matchMedia', (q: string) => ({ matches: reducida && q.includes('prefers-reduced-motion'), addEventListener: () => {}, removeEventListener: () => {} }))
 
+/** `matchMedia` que deja disparar el cambio de preferencia con la página abierta. */
+function mediaCambiante(inicial: boolean) {
+  let reducida = inicial
+  const escuchas = new Set<() => void>()
+  vi.stubGlobal('matchMedia', () => ({
+    get matches() {
+      return reducida
+    },
+    addEventListener: (_: string, f: () => void) => escuchas.add(f),
+    removeEventListener: (_: string, f: () => void) => escuchas.delete(f),
+  }))
+  return {
+    cambiar: (valor: boolean) => {
+      reducida = valor
+      act(() => escuchas.forEach((f) => f()))
+    },
+    escuchas,
+  }
+}
+
 beforeEach(() => {
   doble.creados.length = 0
   mediaReducida(false)
 })
 afterEach(() => vi.unstubAllGlobals())
+
+describe('Chart: registra en Chart.js todo lo que la interfaz dibuja', () => {
+  it('controladores, escalas, elementos y complementos', () => {
+    expect([...doble.registrados].sort()).toEqual(
+      ['BarController', 'LineController', 'RadarController', 'ScatterController', 'CategoryScale', 'LinearScale', 'RadialLinearScale', 'BarElement', 'LineElement', 'PointElement', 'Tooltip', 'Legend', 'Filler'].sort(),
+    )
+  })
+})
 
 describe('Chart: crea el gráfico', () => {
   it('con el tipo, los datos y las opciones del tema actual, sobre un canvas', () => {
@@ -168,6 +199,27 @@ describe('Chart: movimiento reducido', () => {
     mediaReducida(false)
     montar()
     expect('animation' in vivos()[0]!.config.options).toBe(false)
+  })
+
+  it('si lo cambia con la página abierta, el gráfico se recrea sin animaciones (y al revés)', () => {
+    const media = mediaCambiante(false)
+    montar()
+    const primero = vivos()[0]!
+    expect('animation' in primero.config.options).toBe(false)
+    media.cambiar(true)
+    expect(primero.destruido).toBe(true)
+    expect(vivos()).toHaveLength(1)
+    expect(vivos()[0]!.config.options.animation).toBe(false)
+    media.cambiar(false)
+    expect('animation' in vivos()[0]!.config.options).toBe(false)
+  })
+
+  it('al desmontar deja de escuchar el cambio de preferencia', () => {
+    const media = mediaCambiante(false)
+    const { unmount } = montar()
+    expect(media.escuchas.size).toBeGreaterThan(0)
+    unmount()
+    expect(media.escuchas.size).toBe(0)
   })
 
   it('sin matchMedia en el entorno tampoco falla', () => {
