@@ -612,3 +612,9 @@ Islas Mis Números y Comparador, componente `Chart`, retirada del código antigu
 ## Decision queue (adiciones — etapa 8)
 - [review-after] Q16 — T043/T044: el Store no tiene señal de error de `/api/stats` (solo `errorSorteos`), así que Predicciones, Decenas y Terminaciones se quedan en su esqueleto si fallan las estadísticas, sin mensaje ni reintento. Lo natural es un `errorStats` en el Store junto a la carga de `ReactStore` (T052), como `errorSorteos` (Q12), y que las islas que leen `stats` lo muestren.
 - [review-after] Q17 — T044: el interruptor ML de Terminaciones sigue siendo un `.ml-toggle` de la plantilla que `setUseMLLP` actualiza con DOM. Al migrar el armazón (T054) puede sustituirse por `InterruptorML` y entonces `setUseMLLP` deja de tocar el DOM.
+
+## T046 — aprobación del dueño — 2026-11-12
+- status: complete
+- el dueño revisó la pestaña Predicciones en la aplicación real (puerto 5000, rama `feat/react-etapa-8-predicciones`, base real) y la aprobó.
+- no ejecutado en esta sesión: capturas nuevas píxel a píxel ni revisión de teclado/tema anotada; la aprobación se dio sobre la aplicación en marcha. Las capturas de la etapa 8 son las registradas al cerrar T045.
+- T042 (aprobación de Decenas y Terminaciones) sigue pendiente de confirmación explícita.
