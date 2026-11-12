@@ -1,7 +1,7 @@
 // PUENTE PARA LAS ISLAS REACT (frontend/src/store/legacyStore.ts)
 // Va el primero: applyTheme corre antes de las declaraciones `let` de abajo, así que _lpEmit no puede leer el estado
 // mientras no exista la caché (nadie ha pedido aún una instantánea).
-var _lpListeners=new Set(), _lpCache=null, _lpStatsBueno=null, _lpSim=null, _lpSimId=0;
+var _lpListeners=new Set(), _lpCache=null, _lpStatsBueno=null, _lpSim=null, _lpSimId=0, _lpErrSorteos=false;
 function _lpStatsOk(x){return !!x&&typeof x==='object'&&typeof x.total_sorteos==='number'}
 function _lpLeer(campo){
   switch(campo){
@@ -14,12 +14,13 @@ function _lpLeer(campo){
     case 'theme': return document.documentElement.getAttribute('data-theme')==='light'?'light':'dark';
     case 'activeTab': {const t=document.querySelector('#navTabs .nav-tab.active');return t&&t.dataset.tab?t.dataset.tab:'predicciones'}
     case 'simulacion': return _lpSim;
+    case 'errorSorteos': return _lpErrSorteos;
   }
 }
 function _lpSnapshot(){
   if(!_lpCache){
     _lpCache={};
-    ['sorteos','ready','stats','useML','prize','statsPrize','theme','activeTab','simulacion'].forEach(c=>{_lpCache[c]=_lpLeer(c)});
+    ['sorteos','ready','stats','useML','prize','statsPrize','theme','activeTab','simulacion','errorSorteos'].forEach(c=>{_lpCache[c]=_lpLeer(c)});
   }
   return _lpCache;
 }
@@ -197,6 +198,7 @@ async function loadData(){
   showSkeletons();
   // Phase 1: Load sorteos fast (lightweight endpoint)
   try{
+    if(_lpErrSorteos){_lpErrSorteos=false;_lpEmit('errorSorteos')} // nuevo intento: vuelve a «cargando»
     const sRes=await fetch('/api/sorteos?all=true');
     const sData=await sRes.json();
     const lista=sData.data||sData;
@@ -204,7 +206,11 @@ async function loadData(){
     allSorteos=lista;
     _lpEmit('sorteos');
     renderQuick();
-  }catch(e){console.error('Error loading sorteos:',e)}
+  }catch(e){
+    console.error('Error loading sorteos:',e);
+    // Sin ningún sorteo la pestaña no puede distinguir «cargando» de «no va a llegar»; con datos viejos se conservan.
+    if(!allSorteos.length){_lpErrSorteos=true;_lpEmit('errorSorteos')}
+  }
   // Phase 2: Load stats (heavy ML computation — may take >60s on first load)
   const loadStats=async(attempt=1)=>{
     try{

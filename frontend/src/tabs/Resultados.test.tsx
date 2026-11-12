@@ -24,7 +24,7 @@ const FORMATOS: Sorteo[] = [
 const crear = vi.hoisted(() => ({ blobs: [] as Blob[] }))
 let clics: Array<{ download: string; href: string }>
 
-function montar({ sorteos = muchos(120), ready = true, estricto = false, ranura = false } = {}) {
+function montar({ sorteos = muchos(120), ready = true, estricto = false, ranura = false, errorSorteos = false } = {}) {
   if (ranura) {
     // La cabecera de la plantilla: la ranura del CSV (que ocupa la isla) y el botón de actualizar (que sigue siendo del JS antiguo).
     const cabecera = document.createElement('div')
@@ -38,7 +38,7 @@ function montar({ sorteos = muchos(120), ready = true, estricto = false, ranura 
     cabecera.append(hueco, actualizar)
     document.body.append(cabecera)
   }
-  const store = crearStoreFalso({ activeTab: 'resultados' as never, sorteos, ready })
+  const store = crearStoreFalso({ activeTab: 'resultados' as never, sorteos, ready, errorSorteos })
   const arbol = (
     <StoreProvider store={store}>
       <Componente />
@@ -82,6 +82,55 @@ describe('contrato y carga', () => {
     expect(screen.getByRole('status', { name: 'Cargando resultados' })).toBeInTheDocument()
     expect(screen.queryByRole('search')).not.toBeInTheDocument()
     expect(screen.queryByRole('table')).not.toBeInTheDocument()
+  })
+
+  it('si la carga de sorteos falla lo dice, con «Reintentar», en vez de quedarse en el esqueleto para siempre', () => {
+    montar({ sorteos: [], ready: false, errorSorteos: true })
+    expect(screen.getByRole('alert')).toHaveTextContent('No se pudieron cargar los sorteos.')
+    expect(screen.getByRole('button', { name: 'Reintentar' })).toBeInTheDocument()
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    expect(screen.queryByRole('search')).not.toBeInTheDocument()
+    expect(screen.queryByRole('table')).not.toBeInTheDocument()
+  })
+
+  it('con el error a la vista, el botón de exportar sigue desactivado', () => {
+    montar({ sorteos: [], ready: false, errorSorteos: true })
+    expect(screen.getByRole('button', { name: 'Exportar resultados a CSV' })).toBeDisabled()
+  })
+
+  it('«Reintentar» vuelve a pedir los datos y el foco se queda en la isla, no se pierde en <body>', () => {
+    const { store } = montar({ sorteos: [], ready: false, errorSorteos: true })
+    const zona = screen.getByRole('alert').parentElement as HTMLElement
+    fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }))
+    expect(store.llamadas.filter((l) => l.accion === 'reload')).toHaveLength(1)
+    expect(zona).toHaveFocus()
+    // El Store limpia el error al empezar el intento: el mismo contenedor pasa a enseñar el esqueleto y conserva el foco.
+    act(() => store.cambiar({ errorSorteos: false }))
+    expect(screen.getByRole('status', { name: 'Cargando resultados' })).toBeInTheDocument()
+    expect(zona.contains(screen.getByRole('status'))).toBe(true)
+    expect(zona).toHaveFocus()
+  })
+
+  it('error → intento (esqueleto) → datos: la secuencia completa', () => {
+    const { store } = montar({ sorteos: [], ready: false, errorSorteos: true })
+    act(() => store.cambiar({ errorSorteos: false }))
+    expect(screen.getByRole('status')).toBeInTheDocument()
+    act(() => store.cambiar({ sorteos: muchos(10), ready: true }))
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(filas()).toHaveLength(10)
+  })
+
+  it('si ya hay sorteos, un `errorSorteos` rezagado no tapa la tabla', () => {
+    montar({ errorSorteos: true })
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(filas()).toHaveLength(50)
+  })
+
+  it('el error no ocupa el sitio de otra cosa: sin error y sin datos sigue siendo el esqueleto', () => {
+    montar({ sorteos: [], ready: false, errorSorteos: false })
+    expect(screen.getByRole('status', { name: 'Cargando resultados' })).toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 
   it('no depende de `stats`: con `stats` nulo y los sorteos cargados ya se ve todo', () => {
@@ -407,7 +456,7 @@ describe('paginación', () => {
 
 describe('exportar CSV', () => {
   const exportar = () => screen.getByRole('button', { name: 'Exportar resultados a CSV' })
-  const csvDe = async (i = 0) => (await crear.blobs[i]!.text()).replace(/^﻿/, '')
+  const csvDe = async (i = 0) => crear.blobs[i]!.text()
 
   it('el botón dice «⬇ Exportar CSV» y es un botón de la barra de acciones', () => {
     montar()
@@ -488,12 +537,14 @@ describe('exportar CSV', () => {
     expect(avisos(store)).toEqual([['CSV exportado: 30 registros', undefined]])
   })
 
-  it('libera la dirección del archivo después del clic, no en el mismo instante (algunos navegadores cortarían la descarga)', () => {
+  it('libera la dirección del archivo a los 40 s, no en el mismo instante ni a los 0 ms (algunos navegadores cortarían la descarga)', () => {
     vi.useFakeTimers()
     montar()
     fireEvent.click(exportar())
     expect(URL.revokeObjectURL).not.toHaveBeenCalled()
-    vi.runAllTimers()
+    vi.advanceTimersByTime(39_999)
+    expect(URL.revokeObjectURL).not.toHaveBeenCalled()
+    vi.advanceTimersByTime(1)
     vi.useRealTimers()
     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:falso')
   })
@@ -514,14 +565,15 @@ describe('exportar CSV', () => {
 })
 
 describe('con la pestaña viva', () => {
-  it('conserva los filtros y la página al cambiar de pestaña y volver', () => {
+  it('si tras recargar los datos desaparece la categoría elegida, el selector y la tabla vuelven a «Todas las categorías»', () => {
     const { store } = montar()
-    fireEvent.change(categoria(), { target: { value: 'dominical' } })
-    fireEvent.change(busqueda(), { target: { value: '1' } })
-    act(() => store.cambiar({ activeTab: 'gaps' }))
-    act(() => store.cambiar({ activeTab: 'resultados' as never }))
-    expect(categoria().value).toBe('dominical')
-    expect(busqueda().value).toBe('1')
+    fireEvent.change(categoria(), { target: { value: 'gordito' } })
+    expect(filas()).toHaveLength(30)
+    act(() => store.cambiar({ sorteos: muchos(120).filter((s) => s.cat !== 'gordito') }))
+    expect(categoria().value).toBe('all')
+    expect(screen.getByText(`${(90).toLocaleString()} resultados`)).toBeInTheDocument()
+    expect(filas()).toHaveLength(50)
+    expect(screen.queryByText('No hay resultados con esos filtros.')).not.toBeInTheDocument()
   })
 
   it('cuando se recargan los sorteos mantiene los filtros', () => {

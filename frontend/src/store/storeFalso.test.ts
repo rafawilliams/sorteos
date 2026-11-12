@@ -14,6 +14,7 @@ describe('crearStoreFalso: estado inicial', () => {
       activeTab: 'predicciones',
       ready: false,
       simulacion: null,
+      errorSorteos: false,
     })
   })
 

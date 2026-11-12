@@ -25,6 +25,7 @@ const estadoInicial = (): Snapshot => ({
   activeTab: 'predicciones',
   ready: false,
   simulacion: null,
+  errorSorteos: false,
 })
 
 export function crearStoreFalso(inicial: Partial<Snapshot> = {}): StoreFalso {
