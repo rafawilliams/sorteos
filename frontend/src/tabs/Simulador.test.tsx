@@ -241,6 +241,15 @@ describe('resultados', () => {
     ])
   })
 
+  it('si todas las categorías llegan con 0, las barras miden 0% y no «NaN%»', async () => {
+    control.simular.mockResolvedValue(ok(respuestaPara('9614', { by_category: { dominical: 0, gordito: 0 } })))
+    montar()
+    simular('9614')
+    const tarj = (await screen.findByText('Distribución por Categoría')).closest('.card') as HTMLElement
+    const anchos = Array.from(tarj.querySelectorAll('.bar-fill')).map((b) => (b as HTMLElement).style.width)
+    expect(anchos).toEqual(['0%', '0%'])
+  })
+
   it('el historial lista fecha y categoría de cada acierto, con el número de filas en la insignia', async () => {
     const matches = [
       { cat: 'extraordinario' as const, fecha: '2019-10-02', tipo: '' },

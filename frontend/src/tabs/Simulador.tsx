@@ -46,7 +46,7 @@ function Resultados({ datos: d }: { datos: Simulacion }) {
   const en = d.ending
   const hayAciertos = ex.total > 0
   const categorias = Object.entries(d.by_category ?? {}).sort((a, b) => b[1] - a[1])
-  const maximo = Math.max(...categorias.map(([, n]) => n))
+  const maximo = Math.max(...categorias.map(([, n]) => n)) || 1 // con todas a 0 la barra mide 0%, no «NaN%»
   const aciertos = ex.matches ?? []
   return (
     <>
