@@ -60,6 +60,11 @@ export function useToast(): (mensaje: string, ms?: number) => void {
   return useStore().actions.toast
 }
 
+/** Abre el Simulador con un número y lanza la simulación. */
+export function useSimularNumero(): (numero: string) => void {
+  return useStore().actions.simularNumero
+}
+
 /** Vuelve a cargar sorteos y estadísticas. */
 export function useReload(): () => Promise<void> {
   return useStore().actions.reload

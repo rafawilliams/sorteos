@@ -398,3 +398,45 @@ Puente `window.LP`, `LegacyStore`, hooks, cliente de API, fixtures y contrato, m
 
 ## Etapa 2 (T020–T022) completa
 Isla Seguimiento, retirada del código antiguo con la guardia ampliada y referencia de capturas renovada con el menú. Pendiente de la etapa: abrir su PR contra `main`.
+
+## T023 — 2026-11-11 (rama `feat/react-etapa-3-favoritos-comparador`, apilada sobre la etapa 2)
+- status: complete (commits 6139d82, 449f8a2, ee8f3b3 + arreglos de la ronda 2)
+- hecho: isla `tabs/Favoritos.tsx` (lista en `lp_favorites`, cruce con los 20 sorteos recientes y las recomendaciones, etiquetas y bordes como antes, insignia de la pestaña con `useInsignia`); `lib/favoritos.ts` (lógica pura y tolerante); `lib/numeroSimulador.ts` (`normalizarNumero` y `validarNumero`, antes de T028: lo necesita Mis Números); acción de Store `simularNumero` (puente `LP.simular`) para el botón «Simular».
+- pruebas: 517 en el front (37+ de la isla, lógica pura, contrato del Store con la acción nueva, puente), `typecheck` 0, `npm audit` 0, 458 Python. 38 mutantes (26 + 12 de la ronda 2): todos detectados tras cerrar dos huecos (límite exacto de 20 sorteos; borde dorado solo con ML).
+- página real (5001, base sembrada): alta, avisos de repetido y vacío, persistencia al recargar, insignia, «Simular» abre el Simulador con `0042` y lanza `/api/simulador?numero=0042`, 0 errores de consola.
+- risk: tier 1 — 1 revisor. review ronda 1 → 10 hallazgos (4 should-fix, 1 pregunta de proceso, 3 nits, 2 más): L1–L9 arreglados (almacén resuelto dentro del `try`; solo el aviso de fallo al guardar, sin tapar; evento `storage` para sincronizar pestañas; `key` por id de sorteo; decisión registrada en decisions.md; un solo nombre accesible en el campo; foco a la lista al quitar y «Simular {n}»; pruebas reforzadas; `simular` no actúa si falta la pestaña). L10 aparcado (Q8).
+- desviaciones declaradas: la plantilla ya sustituye la tarjeta «Agregar Número» y `#favContainer` por `<div data-react-root="favoritos">` (el JS antiguo queda muerto hasta T025).
+- controls: tests ✅ build ✅ security ✅ traceability ✅ (AC2). Ronda 2 de 3.
+
+## Decision queue (adiciones — etapa 3)
+- [review-after] Q8 — T023/L10: `simularNumero`/`LP.simular` es una acción puente temporal; T028 (isla Simulador) debe reimplementarla sobre la isla (o retirar el puente) y usar `validarNumero` para que el campo vacío no se rellene hasta «0000» (hoy `runSimulation` aún lo hace).
+
+## T027 — 2026-11-11 (adelantada a la etapa 3, ver decisions.md)
+- status: complete (commits 2ee774b + arreglos de la ronda 2)
+- hecho: `components/Chart.tsx` (Chart.js empaquetado, registra bar/line/radar/scatter y sus escalas, elementos y complementos; se destruye al desmontar y se recrea al cambiar tema, tipo, `datos`/`opciones` o la preferencia de movimiento) y `lib/chartOptions.ts` (los colores literales de `chartOpts()` por tema).
+- pruebas: `Chart.test.tsx` (con un doble de chart.js que registra qué se registra y qué se destruye), `Chart.registro.test.ts` (el chart.js REAL: si falta un registro, falla) y `chartOptions.test.ts` (cada color y fuente). Mutantes: 21 de la 1.ª ronda + 5 de la 2.ª, todos detectados salvo un registro duplicado (equivalente).
+- comprobación real en el navegador (Playwright, base sembrada): el gráfico del Comparador se pinta con Chart.js de verdad en oscuro y claro, con los colores y la leyenda esperados; el cambio de tema lo recrea. Capturas manuales revisadas (no se guardan en el repositorio).
+- risk: tier 1 — 1 revisor (junto con T024). review ronda 1: 2 should-fix (el doble ocultaba registros que faltan; el cambio en vivo de «movimiento reducido»), ambos arreglados; L13 (nada obliga a memorizar `datos`/`opciones`) aparcado como Q9.
+
+## T024 — 2026-11-11
+- status: complete (commit 473ef18 + arreglos de la ronda 2)
+- hecho: isla `tabs/Comparador.tsx` (hasta 5 números, etiquetas de color, `/api/comparar`, tabla de 9 métricas, gráfico mensual; esqueleto «Comparando...», error con «Reintentar», respuestas viejas descartadas). La plantilla sustituye la tarjeta del formulario, las etiquetas y `#compResults` por `<div data-react-root="comparador">`; el JS antiguo queda muerto hasta T025.
+- cambios de comportamiento declarados: un campo vacío se rechaza (antes se añadía «0000»), y un error ya no deja el spinner para siempre. La plantilla del plan se corrigió: la fila de T024 depende ahora de `T022, T027`.
+- pruebas: 35 de la isla (incluida «la lista se conserva al cambiar de pestaña»); 38 mutantes de la isla, todos detectados (uno equivalente: dependencias de `useCallback`). 
+- risk: tier 1. review ronda 1: 2 should-fix de T027 (arriba) + 4 nits + 1 pregunta; L14, L16, L17 arreglados, L15 intencional (mismo patrón de accesibilidad que Gaps y Seguimiento).
+- controls: tests ✅ build ✅ security ✅ traceability ✅ (AC2). Ronda 2 de 3.
+
+## Decision queue (adiciones — etapa 3)
+- [review-after] Q9 — T027/L13: nada obliga a quien use `Chart` a memorizar `datos` y `opciones`. Los próximos consumidores (T028, T029, T040, T048, T049) deben pasar `useCallback` o constantes de módulo; vale la pena que su revisión lo compruebe.
+
+## T025 — 2026-11-11
+- status: complete (commit 47dfc76)
+- red/green: la guardia ampliada falló en 20 aserciones sobre el `app.js` real antes de retirar el código; después 83 pruebas Python en verde (`test_ids_retirados` + `test_ui_assets`), 492 en la suite completa con base sembrada, 591 en el front. `node new Function(app.js)` sin error.
+- mutantes: reintroducir cada uno de los 6 ids nuevos y las 14 funciones/variables en app.js, un id en style.css y otro en index.html, y quitar el marcador de la isla: todos hacen fallar la guardia.
+- files: static/app.js (−224 líneas: bloques de Comparador y Favoritos y la llamada `renderFavorites()` de `renderFull`), tests/test_ids_retirados.py
+- risk: tier 1 — 1 revisor. review ronda 1 → VERDICT pass, 0 hallazgos (`chartOpts`, `esc`, `showToast`, `triggerReveals` y las clases compartidas siguen en uso; nadie más llamaba a `updateFavBadge`; la insignia la pone la isla).
+- controls: tests ✅ build ✅ security n/a traceability ✅ (AC10).
+
+## T026 — 2026-11-11 (pendiente de la aprobación del dueño)
+- capturas con DATOS (la base sembrada no tiene favoritos ni comparaciones): Mis Números con tres favoritos en `lp_favorites` y Comparador con tres números, en oscuro y claro, sacadas con el código antiguo (rama de la etapa 2) y con las islas (etapa 3) con las mismas acciones, y comparadas píxel a píxel. Mis Números: 0 píxeles de diferencia en los dos temas. Comparador: la primera pasada difería en 6.465 píxeles por un defecto del código antiguo (comillas dobles dentro del `style` de las celdas, que lo cortaban); se reproduce lo que se ve (decisión en decisions.md) y la segunda pasada da 0 en los dos temas.
+- verificación solo con teclado en la página real (0 errores de consola): en Mis Números, escribir, Tab, Enter añade; Tab llega a «Simular 0042» y «Eliminar 0042»; Enter elimina y el foco pasa a la lista. En el Comparador, escribir y Enter añaden con etiquetas; «Quitar 9614» con Enter quita y recompara. El tema recrea el gráfico. Las flechas de la barra lateral desde Comparador llevan a Gaps. Ninguna de las dos pestañas tiene subpestañas.

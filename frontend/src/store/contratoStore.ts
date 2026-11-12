@@ -13,7 +13,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { Snapshot, Store } from './tipos'
 
 const CAMPOS = ['sorteos', 'stats', 'useML', 'prize', 'statsPrize', 'theme', 'activeTab', 'ready'] as const satisfies readonly (keyof Snapshot)[]
-const ACCIONES = ['setUseML', 'setPrize', 'setStatsPrize', 'toast', 'reload'] as const
+const ACCIONES = ['setUseML', 'setPrize', 'setStatsPrize', 'toast', 'simularNumero', 'reload'] as const
 
 /** Cómo llevar a un almacén concreto a un estado cargado y cómo hacer que falle su siguiente recarga. */
 export interface ControlDeCarga {
@@ -145,13 +145,14 @@ export const comprobaciones: Record<string, Comprobacion> = {
   async sinDependerDeThis(crear) {
     const store = crear()
     const { subscribe } = store
-    const { setUseML, setPrize, setStatsPrize, toast, reload } = store.actions
+    const { setUseML, setPrize, setStatsPrize, toast, simularNumero, reload } = store.actions
     const escucha = vi.fn()
     const cancelar = suelta('subscribe', () => subscribe(escucha))
     suelta('setUseML', () => setUseML(true))
     suelta('setPrize', () => setPrize('tercero'))
     suelta('setStatsPrize', () => setStatsPrize('segundo'))
     suelta('toast', () => toast('aviso', 100))
+    suelta('simularNumero', () => simularNumero('0042'))
     const recarga = suelta('reload', () => reload())
     expect(recarga, 'reload debe devolver una promesa').toBeInstanceOf(Promise)
     await recarga

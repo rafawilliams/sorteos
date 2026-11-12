@@ -50,6 +50,7 @@ class StoreClaseConFlechas implements Store {
     setPrize: (p: Snapshot['prize']) => this.poner({ prize: p }),
     setStatsPrize: (p: Snapshot['statsPrize']) => this.poner({ statsPrize: p }),
     toast: () => {},
+    simularNumero: (_n: string) => this.poner({ activeTab: 'simulador' }),
     reload: async () => {
       this.fallaLaRecarga = false // un fallo se registra y se traga; los datos viejos se quedan
     },
@@ -124,6 +125,7 @@ class StoreManual implements Store {
     setPrize: (p: Snapshot['prize']) => this.poner('setPrize', { prize: p }),
     setStatsPrize: (p: Snapshot['statsPrize']) => this.poner('setStatsPrize', { statsPrize: p }),
     toast: () => {},
+    simularNumero: (_n: string) => this.poner('simularNumero', { activeTab: 'simulador' }),
     reload: async () => {
       if (this.opciones.vaciaStatsSinAvisarEnReload) {
         // defecto: vacía `stats` un momento SIN avisar a nadie (solo se ve leyendo el estado a intervalos)

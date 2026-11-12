@@ -62,6 +62,10 @@ export function crearStoreFalso(inicial: Partial<Snapshot> = {}): StoreFalso {
       toast(mensaje, ms) {
         registrar('toast', mensaje, ms)
       },
+      simularNumero(numero) {
+        registrar('simularNumero', numero)
+        cambiar({ activeTab: 'simulador' })
+      },
       async reload() {
         registrar('reload')
         if (fallaLaRecarga) {

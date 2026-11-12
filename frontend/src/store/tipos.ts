@@ -61,6 +61,11 @@ export interface AccionesStore {
   /** Aviso emergente de la página (`#toast`). */
   toast(mensaje: string, ms?: number): void
   /**
+   * Abre el Simulador con ese número (ya normalizado a 4 cifras) y lanza la simulación: el botón «Simular» de Mis
+   * Números. Deja `activeTab` en `'simulador'`.
+   */
+  simularNumero(numero: string): void
+  /**
    * Vuelve a cargar sorteos y estadísticas (tras actualizar los datos). Mientras dura se conservan los datos viejos
    * (`stats` y `ready` no vuelven a `null` ni a `false`) hasta que llegan los nuevos. La promesa se resuelve cuando la
    * carga termina, con éxito o sin él, y nunca rechaza: un fallo se registra y los datos viejos se quedan. Un fallo

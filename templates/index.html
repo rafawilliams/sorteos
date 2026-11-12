@@ -248,19 +248,7 @@
       <h2 class="section-title">Comparador de Números</h2>
       <p class="section-subtitle">Ingresa hasta 5 números y compara su historial, frecuencia, última aparición y meses favorables.</p>
 
-      <div class="card reveal">
-        <div class="card-header"><h3 class="card-title">Números a Comparar</h3><span class="card-badge badge-gold">Máx 5</span></div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-top:12px;">
-          <div style="flex:1;min-width:140px;">
-            <input class="filter-input" id="compInput" type="text" maxlength="4" placeholder="Número…" aria-label="Agregar número a comparar" style="font-family:'JetBrains Mono';font-size:1.2rem;text-align:center;letter-spacing:4px;">
-          </div>
-          <button class="btn btn-gold" onclick="addCompNumber()" style="height:42px;">+ Agregar</button>
-          <button class="btn" onclick="clearCompNumbers()" style="height:42px;">Limpiar</button>
-        </div>
-        <div id="compTags" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;"></div>
-      </div>
-
-      <div id="compResults" role="region" aria-label="Resultados de comparación" aria-live="polite"></div>
+      <div data-react-root="comparador"></div>
     </section>
 
     <!-- ==================== GAPS ==================== -->
@@ -307,18 +295,7 @@
       <h2 class="section-title">Mis Números Favoritos</h2>
       <p class="section-subtitle">Guarda tus números y recibe alertas cuando salgan en los resultados o sean recomendados por el modelo.</p>
 
-      <div class="card reveal">
-        <div class="card-header"><h3 class="card-title">Agregar Número</h3><span class="card-badge badge-gold">Watchlist</span></div>
-        <div style="display:flex;gap:12px;align-items:flex-end;margin-top:12px;flex-wrap:wrap;">
-          <div style="flex:1;min-width:140px;">
-            <label style="display:block;font-size:0.8rem;color:var(--text-muted);margin-bottom:4px;">Número (4 dígitos)</label>
-            <input class="filter-input" id="favInput" type="text" maxlength="4" pattern="[0-9]{4}" placeholder="0042" aria-label="Número favorito" style="font-family:'JetBrains Mono';font-size:1.4rem;text-align:center;letter-spacing:6px;">
-          </div>
-          <button class="btn btn-gold" onclick="addFavorite()" aria-label="Agregar número favorito" style="height:42px;">+ Agregar</button>
-        </div>
-      </div>
-
-      <div id="favContainer" role="region" aria-label="Lista de números favoritos" aria-live="polite"></div>
+      <div data-react-root="favoritos"></div>
     </section>
 
     <!-- ==================== RECOMENDACIÓN MENSUAL ==================== -->
