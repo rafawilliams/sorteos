@@ -524,3 +524,33 @@ Islas Mis Números y Comparador, componente `Chart`, retirada del código antigu
 ## T031 — 2026-11-12 (aprobada por el dueño)
 - status: complete («sí, apruebo las capturas»). Las 6 capturas con datos (Simulador con `9749`, Simulador con `0000` y Mensual, en oscuro y claro) comparadas con el código antiguo, la revisión de teclado y tema (31/31) y la corrección de las fichas de Mensual quedan como evidencia de la etapa 4. No se guardan en el repositorio.
 - etapa 4 (T028–T031): isla Simulador, campo `simulacion` del Store, isla Mensual, `BotonCopiar`, `DIGIT_COLORS`, retirada del código antiguo de las dos pestañas (T030 absorbida), guardia de ids ampliada. Riesgo calculado: tier 1. Pendiente de la etapa: abrir su PR contra `main`.
+
+## T032 + T033 — 2026-11-12 (rama `feat/react-etapa-5-precision`; implementadas, pendientes de revisión)
+- status: in-review. risk: tier 1 (calculado para la etapa 4 con `rsc risk`; el de esta rama se calcula al final con su base `53c127d`).
+- red/green: la isla se escribió tras 44 pruebas en rojo («Unable to find…»); la guardia de ids retirados pasó de 18 fallos a verde al retirar el código.
+- hecho: `tabs/Precision.tsx` (carga al activarse y sin repetir si ya hay datos, esqueleto «Calculando backtesting», error con «Reintentar», resumen, 4 tarjetas de posición con barras y marcas del azar, tarjetas ML y Estadístico, gráfico de tendencia mensual con `Chart`, nota de interpretación); plantilla con `<div data-react-root="precision">`; retirados de `app.js` `loadBacktesting`, `renderBacktesting`, `renderPrecisionTrend`, `backtestData`, `precisionChartInstance` y su llamada al cambiar de pestaña, y de la plantilla los ids `precisionLoader`, `precisionContent`, `precisionSummary`, `precisionPositions`, `precisionComparison` y `precisionTrendChart`; guardia ampliada. T033 queda absorbida (decisions.md).
+- pruebas: 47 de la isla; 742 en el front; 554 Python (1 omitida; base sembrada `sorteos_capturas`); `typecheck` 0; build correcto (458 kB); `npm audit` 0; `pip-audit` sin vulnerabilidades.
+- mutantes: 42 (42 detectados; 1 sobrevivió a la primera —el ancho de las barras del Estadístico no se comprobaba— y se cerró con una aserción).
+- navegador real (Chromium, base sembrada, 5005): 13/13 y 0 errores de consola (salvo el 500 provocado para probar el error): no pide nada hasta abrir la pestaña; una petición con `last_n=500`; el resumen coincide con la API (9 %, 30.2 %, 0.9x, 500); 4 tarjetas, 8 marcas del azar, tarjetas ML y Estadístico, «Mejor» solo con datos de los dos; el gráfico se pinta (3.146 muestras) y se recrea al cambiar el tema; volver a la pestaña no repite la petición; un 500 se ve con «Reintentar» y al reintentar carga con el foco en la región.
+- review: pendiente. T034 (capturas y aprobación del dueño): pendiente.
+
+## T032 — revisión, ronda 1 (2026-11-12)
+- review: un revisor de contexto fresco (informe en `.scratch/review-T032-r1.md`, no se versiona) → `VERDICT: pass`: 0 bloqueantes, 0 should-fix, 3 nits; sin hallazgos que pasar por `finding-verifier`. Cierres a mano (el libro de revisiones de rsc no se ha ejecutado).
+- L1 (nit, `Precision.tsx`): región exterior anidada con el nombre del panel → **arreglado** (sin `role`, con `tabindex="-1"`).
+- L2 (nit, `Precision.tsx`): el esqueleto sin texto visible → **arreglado** («Calculando backtesting…» vuelve).
+- L3 (nit, `Precision.test.tsx`): ninguna prueba distinguía `ambos` de `hayMl` ni cubría `comparison` ausente → **arreglado, y destapó un fallo real**: sin `comparison` se coronaba al Estadístico; ahora solo se corona con datos de los dos y un `ml_better` booleano. 4 pruebas nuevas (50 en la isla).
+- mutantes: 49 en total (42 de la ronda 1 y 7 de esta), todos detectados.
+- pruebas: 50 de la isla; ver el recuento del front en la entrada de cierre de T034.
+
+## T034 — 2026-11-12 (capturas y revisión preparadas, pendiente de la aprobación del dueño)
+- capturas con datos del código antiguo (`main`, `53c127d`, 5006) y de la isla (esta rama, 5005), misma base sembrada y **el mismo modelo** (se copió `models/predictor.joblib`; `/api/backtesting` devuelve la misma huella en los dos), 1280×800, oscuro y claro. Alineadas a píxel entero y con el puntero fuera (T031). 0 errores de consola.
+- comparación píxel a píxel (umbral 8/255): **0 píxeles distintos en los dos temas** (984×1520), antes y después de los arreglos de la revisión. Es la primera pestaña idéntica byte a byte de la migración.
+- revisión manual de teclado y tema en Chromium real, el mismo guion contra el antiguo y la isla: **isla 17/17; antiguo 12/13**. Barra lateral desde Precisión (flechas, Inicio, Fin, vuelta cíclica, `aria-selected`, `tabindex`); Tab no se detiene en el contenido (no tiene controles) y el contenedor solo recibe el foco por programa; con un 500 provocado, Tab llega a «Reintentar» con contorno visible, Enter recarga y el foco queda en el contenedor; Enter y Espacio en el interruptor alternan el tema y lo guardan.
+- diferencia con el antiguo (a favor de la isla): al cambiar el tema en vivo el gráfico de tendencia antiguo no se redibuja (misma huella antes y después) y el de la isla sí se recrea.
+- contraste (mínimo AA 4,5), idéntico en las dos versiones: la etiqueta de las cifras y la nota «Prob. prom.» usan `--text-muted` y quedan en 2,63 (oscuro) y 4,1 (claro), por debajo de AA; el resto pasa (4,8 a 17,99). Es el mismo valor que en Simulador y Mensual: una decisión de diseño aparte.
+- `/api/backtesting` está limitado a 5 peticiones por minuto (decisions.md).
+- controles tras la revisión (una sola pasada fresca): `typecheck` 0; 745 pruebas en el front (50 de la isla); 554 Python (1 omitida; base sembrada `sorteos_capturas`); build correcto; `npm audit` 0.
+
+## T034 — 2026-11-12 (aprobada por el dueño)
+- status: complete («apruebo todo»). Las 2 capturas de Precisión (0 píxeles de diferencia frente al código antiguo), la revisión de teclado y tema (17/17) y los arreglos de la revisión de T032 quedan como evidencia de la etapa 5. No se guardan en el repositorio.
+- etapa 5 (T032–T034): isla Precisión, retirada del código antiguo y de los ids `precision*` (T033 absorbida), guardia ampliada. Pendiente de la etapa: abrir su PR contra `main`.
