@@ -36,6 +36,25 @@ describe('leerFavoritos', () => {
   })
 })
 
+describe('con el almacenamiento del navegador bloqueado (el propio getter lanza)', () => {
+  const bloquear = () =>
+    vi.spyOn(window, 'localStorage', 'get').mockImplementation(() => {
+      throw new DOMException('bloqueado', 'SecurityError')
+    })
+
+  it('leer sin almacén explícito da lista vacía en vez de lanzar', () => {
+    bloquear()
+    expect(() => leerFavoritos()).not.toThrow()
+    expect(leerFavoritos()).toEqual([])
+  })
+
+  it('guardar sin almacén explícito dice que no pudo, sin lanzar', () => {
+    bloquear()
+    expect(() => guardarFavoritos(['0042'])).not.toThrow()
+    expect(guardarFavoritos(['0042'])).toBe(false)
+  })
+})
+
 describe('guardarFavoritos', () => {
   it('guarda como JSON con la clave de siempre y dice que lo logró', () => {
     const setItem = vi.fn()
@@ -94,9 +113,9 @@ describe('apariciones: los 20 sorteos más recientes', () => {
       sorteo('2026-01-01', '9999', '1111', '0042', 'gordito'),
     ]
     expect(apariciones('0042', s)).toEqual([
-      { fecha: '2026-01-03', cat: 'dominical', prizes: ['1ro'] },
-      { fecha: '2026-01-02', cat: 'dominical', prizes: ['2do'] },
-      { fecha: '2026-01-01', cat: 'gordito', prizes: ['3ro'] },
+      { id: '2026-01-03', fecha: '2026-01-03', cat: 'dominical', prizes: ['1ro'] },
+      { id: '2026-01-02', fecha: '2026-01-02', cat: 'dominical', prizes: ['2do'] },
+      { id: '2026-01-01', fecha: '2026-01-01', cat: 'gordito', prizes: ['3ro'] },
     ])
   })
 
@@ -106,7 +125,7 @@ describe('apariciones: los 20 sorteos más recientes', () => {
 
   it('sin acierto exacto cuenta la terminación (los dos últimos dígitos), con «Term»', () => {
     expect(apariciones('0042', [sorteo('2026-01-03', '7742', '1142', '9999')])).toEqual([
-      { fecha: '2026-01-03', cat: 'dominical', prizes: ['Term 1ro', 'Term 2do'] },
+      { id: '2026-01-03', fecha: '2026-01-03', cat: 'dominical', prizes: ['Term 1ro', 'Term 2do'] },
     ])
   })
 

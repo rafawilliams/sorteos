@@ -31,7 +31,7 @@ function montar(estado: Partial<{ sorteos: Sorteo[]; stats: Stats | null }> = {}
   return { store, ...render(estricto ? <StrictMode>{arbol}</StrictMode> : arbol) }
 }
 
-const entrada = () => screen.getByRole('textbox', { name: 'Número favorito' }) as HTMLInputElement
+const entrada = () => screen.getByRole('textbox', { name: 'Número (4 dígitos)' }) as HTMLInputElement
 const agregar = (texto: string) => {
   fireEvent.change(entrada(), { target: { value: texto } })
   fireEvent.click(screen.getByRole('button', { name: 'Agregar número favorito' }))
@@ -137,14 +137,67 @@ describe('agregar', () => {
     const { store } = montar()
     agregar('42')
     expect(screen.getByText('0042', { selector: 'span' })).toBeInTheDocument()
-    expect(avisos(store)).toContainEqual(['No se pudo guardar la lista en este navegador', 3000])
+    // Solo ese aviso: el de «agregado» lo taparía (el #toast es uno solo) y la persona creería que se guardó.
+    expect(avisos(store)).toEqual([['No se pudo guardar la lista en este navegador', 3000]])
   })
 
-  it('en StrictMode añade una sola vez', () => {
-    montar({}, true)
+  it('con el almacenamiento bloqueado del todo, la isla se monta y funciona en memoria', () => {
+    vi.spyOn(window, 'localStorage', 'get').mockImplementation(() => {
+      throw new DOMException('bloqueado', 'SecurityError')
+    })
+    const { store } = montar()
+    expect(entrada()).toBeInTheDocument()
     agregar('42')
+    expect(screen.getByText('0042', { selector: 'span' })).toBeInTheDocument()
+    expect(avisos(store)).toEqual([['No se pudo guardar la lista en este navegador', 3000]])
+  })
+
+  it('en StrictMode añade una sola vez y avisa una sola vez', () => {
+    const { store } = montar({}, true)
+    agregar('42')
+    expect(avisos(store)).toEqual([['0042 agregado a favoritos', 2000]])
     expect(guardado()).toEqual(['0042'])
     expect(document.querySelectorAll('.card span[style*="letter-spacing"]')).toHaveLength(1)
+  })
+})
+
+describe('otra pestaña del navegador', () => {
+  it('un cambio de lp_favorites hecho en otra pestaña se recoge (evento storage)', () => {
+    localStorage.setItem('lp_favorites', JSON.stringify(['1111']))
+    montar()
+    localStorage.setItem('lp_favorites', JSON.stringify(['1111', '2222']))
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', { key: 'lp_favorites' }))
+    })
+    expect(screen.getByText('2222', { selector: 'span' })).toBeInTheDocument()
+  })
+
+  it('así no se pisan: añadir tras el cambio ajeno conserva lo de la otra pestaña', () => {
+    localStorage.setItem('lp_favorites', JSON.stringify(['1111']))
+    montar()
+    localStorage.setItem('lp_favorites', JSON.stringify(['1111', '2222']))
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', { key: 'lp_favorites' }))
+    })
+    agregar('3333')
+    expect(guardado()).toEqual(['1111', '2222', '3333'])
+  })
+
+  it('un evento de otra clave se ignora', () => {
+    localStorage.setItem('lp_favorites', JSON.stringify(['1111']))
+    montar()
+    localStorage.setItem('lp_favorites', JSON.stringify(['1111', '2222']))
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', { key: 'theme' }))
+    })
+    expect(screen.queryByText('2222', { selector: 'span' })).toBeNull()
+  })
+
+  it('al desmontar deja de escuchar', () => {
+    const quitar = vi.spyOn(window, 'removeEventListener')
+    const { unmount } = montar()
+    unmount()
+    expect(quitar).toHaveBeenCalledWith('storage', expect.any(Function))
   })
 })
 
@@ -156,6 +209,15 @@ describe('quitar', () => {
     expect(screen.queryByText('0042', { selector: 'span' })).toBeNull()
     expect(screen.getByText('1234', { selector: 'span' })).toBeInTheDocument()
     expect(guardado()).toEqual(['1234'])
+  })
+
+  it('al quitar el foco pasa a la lista y no se pierde en <body>', () => {
+    localStorage.setItem('lp_favorites', JSON.stringify(['0042']))
+    montar()
+    const boton = screen.getByRole('button', { name: 'Eliminar 0042' })
+    boton.focus()
+    fireEvent.click(boton)
+    expect(screen.getByRole('region', { name: 'Lista de números favoritos' })).toHaveFocus()
   })
 
   it('quitar el último vuelve al mensaje de lista vacía', () => {
@@ -177,6 +239,16 @@ describe('cada favorito', () => {
     expect(t).toHaveTextContent(SORTEOS[0]!.fecha) // la fecha ISO tal cual
     expect(within(t).getAllByText(SORTEOS[0]!.cat)[0]).toHaveClass('cat-badge')
     expect(t).toHaveTextContent('1ro')
+  })
+
+  it('dos sorteos con la misma fecha y categoría salen los dos, sin avisos de claves repetidas', () => {
+    const aviso = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const a = { ...sorteo('2002-12-29', '0042'), id: '1' }
+    const b = { ...sorteo('2002-12-29', '0042'), id: '2' }
+    localStorage.setItem('lp_favorites', JSON.stringify(['0042']))
+    montar({ sorteos: [a, b] })
+    expect(tarjeta('0042').querySelectorAll('.cat-badge')).toHaveLength(2)
+    expect(aviso).not.toHaveBeenCalled()
   })
 
   it('muestra como mucho 5 apariciones', () => {
@@ -232,10 +304,11 @@ describe('cada favorito', () => {
     expect(tarjeta('0042')).toHaveTextContent('Term 1ro, Term 3ro')
   })
 
-  it('«Simular» abre el Simulador con ese número', () => {
-    localStorage.setItem('lp_favorites', JSON.stringify(['0042']))
+  it('«Simular» abre el Simulador con ese número y cada botón dice de cuál', () => {
+    localStorage.setItem('lp_favorites', JSON.stringify(['0042', '1234']))
     const { store } = montar()
-    fireEvent.click(within(tarjeta('0042')).getByRole('button', { name: /Simular/ }))
+    expect(screen.getByRole('button', { name: 'Simular 1234' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Simular 0042' }))
     expect(store.llamadas).toContainEqual({ accion: 'simularNumero', args: ['0042'] })
   })
 
@@ -262,7 +335,7 @@ describe('insignia de la pestaña', () => {
     return b
   }
 
-  it('cuenta los aciertos exactos en los 5 últimos sorteos y se actualiza al añadir', () => {
+  it('cuenta los aciertos exactos en los 5 últimos sorteos', () => {
     const b = pestana()
     localStorage.setItem('lp_favorites', JSON.stringify(['0042']))
     montar({ sorteos: [sorteo('2026-01-03', '0042', '0042'), sorteo('2026-01-02', '1111')] })

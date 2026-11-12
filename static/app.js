@@ -45,7 +45,7 @@ window.LP={
   setPrize(p){const tab=_lpTabPremio('#prizeTabs',p);if(tab)selectPrize(tab)},
   setStatsPrize(p){const tab=_lpTabPremio('#statsPrizeTabs',p);if(tab)selectStatsPrize(tab)},
   toast(msg,ms){showToast(msg,ms)},
-  simular(n){const i=document.getElementById('simNumero');if(!i)return;i.value=String(n);const t=document.querySelector('#navTabs [data-tab="simulador"]');if(t)t.click();runSimulation()},
+  simular(n){const i=document.getElementById('simNumero');if(!i)return;i.value=String(n);const t=document.querySelector('#navTabs [data-tab="simulador"]');if(!t)return;t.click();runSimulation()},
   reload(){return loadData().catch(e=>{console.error('Error reloading:',e)})}
 };
 

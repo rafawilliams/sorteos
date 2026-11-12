@@ -1,11 +1,11 @@
 // Isla «Mis Números» (spec frontend-react, T023). Equivale a `addFavorite`/`removeFavorite`/`renderFavorites`/
 // `updateFavBadge` de static/app.js: una lista de números guardada en el navegador (`lp_favorites`) que se cruza con los
 // sorteos recientes y con las recomendaciones del modelo, y pone una insignia en la pestaña de la barra.
-import { useId, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { Skeleton } from '../components/Skeleton'
 import { useInsignia } from '../components/useInsignia'
 import { useReveal } from '../components/useReveal'
-import { agregarFavorito, apariciones, contarAlertas, guardarFavoritos, leerFavoritos, quitarFavorito } from '../lib/favoritos'
+import { agregarFavorito, apariciones, CLAVE_FAVORITOS, contarAlertas, guardarFavoritos, leerFavoritos, quitarFavorito } from '../lib/favoritos'
 import { useSimularNumero, useSorteos, useStats, useToast } from '../store/hooks'
 import type { Sorteo, Stats } from '../api/types'
 
@@ -34,7 +34,7 @@ function Favorito({ numero, sorteos, stats, onSimular, onQuitar }: { numero: str
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button type="button" className="btn" style={{ fontSize: '0.8rem' }} onClick={onSimular}>
+          <button type="button" className="btn" style={{ fontSize: '0.8rem' }} aria-label={`Simular ${numero}`} onClick={onSimular}>
             🔍 Simular
           </button>
           <button type="button" className="btn" style={{ fontSize: '0.8rem', color: '#f87171' }} aria-label={`Eliminar ${numero}`} onClick={onQuitar}>
@@ -45,7 +45,7 @@ function Favorito({ numero, sorteos, stats, onSimular, onQuitar }: { numero: str
       {hayAlerta && (
         <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--border)' }}>
           {salidas.slice(0, 5).map((a) => (
-            <div key={`${a.fecha}-${a.cat}`} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', padding: '3px 0' }}>
+            <div key={a.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', padding: '3px 0' }}>
               <span style={{ color: 'var(--text-secondary)' }}>
                 {a.fecha} ·{' '}
                 <span className="cat-badge" style={{ fontSize: '0.7rem' }}>
@@ -70,12 +70,25 @@ export function Componente() {
   const idCampo = useId()
   const [lista, setLista] = useState<string[]>(() => leerFavoritos())
   const [texto, setTexto] = useState('')
+  const regionRef = useRef<HTMLDivElement>(null)
 
   useInsignia('favoritos', contarAlertas(lista, sorteos))
 
-  const guardar = (nueva: string[]) => {
+  // Otra pestaña del navegador cambió la lista: se relee, para no sobrescribir sus cambios con una lista vieja.
+  useEffect(() => {
+    const alCambiar = (e: StorageEvent) => {
+      if (e.key === CLAVE_FAVORITOS || e.key === null) setLista(leerFavoritos())
+    }
+    window.addEventListener('storage', alCambiar)
+    return () => window.removeEventListener('storage', alCambiar)
+  }, [])
+
+  /** Guarda y devuelve si se pudo. Si no, avisa (y quien llama NO debe tapar ese aviso con otro). */
+  const guardar = (nueva: string[]): boolean => {
     setLista(nueva)
-    if (!guardarFavoritos(nueva)) toast('No se pudo guardar la lista en este navegador', 3000)
+    const guardada = guardarFavoritos(nueva)
+    if (!guardada) toast('No se pudo guardar la lista en este navegador', 3000)
+    return guardada
   }
 
   const agregar = () => {
@@ -84,9 +97,8 @@ export function Componente() {
       toast(r.motivo === 'invalido' ? 'Ingresa un número de 4 dígitos' : `${r.numero} ya está en tu lista`, r.motivo === 'invalido' ? 3000 : 2000)
       return
     }
-    guardar(r.lista)
     setTexto('')
-    toast(`${r.numero} agregado a favoritos`, 2000)
+    if (guardar(r.lista)) toast(`${r.numero} agregado a favoritos`, 2000)
   }
 
   return (
@@ -108,7 +120,6 @@ export function Componente() {
               maxLength={4}
               pattern="[0-9]{4}"
               placeholder="0042"
-              aria-label="Número favorito"
               value={texto}
               onChange={(e) => setTexto(e.target.value)}
               style={{ fontFamily: MONO, fontSize: '1.4rem', textAlign: 'center', letterSpacing: 6 }}
@@ -120,7 +131,7 @@ export function Componente() {
         </div>
       </div>
 
-      <div role="region" aria-label="Lista de números favoritos" aria-live="polite">
+      <div role="region" aria-label="Lista de números favoritos" aria-live="polite" ref={regionRef} tabIndex={-1} style={{ outline: 'none' }}>
         {stats === null ? (
           <div role="status" aria-label="Cargando favoritos" style={{ marginTop: 20 }}>
             <Skeleton lineas={3} />
@@ -136,7 +147,11 @@ export function Componente() {
         ) : (
           <div style={{ marginTop: 20 }}>
             {lista.map((n) => (
-              <Favorito key={n} numero={n} sorteos={sorteos} stats={stats} onSimular={() => simular(n)} onQuitar={() => guardar(quitarFavorito(lista, n))} />
+              <Favorito key={n} numero={n} sorteos={sorteos} stats={stats} onSimular={() => simular(n)} onQuitar={() => {
+                  guardar(quitarFavorito(lista, n))
+                  regionRef.current?.focus() // la tarjeta se desmonta: el foco pasa a la lista, no a <body>
+                }}
+              />
             ))}
           </div>
         )}

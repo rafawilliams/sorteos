@@ -7,6 +7,8 @@ import { validarNumero } from './numeroSimulador'
 export const CLAVE_FAVORITOS = 'lp_favorites'
 
 export interface Aparicion {
+  /** Id del sorteo: dos sorteos pueden compartir fecha y categoría (1973-02-07 miercolito, 2002-12-29 dominical). */
+  id: string
   fecha: string
   cat: string
   /** `1ro`/`2do`/`3ro` si salió el número entero; `Term 1ro`… si solo coincide la terminación (últimos 2 dígitos). */
@@ -29,9 +31,10 @@ const VENTANA_INSIGNIA = 5
  * La lista guardada. Tolerante: JSON roto, algo que no es una lista, entradas que no son un número de 4 cifras,
  * repetidos o un almacenamiento que lanza (modo privado) dan una lista válida en vez de romper la pestaña.
  */
-export function leerFavoritos(almacen: Pick<Storage, 'getItem'> = localStorage): string[] {
+export function leerFavoritos(almacen?: Pick<Storage, 'getItem'>): string[] {
   try {
-    const valor: unknown = JSON.parse(almacen.getItem(CLAVE_FAVORITOS) || '[]')
+    // `localStorage` se resuelve DENTRO del try: con los datos del sitio bloqueados, el propio getter lanza.
+    const valor: unknown = JSON.parse((almacen ?? localStorage).getItem(CLAVE_FAVORITOS) || '[]')
     if (!Array.isArray(valor)) return []
     const limpios = valor.filter((n): n is string => typeof n === 'string' && /^[0-9]{4}$/.test(n))
     return [...new Set(limpios)]
@@ -41,9 +44,9 @@ export function leerFavoritos(almacen: Pick<Storage, 'getItem'> = localStorage):
 }
 
 /** `false` si no se pudo guardar (cuota, modo privado): la lista sigue viva en memoria hasta recargar. */
-export function guardarFavoritos(lista: string[], almacen: Pick<Storage, 'setItem'> = localStorage): boolean {
+export function guardarFavoritos(lista: string[], almacen?: Pick<Storage, 'setItem'>): boolean {
   try {
-    almacen.setItem(CLAVE_FAVORITOS, JSON.stringify(lista))
+    ;(almacen ?? localStorage).setItem(CLAVE_FAVORITOS, JSON.stringify(lista))
     return true
   } catch {
     return false
@@ -71,7 +74,7 @@ export function apariciones(numero: string, sorteos: Sorteo[]): Aparicion[] {
     const prizes = exactos.length
       ? exactos
       : PREMIOS.filter(([campo]) => s[campo] && s[campo].slice(-2) === terminacion).map(([, etiqueta]) => `Term ${etiqueta}`)
-    if (prizes.length) resultado.push({ fecha: s.fecha, cat: s.cat, prizes })
+    if (prizes.length) resultado.push({ id: s.id, fecha: s.fecha, cat: s.cat, prizes })
   }
   return resultado
 }
