@@ -5,6 +5,7 @@
   ],
   "skills": [
     "analyze",
+    "asdd",
     "automation-strategy",
     "clarify",
     "connect-tool",
@@ -24,14 +25,15 @@
     "plan",
     "python",
     "review",
-    "sdd",
     "sdd-init",
+    "security-audit",
     "ship",
     "simplify-code",
     "source-grounded-development",
     "specify",
     "suggest",
     "tasks",
+    "tidy",
     "unslop",
     "ux",
     "verify",
@@ -46,9 +48,11 @@
     "refuter-tests"
   ],
   "ownSkills": [],
-  "catalogVersion": "3.6.0",
+  "catalogVersion": "4.1.2",
   "tier": null,
-  "optOuts": [],
+  "optOuts": [
+    "trunk-open"
+  ],
   "gitPermissions": true,
   "onboarding": {
     "schemaVersion": 1,

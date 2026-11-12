@@ -1,9 +1,61 @@
+// PUENTE PARA LAS ISLAS REACT (frontend/src/store/legacyStore.ts)
+// Va el primero: applyTheme corre antes de las declaraciones `let` de abajo, así que _lpEmit no puede leer el estado
+// mientras no exista la caché (nadie ha pedido aún una instantánea).
+var _lpListeners=new Set(), _lpCache=null, _lpStatsBueno=null;
+function _lpStatsOk(x){return !!x&&typeof x==='object'&&typeof x.total_sorteos==='number'}
+function _lpLeer(campo){
+  switch(campo){
+    case 'sorteos': return allSorteos;
+    case 'ready': return allSorteos.length>0;
+    case 'stats': if(_lpStatsOk(stats))_lpStatsBueno=stats;return _lpStatsBueno;
+    case 'useML': return useML;
+    case 'prize': return currentPrize;
+    case 'statsPrize': return currentStatsPrize;
+    case 'theme': return document.documentElement.getAttribute('data-theme')==='light'?'light':'dark';
+    case 'activeTab': {const t=document.querySelector('#navTabs .nav-tab.active');return t&&t.dataset.tab?t.dataset.tab:'predicciones'}
+  }
+}
+function _lpSnapshot(){
+  if(!_lpCache){
+    _lpCache={};
+    ['sorteos','ready','stats','useML','prize','statsPrize','theme','activeTab'].forEach(c=>{_lpCache[c]=_lpLeer(c)});
+  }
+  return _lpCache;
+}
+function _lpEmit(...campos){
+  let cambio=true;
+  if(_lpCache){
+    const sig={..._lpCache};
+    campos.forEach(c=>{
+      if(c==='sorteos'){sig.sorteos=_lpLeer('sorteos');sig.ready=_lpLeer('ready')}
+      else sig[c]=_lpLeer(c);
+    });
+    cambio=Object.keys(sig).some(k=>sig[k]!==_lpCache[k]);
+    if(cambio)_lpCache=sig;
+  }
+  if(!cambio)return;
+  _lpListeners.forEach(fn=>{try{fn()}catch(e){console.error(e)}});
+  campos.forEach(c=>document.dispatchEvent(new CustomEvent('lp:change',{detail:c})));
+}
+function _lpTabPremio(contenedor,p){return Array.from(document.querySelectorAll(contenedor+' .prize-tab')).find(t=>t.dataset.prize===p)}
+window.LP={
+  getSnapshot:_lpSnapshot,
+  subscribe(fn){_lpListeners.add(fn);return()=>{_lpListeners.delete(fn)}},
+  setUseML(v){setUseMLLP(!!v)},
+  setPrize(p){const tab=_lpTabPremio('#prizeTabs',p);if(tab)selectPrize(tab)},
+  setStatsPrize(p){const tab=_lpTabPremio('#statsPrizeTabs',p);if(tab)selectStatsPrize(tab)},
+  toast(msg,ms){showToast(msg,ms)},
+  simular(n){const i=document.getElementById('simNumero');if(!i)return;i.value=String(n);const t=document.querySelector('#navTabs [data-tab="simulador"]');if(!t)return;t.click();runSimulation()},
+  reload(){return loadData().catch(e=>{console.error('Error reloading:',e)})}
+};
+
 // THEME
 function applyTheme(theme){
   document.documentElement.setAttribute('data-theme',theme);
   document.getElementById('themeIcon').textContent=theme==='light'?'🌙':'☀️';
   document.getElementById('themeLabel').textContent=theme==='light'?'Oscuro':'Claro';
   localStorage.setItem('theme',theme);
+  _lpEmit('theme');
 }
 function toggleTheme(){
   const current=document.documentElement.getAttribute('data-theme')||'dark';
@@ -24,9 +76,17 @@ let currentPrize='primero', currentStatsPrize='primero';
 let useML=false;
 let trendChartInstance=null, volumeChartInstance=null, endingsTrendChartInstance=null;
 
-const CAT_LABELS={dominical:'Dominical',miercolito:'Miercolito',gordito:'Gordito del Zodiaco',extraordinario:'Extraordinario',extraordinaria:'Extraordinaria',zodiaco:'Zodiaco',extraordonario:'Extraordonario'};
+const CAT_LABELS={dominical:'Dominical',miercolito:'Miercolito',gordito:'Gordito del Zodiaco',extraordinario:'Extraordinario'};
 function catLabel(k){return CAT_LABELS[k]||k.charAt(0).toUpperCase()+k.slice(1)}
+// Category as a CSS class suffix: only [a-z0-9_-], so a raw API value cannot break out of class="…".
+function catClase(k){return String(k??'').toLowerCase().replace(/[^a-z0-9_-]/g,'')}
 function formatDate(d){if(!d)return'—';return new Date(d+'T00:00:00').toLocaleDateString('es-PA',{year:'numeric',month:'short',day:'numeric'})}
+function renderBalls(val,variant='gold',size='lg'){
+  const s=String(val??'').trim();
+  if(!s)return'<span class="num-empty">—</span>';
+  const balls=Array.from(s).map(ch=>`<span class="lotto-ball ball-${variant}" aria-hidden="true">${esc(ch)}</span>`).join('');
+  return`<span class="lotto-balls lotto-balls-${size}" aria-label="${esc(s)}">${balls}</span>`;
+}
 
 // TOAST
 function showToast(msg,ms=2500){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),ms)}
@@ -38,6 +98,8 @@ function copyNumber(num){navigator.clipboard.writeText(num).then(()=>{showToast(
 document.addEventListener('DOMContentLoaded',async()=>{initTabs();await loadData()});
 
 // Keyboard navigation helper for tablists
+// Las flechas, Inicio y Fin activan la pestaña con un click() sintético: el menú lateral abierto no debe cerrarse por eso
+let _navPorTeclado=false;
 function initTablistKeyboard(container){
   const tabs=Array.from(container.querySelectorAll('[role="tab"]'));
   if(!tabs.length)return;
@@ -49,7 +111,7 @@ function initTablistKeyboard(container){
     else if(e.key==='ArrowLeft'||e.key==='ArrowUp'){next=(cur-1+tabs.length)%tabs.length;e.preventDefault();}
     else if(e.key==='Home'){next=0;e.preventDefault();}
     else if(e.key==='End'){next=tabs.length-1;e.preventDefault();}
-    if(next>=0){tabs[next].focus();tabs[next].click();}
+    if(next>=0){tabs[next].focus();_navPorTeclado=true;try{tabs[next].click()}finally{_navPorTeclado=false}}
   });
   // Only first tab in set should be in tab order
   tabs.forEach((t,i)=>t.setAttribute('tabindex',i===0?'0':'-1'));
@@ -67,8 +129,8 @@ function activateNavTab(tab){
   tab.setAttribute('tabindex','0');
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.getElementById('sec-'+tab.dataset.tab).classList.add('active');
+  _lpEmit('activeTab');
   if(tab.dataset.tab==='precision') loadBacktesting();
-  if(tab.dataset.tab==='gaps') loadGaps();
   triggerReveals();
 }
 
@@ -85,6 +147,32 @@ function initTabs(){
   // Cat tabs keyboard nav
   const catTabs=document.getElementById('recoCatTabs');
   if(catTabs)initTablistKeyboard(catTabs);
+  initMenu();
+}
+
+// MENÚ LATERAL: con la ventana estrecha la barra se esconde y el botón con el icono de menú la abre
+function initMenu(){
+  const btn=document.getElementById('menuToggle'),nav=document.getElementById('navTabs'),fondo=document.getElementById('menuBackdrop');
+  if(!btn||!nav||!fondo)return;
+  const abierto=()=>nav.classList.contains('open');
+  // Con el menú abierto el resto de la página es inerte (sin foco ni lectura): el fondo oscuro es modal
+  const resto=()=>Array.from(document.querySelector('.app').children).filter(el=>el!==nav&&el!==fondo);
+  const poner=on=>{
+    nav.classList.toggle('open',on);fondo.hidden=!on;document.body.classList.toggle('menu-open',on);
+    resto().forEach(el=>el.toggleAttribute('inert',on));
+    btn.setAttribute('aria-expanded',String(on));
+    btn.setAttribute('aria-label',on?'Cerrar menú de secciones':'Abrir menú de secciones');
+  };
+  btn.addEventListener('click',()=>{
+    poner(!abierto());
+    if(abierto()){const t=nav.querySelector('.nav-tab.active')||nav.querySelector('.nav-tab');if(t)t.focus()}
+  });
+  fondo.addEventListener('click',()=>{poner(false);btn.focus()});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&abierto()){poner(false);btn.focus()}});
+  // Con el menú abierto, elegir una sección con clic o Enter lo cierra; con las flechas se recorre sin cerrarlo.
+  // (En escritorio no está "abierto": el foco no se mueve.)
+  nav.querySelectorAll('.nav-tab').forEach(t=>t.addEventListener('click',()=>{if(abierto()&&!_navPorTeclado){poner(false);btn.focus()}}));
+  if(window.matchMedia){const ancho=matchMedia('(min-width:901px)');if(ancho.addEventListener)ancho.addEventListener('change',e=>{if(e.matches)poner(false)})}
 }
 
 function skelCard(lines=3){
@@ -109,14 +197,21 @@ async function loadData(){
   try{
     const sRes=await fetch('/api/sorteos?all=true');
     const sData=await sRes.json();
-    allSorteos=sData.data||sData;
+    const lista=sData.data||sData;
+    if(!sRes.ok||!Array.isArray(lista))throw new Error('Respuesta inválida de /api/sorteos');
+    allSorteos=lista;
+    _lpEmit('sorteos');
     renderQuick();
   }catch(e){console.error('Error loading sorteos:',e)}
   // Phase 2: Load stats (heavy ML computation — may take >60s on first load)
   const loadStats=async(attempt=1)=>{
     try{
       const stRes=await fetch('/api/stats',{signal:AbortSignal.timeout(180000)});
-      stats=await stRes.json();
+      const cuerpo=await stRes.json();
+      // Un 500 con cuerpo JSON (o {}) no puede ocupar el lugar de las estadísticas: cuenta como fallo y reintenta.
+      if(!stRes.ok||!_lpStatsOk(cuerpo))throw new Error('Respuesta inválida de /api/stats');
+      stats=cuerpo;
+      _lpEmit('stats');
       renderFull();
     }catch(e){
       if(attempt<3){console.warn(`Stats attempt ${attempt} failed, retrying...`);return loadStats(attempt+1);}
@@ -136,11 +231,11 @@ function renderQuick(){
 function renderFull(){
   // Full renders once stats are available
   renderLastUpdate();buildCategoryUI();renderStatCounters();
-  renderRecommendations('all');renderDecenas();renderStatsForPrize('primero');renderSeriesLetras();
+  renderRecommendations('all');renderDecenas();renderStatsForPrize(currentStatsPrize);renderSeriesLetras();renderFormatos();
   renderRadarChart();renderScatterChart();
   renderPositionGrids();renderHeatmap();renderTrendChart();renderVolumeChart();
-  renderEndingsSection();renderMonthlySection();renderFavorites();initSimCats();renderDashboard();
-  initRecoCatTabs();initPrizeTabs();initStatsPrizeTabs();
+  renderEndingsSection();renderMonthlySection();initSimCats();renderDashboard();
+  initRecoCatTabs();initEndCatTabs();initPrizeTabs();initStatsPrizeTabs();
 }
 
 // LAST UPDATE
@@ -157,6 +252,8 @@ function buildCategoryUI(){
   const cats=[...new Set(allSorteos.map(s=>s.cat).filter(Boolean))];
   const tc=document.getElementById('recoCatTabs');
   cats.forEach(c=>{const b=document.createElement('button');b.className='cat-tab';b.dataset.cat=c;b.textContent=catLabel(c);tc.appendChild(b)});
+  const te=document.getElementById('endCatTabs');
+  if(te)cats.forEach(c=>{const b=document.createElement('button');b.className='cat-tab';b.dataset.cat=c;b.setAttribute('role','tab');b.setAttribute('aria-selected','false');b.textContent=catLabel(c);te.appendChild(b)});
   const sel=document.getElementById('catFilter');
   cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=catLabel(c);sel.appendChild(o)});
 }
@@ -165,7 +262,7 @@ function buildCategoryUI(){
 function renderStatCounters(){
   const cats={};allSorteos.forEach(s=>{cats[s.cat]=(cats[s.cat]||0)+1});
   let h=`<div class="stat-card"><div class="stat-value">${allSorteos.length.toLocaleString()}</div><div class="stat-label">Total Sorteos</div></div>`;
-  for(const[cat,count]of Object.entries(cats))h+=`<div class="stat-card"><div class="stat-value">${count.toLocaleString()}</div><div class="stat-label">${catLabel(cat)}</div></div>`;
+  for(const[cat,count]of Object.entries(cats))h+=`<div class="stat-card"><div class="stat-value">${count.toLocaleString()}</div><div class="stat-label">${esc(catLabel(cat))}</div></div>`;
   document.getElementById('statCounters').innerHTML=h;
 }
 
@@ -180,10 +277,12 @@ function getFilteredSorteos(){
 }
 function renderSorteos(){
   const data=getFilteredSorteos(),start=(currentPage-1)*PER_PAGE,page=data.slice(start,start+PER_PAGE);
+  const prizeCell=(val,cls)=>val?`<span class="prize-chip ${cls}">${esc(val)}</span>`:'<span class="num-empty">—</span>';
+  const metaCell=val=>val?`<span class="meta-chip">${esc(val)}</span>`:'<span class="num-empty">—</span>';
   document.getElementById('sorteosBody').innerHTML=page.map(s=>`<tr>
-    <td>${formatDate(s.fecha)}</td><td><span class="cat-pill cat-${s.cat}">${catLabel(s.cat)}</span></td>
-    <td class="num-cell">${(s.primero||'').padStart(4,'0')}</td><td class="num-cell">${(s.segundo||'').padStart(4,'0')}</td><td class="num-cell">${(s.tercero||'').padStart(4,'0')}</td>
-    <td>${s.letra||'—'}</td><td>${s.serie||'—'}</td><td>${s.folio||'—'}</td></tr>`).join('');
+    <td>${formatDate(s.fecha)}</td><td><span class="cat-pill cat-${catClase(s.cat)}">${esc(catLabel(s.cat))}</span></td>
+    <td class="num-cell">${prizeCell(s.primero,'prize-1')}</td><td class="num-cell">${prizeCell(s.segundo,'prize-2')}</td><td class="num-cell">${prizeCell(s.tercero,'prize-3')}</td>
+    <td>${metaCell(s.letra)}</td><td>${metaCell(s.serie)}</td><td>${metaCell(s.folio)}</td></tr>`).join('');
   renderPagination();
 }
 function renderPagination(){
@@ -210,7 +309,7 @@ function initFilters(){
 function exportCSV(){
   const data=getFilteredSorteos();
   let csv='Fecha,Categoria,1er Premio,2do Premio,3er Premio,Letras,Serie,Folio\n';
-  data.forEach(s=>{csv+=`${s.fecha},${s.cat},${(s.primero||'').padStart(4,'0')},${(s.segundo||'').padStart(4,'0')},${(s.tercero||'').padStart(4,'0')},${s.letra||''},${s.serie||''},${s.folio||''}\n`});
+  data.forEach(s=>{csv+=`${s.fecha},${s.cat},${(s.primero||'')},${(s.segundo||'')},${(s.tercero||'')},${s.letra||''},${s.serie||''},${s.folio||''}\n`});
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`sorteos_panama_${new Date().toISOString().slice(0,10)}.csv`;a.click();
   showToast(`CSV exportado: ${data.length} registros`);
@@ -221,10 +320,15 @@ async function runUpdate(){
   const btn=document.getElementById('updateBtn');
   btn.disabled=true;btn.textContent='↻ Actualizando…';
   try{
-    const res=await fetch('/api/actualizar',{method:'POST'});
+    let token=sessionStorage.getItem('updateToken');
+    if(!token){token=prompt('Token de actualización (ACTUALIZAR_TOKEN):');}
+    if(!token){btn.disabled=false;btn.textContent='↻ Actualizar datos';return;}
+    const res=await fetch('/api/actualizar',{method:'POST',headers:{'X-Update-Token':token}});
     const data=await res.json();
+    if(res.status===401){sessionStorage.removeItem('updateToken');}
+    else{sessionStorage.setItem('updateToken',token);}
     if(data.ok){
-      showToast('Datos actualizados correctamente',3000);
+      showToast(data.ml_retrained===false?'Datos actualizados (el modelo ML no se pudo reentrenar)':'Datos actualizados correctamente',3000);
       await loadData();
     }else{showToast('Error: '+(data.error||'desconocido'),4000)}
   }catch(e){showToast('Error de conexión',3000)}
@@ -242,22 +346,35 @@ function _setAriaTab(container,active){
   active.setAttribute('aria-selected','true');
   active.setAttribute('tabindex','0');
 }
+function _statsListas(){return _lpStatsOk(stats)}
+function selectPrize(tab){
+  _setAriaTab(document.getElementById('prizeTabs'),tab);currentPrize=tab.dataset.prize;
+  _lpEmit('prize');
+  const cat=document.querySelector('#recoCatTabs .cat-tab.active');
+  if(_statsListas()&&cat)renderRecommendations(cat.dataset.cat);
+}
+function selectStatsPrize(tab){
+  _setAriaTab(document.getElementById('statsPrizeTabs'),tab);currentStatsPrize=tab.dataset.prize;
+  _lpEmit('statsPrize');
+  if(_statsListas()){renderStatsForPrize(currentStatsPrize);triggerReveals()}
+}
 function initPrizeTabs(){
-  const wrap=document.getElementById('prizeTabs');
-  wrap.querySelectorAll('.prize-tab').forEach(tab=>{
-    tab.addEventListener('click',()=>{
-      _setAriaTab(wrap,tab);currentPrize=tab.dataset.prize;
-      renderRecommendations(document.querySelector('#recoCatTabs .cat-tab.active').dataset.cat);
-    });
+  document.getElementById('prizeTabs').querySelectorAll('.prize-tab').forEach(tab=>{
+    tab.addEventListener('click',()=>selectPrize(tab));
   });
 }
 function initStatsPrizeTabs(){
-  const wrap=document.getElementById('statsPrizeTabs');
-  wrap.querySelectorAll('.prize-tab').forEach(tab=>{
-    tab.addEventListener('click',()=>{
-      _setAriaTab(wrap,tab);renderStatsForPrize(tab.dataset.prize);triggerReveals();
-    });
+  document.getElementById('statsPrizeTabs').querySelectorAll('.prize-tab').forEach(tab=>{
+    tab.addEventListener('click',()=>selectStatsPrize(tab));
   });
+}
+function initEndCatTabs(){
+  const wrap=document.getElementById('endCatTabs');
+  if(!wrap)return;
+  wrap.querySelectorAll('.cat-tab').forEach(tab=>{
+    tab.addEventListener('click',()=>{_setAriaTab(wrap,tab);renderEndingsSection();});
+  });
+  initTablistKeyboard(wrap);
 }
 function initRecoCatTabs(){
   const wrap=document.getElementById('recoCatTabs');
@@ -269,19 +386,28 @@ function initRecoCatTabs(){
 }
 
 // ML TOGGLE
-function toggleML(){
-  useML=!useML;
+function toggleML(){setUseMLLP(!useML)}
+function setUseMLLP(valor){
+  if(valor===useML)return;
+  useML=valor;
   document.querySelectorAll('.ml-toggle').forEach(b=>{
     b.classList.toggle('active',useML);
     b.textContent=useML?'🤖 ML Activo':'📊 Estadístico';
     b.setAttribute('aria-pressed',String(useML));
   });
-  renderRecommendations(document.querySelector('#recoCatTabs .cat-tab.active').dataset.cat);
+  _lpEmit('useML');
+  const cat=document.querySelector('#recoCatTabs .cat-tab.active');
+  if(!_statsListas()||!cat)return; // aún no hay estadísticas: solo cambia el modo; renderFull lo usará al llegar
+  renderRecommendations(cat.dataset.cat);
   renderEndingsSection();
   // Show ML info badge
   const info=stats.ml_info||{};
   if(useML&&info.trained)showToast(`ML: ${info.train_samples} muestras · Entrenado: ${info.train_date}`,3000);
 }
+
+// Number confidence (statistical and ML) is "times more likely than chance": 1.0 = pure chance, capped at 15.
+function fmtLift(x){return x==null?'—':`×${Number(x).toFixed(2)} azar`}
+function liftBar(x){return Math.min((x||0)/2*100,100)}  // 2× chance fills the bar
 
 // RECOMMENDATIONS
 function renderRecommendations(cat){
@@ -299,18 +425,19 @@ function renderRecommendations(cat){
     // Statistical recommendations
     const pd=stats.prizes&&stats.prizes[currentPrize];
     if(cat==='all')recos=(pd&&pd.recommendations)||stats.recommendations||[];
-    else recos=(currentPrize==='primero'&&stats.by_category&&stats.by_category[cat])?stats.by_category[cat].recommendations||[]:[];
+    else recos=(stats.by_category&&stats.by_category[cat]&&stats.by_category[cat].recommendations)||[];
   }
   if(!recos.length){container.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:40px;">No hay suficientes datos para esta combinación.</p>';return}
-  const pl={primero:'1er Premio',segundo:'2do Premio',tercero:'3er Premio'}[currentPrize];
+  // Per-category recommendations cover every 4-digit prize (1st, 2nd and 3rd), whatever prize is selected.
+  const pl=cat==='all'?{primero:'1er Premio',segundo:'2do Premio',tercero:'3er Premio'}[currentPrize]:'cualquier premio de 4 cifras';
   const method=useML?'🤖 Machine Learning':'📊 Estadístico';
   const ranks=['1ro','2do','3ro','4to','5to'];
   container.innerHTML=`<div style="margin-bottom:12px;font-size:0.8rem;color:var(--text-muted);">Recomendaciones para <strong style="color:var(--gold-300)">${pl}</strong> — <span style="color:${useML?'var(--accent-green)':'var(--gold-400)'};">${method}</span></div>
-    <div class="reco-grid">${recos.map((r,i)=>`<div class="reco-card"${useML?' style="border-color:rgba(52,211,153,0.3);"':''}>
+    <div class="reco-grid">${recos.map((r,i)=>`<div class="reco-card${useML?' reco-ml':''}">
       <button class="copy-btn" data-num="${r.number}" onclick="copyNumber('${r.number}')">Copiar</button>
       <div class="reco-rank">${ranks[i]||(i+1)+'to'} Recomendado</div>
-      <div class="reco-number">${r.number}</div>
-      <div class="reco-confidence"><div class="conf-bar"><div class="conf-bar-fill" style="width:${Math.min(r.confidence,100)}%;${useML?'background:linear-gradient(90deg,var(--accent-green),#6ee7b7);':''}"></div></div>${r.confidence}%</div>
+      <div class="reco-number">${renderBalls(r.number,useML?'green':'gold','lg')}</div>
+      <div class="reco-confidence" title="Veces más probable que un número al azar (×1.00 = azar)"><div class="conf-bar"><div class="conf-bar-fill" style="width:${liftBar(r.confidence)}%;${useML?'background:linear-gradient(90deg,var(--accent-green),#6ee7b7);':''}"></div></div>${fmtLift(r.confidence)}</div>
     </div>`).join('')}</div>`;
   requestAnimationFrame(()=>{container.querySelectorAll('.conf-bar-fill').forEach(b=>{const w=b.style.width;b.style.width='0%';requestAnimationFrame(()=>{b.style.width=w})})});
 }
@@ -320,14 +447,14 @@ function renderDecenas(){
   const dr=stats.decena_recomendada||{};
   const cats=Object.keys(dr);
   if(!cats.length){document.getElementById('decenaContainer').innerHTML='<p style="color:var(--text-muted);text-align:center;padding:40px;">No hay suficientes datos para análisis de decenas.</p>';return}
-  const methodLabel={triple:'Patrón de 3 sorteos',pair:'Patrón de 2 sorteos',fallback:'Frecuencia general'};
+  const methodLabel={triple:'Patrón de 3 sorteos',pair:'Patrón de 2 sorteos',frecuencia:'Frecuencia general',fallback:'Frecuencia general'};
   let h='<div class="decena-grid">';
   cats.forEach(cat=>{
     const d=dr[cat];
     const dist=d.follower_distribution||{};
     const maxDist=Math.max(...Object.values(dist),1);
     h+=`<div class="card reveal decena-card">
-      <div class="card-header"><div class="card-title">${catLabel(cat)}</div><span class="card-badge badge-gold">${methodLabel[d.method]||d.method}</span></div>
+      <div class="card-header"><div class="card-title">${esc(catLabel(cat))}</div><span class="card-badge badge-gold">${esc(methodLabel[d.method]||d.method)}</span></div>
       <div class="decena-body">
         <div class="triangle-wrap">
           <svg viewBox="0 0 200 190" class="triangle-svg">
@@ -354,7 +481,8 @@ function renderDecenas(){
           <div class="decena-main">
             <div class="decena-rec-label">Decena recomendada</div>
             <div class="decena-rec-number">${d.recommended}</div>
-            <div class="decena-confidence">${d.confidence}% confianza · ${d.match_count} coincidencias</div>
+            <div class="decena-confidence" title="Veces más probable que una decena al azar (×1.00 = azar)">${fmtLift(d.confidence)} · ${d.method==='frecuencia'||d.method==='fallback'?`${d.match_count} sorteos (ningún patrón llega a ${d.minimo||20} coincidencias)`:`${d.match_count} sorteos coincidentes`} · ${d.muestras??'—'} decenas</div>
+            <div class="decena-confidence" style="opacity:0.85;">${d.backtest?`ℹ Prueba con los últimos ${d.backtest.sorteos} sorteos: la decena recomendada salió en algún premio el ${d.backtest.acierto_pct}% de las veces, frente al ${d.backtest.acierto_pct_azar}% del azar.`:'ℹ Muy pocos sorteos desde 1995 para comprobarlo.'}</div>
           </div>
           <div class="decena-last3">
             <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:6px;">Últimos 3 sorteos:</div>
@@ -390,9 +518,39 @@ function renderStatsForPrize(prize){
 function renderSeriesLetras(){
   const sf=stats.series_folio||{},series=sf.series||[],letras=stats.letras||[];
   const sMax=Math.max(...series.map(s=>s.count),1);
-  document.getElementById('seriesChart').innerHTML=series.map(s=>`<div class="bar-row"><span class="bar-label">${s.value}</span><div class="bar-track"><div class="bar-fill gold" style="width:${(s.count/sMax*100).toFixed(1)}%">${s.count}</div></div></div>`).join('');
+  document.getElementById('seriesChart').innerHTML=series.map(s=>`<div class="bar-row"><span class="bar-label">${esc(s.value)}</span><div class="bar-track"><div class="bar-fill gold" style="width:${(s.count/sMax*100).toFixed(1)}%">${s.count}</div></div></div>`).join('');
   const lMax=Math.max(...letras.map(l=>l.count),1);
-  document.getElementById('letrasChart').innerHTML=letras.map(l=>`<div class="bar-row"><span class="bar-label">${l.letra}</span><div class="bar-track"><div class="bar-fill green" style="width:${(l.count/lMax*100).toFixed(1)}%">${l.count}</div></div></div>`).join('');
+  document.getElementById('letrasChart').innerHTML=letras.map(l=>`<div class="bar-row"><span class="bar-label">${esc(l.letra)}</span><div class="bar-track"><div class="bar-fill green" style="width:${(l.count/lMax*100).toFixed(1)}%">${l.count}</div></div></div>`).join('');
+}
+
+// ==================== OTHER PRIZE FORMATS (2 and 5 digits) ====================
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function renderFormatos(){
+  const el=document.getElementById('formatosGrid');if(!el)return;
+  const f=stats.formatos||{};
+  const names={'2':'2 cifras','5':'5 cifras'},posNames={'2':['Decenas','Unidades'],'5':['Dec. millar','Millares','Centenas','Decenas','Unidades']};
+  const prizeNames={primero:'1ro',segundo:'2do',tercero:'3ro'};
+  el.innerHTML=['2','5'].map(w=>{
+    const d=f[w];
+    if(!d||!d.total)return`<div><h4 class="card-title">${names[w]}</h4><p class="section-subtitle">Sin premios de este formato.</p></div>`;
+    const cats=Object.entries(d.by_category||{}).map(([c,n])=>`${esc(c)} (${n})`).join(', ');
+    const prizes=Object.entries(d.by_prize||{}).map(([p,n])=>`${prizeNames[p]||esc(p)}: ${n}`).join(' · ');
+    const range=d.date_range?`${esc(d.date_range.from)} → ${esc(d.date_range.to)}`:'';
+    const grids=(d.position_frequency||[]).map((pos,idx)=>{
+      const max=Math.max(...Object.values(pos),1);
+      const cells=Object.entries(pos).map(([dg,c])=>{const i=c/max;return`<div class="pos-cell" style="background:rgba(212,175,55,${(i*0.6+0.05).toFixed(2)});color:${i>0.5?(isLight()?'#fff':'var(--bg-deep)'):'var(--text-primary)'}" title="${posNames[w][idx]}: dígito ${dg} — ${c} veces">${dg}<br><small style="font-size:0.6rem;opacity:0.7">${c}</small></div>`}).join('');
+      return`<div style="margin-top:0.75rem"><small class="section-subtitle">${posNames[w][idx]}</small><div class="pos-grid">${cells}</div></div>`;
+    }).join('');
+    const hot=(d.hot_cold&&d.hot_cold.hot)||[],hMax=Math.max(...hot.map(h=>h.count),1);
+    const hotBars=hot.map(h=>`<div class="bar-row"><span class="bar-label">${esc(h.number)}</span><div class="bar-track"><div class="bar-fill hot" style="width:${(h.count/hMax*100).toFixed(1)}%">${h.count}</div></div></div>`).join('');
+    return`<div aria-label="Estadísticas de premios de ${names[w]}">
+      <h4 class="card-title">${names[w]} — ${d.total} premios</h4>
+      <p class="section-subtitle">${cats}<br>${prizes}<br>${range}</p>
+      ${grids}
+      <h4 class="card-title" style="margin-top:1rem">Más frecuentes</h4>
+      <div class="bar-chart" role="img" aria-label="Números de ${names[w]} más frecuentes">${hotBars}</div>
+    </div>`;
+  }).join('');
 }
 
 // ==================== RADAR & SCATTER CHARTS ====================
@@ -432,7 +590,7 @@ function renderRadarChart(){
 
 function renderScatterChart(){
   if(!allSorteos.length)return;
-  const points=allSorteos.slice(0,500).filter(s=>s.primero&&s.segundo).map(s=>({x:parseInt(s.primero)||0,y:parseInt(s.segundo)||0}));
+  const points=allSorteos.slice(0,500).filter(s=>(s.primero||'').length===4&&(s.segundo||'').length===4).map(s=>({x:parseInt(s.primero)||0,y:parseInt(s.segundo)||0}));
   if(!points.length)return;
   const ctx=document.getElementById('scatterChart').getContext('2d');
   if(scatterChartInstance)scatterChartInstance.destroy();
@@ -459,18 +617,26 @@ function renderScatterChart(){
 // ==================== ENDINGS SECTION ====================
 function renderEndingsSection(){
   const ed=stats.endings||{};
-  // Recommendations — ML or Statistical
-  const recos=useML?(stats.ml_endings||[]):(ed.recommendations||[]);
+  // Recommendations — ML or Statistical, for "Todos" or one category (the ones Seguimiento freezes)
+  const endTab=document.querySelector('#endCatTabs .cat-tab.active');
+  const endCat=endTab?endTab.dataset.cat:'all';
+  const ec=endCat!=='all'?((stats.endings_by_category||{})[endCat]||{}):null;
+  const recos=ec?((useML?ec.ml_recommendations:ec.recommendations)||[]):(useML?(stats.ml_endings||[]):(ed.recommendations||[]));
+  const bt=ec&&ec.backtest;
+  document.getElementById('endingsBacktestNote').innerHTML=endCat==='all'
+    ?'ℹ En las pruebas por categoría con sorteos reales, las terminaciones aciertan como el azar. Elige una categoría para ver la suya.'
+    :bt?`ℹ Prueba del método estadístico con los últimos ${bt.sorteos} sorteos de ${esc(catLabel(endCat))}, recomendando solo con los sorteos anteriores: ${bt.aciertos} aciertos frente a ${bt.aciertos_azar} del azar; al menos 1 acierto en el ${bt.alguna_pct}% de los sorteos frente al ${bt.alguna_pct_azar}% del azar.${useML?' El ML no tiene prueba propia aquí (ver Seguimiento).':''}`
+    :`ℹ ${esc(catLabel(endCat))} tiene muy pocos sorteos para comprobarlo (${ec.total_endings||0} terminaciones): una cifra alta aquí es ruido de muestra pequeña.`;
   const isEnding=!useML; // statistical uses 'ending' key, ML uses 'ending' key too
   const ranks=['1ro','2do','3ro','4to','5to','6to','7mo','8vo','9no','10mo'];
   const method=useML?'🤖 Machine Learning':'📊 Estadístico';
   document.getElementById('endingsRecoContainer').innerHTML=`
     <div style="margin-bottom:12px;font-size:0.8rem;color:var(--text-muted);">Terminaciones recomendadas — <span style="color:${useML?'var(--accent-green)':'var(--gold-400)'};">${method}</span></div>
-    <div class="reco-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));">${recos.map((r,i)=>`<div class="reco-card" style="padding:20px 16px;${useML?'border-color:rgba(52,211,153,0.3);':''}">
+    <div class="reco-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));">${recos.map((r,i)=>`<div class="reco-card${useML?' reco-ml':''}" style="padding:20px 16px;">
       <button class="copy-btn" data-num="${r.ending}" onclick="copyNumber('${r.ending}')">Copiar</button>
       <div class="reco-rank">${ranks[i]||(i+1)+'to'} Terminación</div>
-      <div class="reco-number" style="font-size:2.2rem;">${r.ending}</div>
-      <div class="reco-confidence"><div class="conf-bar"><div class="conf-bar-fill" style="width:${Math.min(r.confidence,100)}%;${useML?'background:linear-gradient(90deg,var(--accent-green),#6ee7b7);':''}"></div></div>${r.confidence}%</div>
+      <div class="reco-number">${renderBalls(r.ending,useML?'green':'gold','md')}</div>
+      <div class="reco-confidence" title="Veces más probable que una terminación al azar (×1.00 = azar)"><div class="conf-bar"><div class="conf-bar-fill" style="width:${liftBar(r.confidence)}%;${useML?'background:linear-gradient(90deg,var(--accent-green),#6ee7b7);':''}"></div></div>${fmtLift(r.confidence)}</div>
     </div>`).join('')}</div>`;
   requestAnimationFrame(()=>{document.getElementById('endingsRecoContainer').querySelectorAll('.conf-bar-fill').forEach(b=>{const w=b.style.width;b.style.width='0%';requestAnimationFrame(()=>{b.style.width=w})})});
 
@@ -500,7 +666,8 @@ function renderPrizeEndings(id,data,cls){
 
 function renderEndingsHeatmap(freq){
   const vals=Object.values(freq);const max=Math.max(...vals,1);
-  let h='<div style="display:flex;gap:4px;margin-bottom:6px;padding-left:28px;">';
+  let h=`<div class="heatmap-legend" aria-hidden="true"><span>Menor frec.</span><span class="heatmap-scale"><span class="heatmap-swatch" style="background:rgba(212,175,55,0.08)"></span><span class="heatmap-swatch" style="background:rgba(212,175,55,0.28)"></span><span class="heatmap-swatch" style="background:rgba(212,175,55,0.5)"></span><span class="heatmap-swatch" style="background:rgba(212,175,55,0.75)"></span></span><span>Mayor frec. (máx: ${max})</span></div>`;
+  h+='<div style="display:flex;gap:4px;margin-bottom:6px;padding-left:28px;">';
   for(let c=0;c<10;c++)h+=`<div style="flex:1;text-align:center;font-family:var(--font-mono);font-size:0.7rem;color:var(--text-muted);">x${c}</div>`;
   h+='</div>';
   for(let r=0;r<10;r++){
@@ -508,9 +675,10 @@ function renderEndingsHeatmap(freq){
     h+=`<div style="width:24px;text-align:right;font-family:var(--font-mono);font-size:0.7rem;color:var(--text-muted);">${r}x</div>`;
     for(let c=0;c<10;c++){
       const key=String(r)+String(c);const v=freq[key]||0;const i=v/max;
+      const peak=i>=0.85?' cell-peak':'';
       const bg=`rgba(212,175,55,${(i*0.65+0.04).toFixed(2)})`;
       const col=i>0.4?(isLight()?'#fff':'#0a0a0f'):(isLight()?'#1a1612':'#f0ece2');
-      h+=`<div class="ending-cell" style="flex:1;background:${bg};color:${col}" title="${key}: ${v} veces">${key}<br><small style="font-size:0.55rem;opacity:0.7">${v}</small></div>`;
+      h+=`<div class="ending-cell${peak}" style="flex:1;background:${bg};color:${col}" title="${key}: ${v} veces">${key}<small style="font-size:0.55rem;opacity:0.75">${v}</small></div>`;
     }
     h+='</div>';
   }
@@ -546,11 +714,12 @@ function renderHeatmap(){
   const pf=stats.position_frequency||[];if(!pf.length)return;
   const posLabels=['Millares','Centenas','Decenas','Unidades'];let allMax=0;
   pf.forEach(p=>{Object.values(p).forEach(v=>{if(v>allMax)allMax=v})});
-  let h='<table style="width:100%;border-collapse:collapse;"><thead><tr><th style="padding:10px;color:var(--text-muted);font-size:0.72rem;"></th>';
+  let h=`<div class="heatmap-legend" aria-hidden="true"><span>Menor frec.</span><span class="heatmap-scale"><span class="heatmap-swatch" style="background:rgba(212,175,55,0.08)"></span><span class="heatmap-swatch" style="background:rgba(212,175,55,0.3)"></span><span class="heatmap-swatch" style="background:rgba(212,175,55,0.6)"></span></span><span>Mayor frec. (máx: ${allMax})</span></div>`;
+  h+='<table class="heatmap-table"><thead><tr><th style="padding:10px;color:var(--text-muted);font-size:0.72rem;">Posición</th>';
   for(let d=0;d<10;d++)h+=`<th style="padding:10px;text-align:center;color:var(--text-muted);font-family:var(--font-mono);font-size:0.82rem;">${d}</th>`;
   h+='</tr></thead><tbody>';
   pf.forEach((pos,idx)=>{h+=`<tr><td style="padding:10px;color:var(--text-secondary);font-size:0.82rem;font-weight:600;">${posLabels[idx]}</td>`;
-    for(let d=0;d<10;d++){const v=pos[String(d)]||0;const i=v/(allMax||1);h+=`<td style="padding:10px;text-align:center;font-family:var(--font-mono);font-size:0.85rem;font-weight:600;background:rgba(${Math.round(212*i)},${Math.round(175*i)},${Math.round(55*i)},${(i*0.5+0.03).toFixed(2)});border-radius:8px;color:${i>0.4?(isLight()?'#fff':'#0a0a0f'):(isLight()?'#1a1612':'#f0ece2')};cursor:default;" title="${posLabels[idx]} dígito ${d}: ${v}">${v}</td>`}h+='</tr>'});
+    for(let d=0;d<10;d++){const v=pos[String(d)]||0;const i=v/(allMax||1);const peak=i>=0.9?' cell-peak':'';h+=`<td class="${peak.trim()}" style="padding:10px;text-align:center;font-family:var(--font-mono);font-size:0.85rem;font-weight:600;background:rgba(${Math.round(212*i)},${Math.round(175*i)},${Math.round(55*i)},${(i*0.5+0.03).toFixed(2)});border-radius:8px;color:${i>0.4?(isLight()?'#fff':'#0a0a0f'):(isLight()?'#1a1612':'#f0ece2')};cursor:default;" title="${posLabels[idx]} dígito ${d}: ${v}">${v}</td>`}h+='</tr>'});
   h+='</tbody></table>';document.getElementById('heatmap').innerHTML=h;
 }
 
@@ -589,7 +758,8 @@ function renderDashboard(){
     (allSorteos||[]).forEach(s=>{
       if(!s.fecha||!s.fecha.startsWith(year))return;
       ['primero','segundo','tercero'].forEach(p=>{
-        const n=(s[p]||'').padStart(4,'0');
+        const n=s[p]||'';
+        if(!n)return;
         const ending=n.slice(-2);
         counter[ending]=(counter[ending]||0)+1;
       });
@@ -599,221 +769,60 @@ function renderDashboard(){
     return {ending:best,count:bestC};
   })();
 
-  let h=`<div class="stat-cards">
-    <div class="stat-card">
-      <div class="stat-label">Último Sorteo</div>
-      <div style="font-size:0.85rem;color:var(--gold-300);font-weight:600;text-transform:capitalize;">${last.cat||last.tipo}</div>
-      <div style="font-size:0.8rem;color:var(--text-muted);">${last.fecha}</div>
-      <div style="display:flex;gap:8px;margin-top:6px;font-family:'JetBrains Mono';font-size:0.9rem;">
-        <span style="color:var(--gold-400);" title="1er Premio">${(last.primero||'').padStart(4,'0')}</span>
-        <span style="color:#4ade80;" title="2do Premio">${(last.segundo||'').padStart(4,'0')}</span>
-        <span style="color:#c084fc;" title="3er Premio">${(last.tercero||'').padStart(4,'0')}</span>
+  const catKey=esc(last.cat||last.tipo||'');
+  const h=`<div class="dashboard-hero-grid">
+    <div class="last-draw-card">
+      <div class="last-draw-header">
+        <div class="last-draw-title">
+          <span class="cat-pill cat-${catKey}">${esc(catLabel(last.cat||last.tipo||''))}</span>
+          <span>Último Sorteo Oficial</span>
+        </div>
+        <span class="last-draw-date">${formatDate(last.fecha)}</span>
+      </div>
+      <div class="last-draw-prizes">
+        <div class="last-draw-prize-box prize-box-1" title="1er Premio">
+          <span class="last-draw-prize-label">1er Premio</span>
+          ${renderBalls(last.primero,'gold','md')}
+        </div>
+        <div class="last-draw-prize-box prize-box-2" title="2do Premio">
+          <span class="last-draw-prize-label">2do Premio</span>
+          ${renderBalls(last.segundo,'green','md')}
+        </div>
+        <div class="last-draw-prize-box prize-box-3" title="3er Premio">
+          <span class="last-draw-prize-label">3er Premio</span>
+          ${renderBalls(last.tercero,'purple','md')}
+        </div>
+      </div>
+      <div class="last-draw-meta">
+        <span>Letras: <strong>${esc(last.letra||'—')}</strong></span>
+        <span>Serie: <strong>${esc(last.serie||'—')}</strong></span>
+        <span>Folio: <strong>${esc(last.folio||'—')}</strong></span>
       </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">Top Recomendación</div>
-      <div style="font-family:'JetBrains Mono';font-size:1.6rem;font-weight:700;color:var(--gold-400);">${topRec?topRec.number:'—'}</div>
-      <div style="font-size:0.75rem;color:var(--text-muted);">📊 Estadístico · ${topRec?topRec.confidence+'%':'—'}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Top ML</div>
-      <div style="font-family:'JetBrains Mono';font-size:1.6rem;font-weight:700;color:#4ade80;">${topML?topML.number:'—'}</div>
-      <div style="font-size:0.75rem;color:var(--text-muted);">🤖 Machine Learning · ${topML?topML.confidence+'%':'—'}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Terminación Más Caliente</div>
-      <div style="font-family:'JetBrains Mono';font-size:2rem;font-weight:700;color:#ff4d4d;">${hotDecena.ending}</div>
-      <div style="font-size:0.75rem;color:var(--text-muted);">${hotDecena.count} veces en ${new Date().getFullYear()}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Total Sorteos</div>
-      <div style="font-size:1.6rem;font-weight:700;color:var(--text-primary);">${stats.total_sorteos?.toLocaleString()||'—'}</div>
-      <div style="font-size:0.75rem;color:var(--text-muted);">Desde 1919</div>
+    <div class="dashboard-kpis">
+      <div class="kpi-card">
+        <div class="kpi-label">Top Recomendación</div>
+        <div>${topRec?renderBalls(topRec.number,'gold','sm'):'<span class="num-empty">—</span>'}</div>
+        <div class="kpi-sub">📊 Estadístico · ${topRec?fmtLift(topRec.confidence):'—'}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Top ML</div>
+        <div>${topML?renderBalls(topML.number,'green','sm'):'<span class="num-empty">—</span>'}</div>
+        <div class="kpi-sub">🤖 Machine Learning · ${topML?fmtLift(topML.confidence):'—'}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Terminación Caliente</div>
+        <div>${renderBalls(hotDecena.ending,'hot','sm')}</div>
+        <div class="kpi-sub">🔥 ${hotDecena.count} veces en ${new Date().getFullYear()}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Total Sorteos</div>
+        <div class="stat-value" style="font-size:1.75rem;line-height:1.1;">${stats.total_sorteos?.toLocaleString()||'—'}</div>
+        <div class="kpi-sub">Historial desde 1919</div>
+      </div>
     </div>
   </div>`;
   document.getElementById('dashboardSummary').innerHTML=h;
-}
-
-// COMPARADOR
-let compNumbers=[];
-function addCompNumber(){
-  const input=document.getElementById('compInput');
-  const num=input.value.trim().padStart(4,'0');
-  if(!/^\d{4}$/.test(num)){showToast('Ingresa un número de 4 dígitos',3000);return;}
-  if(compNumbers.includes(num)){showToast(`${num} ya está en la lista`,2000);return;}
-  if(compNumbers.length>=5){showToast('Máximo 5 números',2000);return;}
-  compNumbers.push(num);
-  input.value='';
-  renderCompTags();
-  runComparison();
-}
-function removeCompNumber(num){
-  compNumbers=compNumbers.filter(n=>n!==num);
-  renderCompTags();
-  if(compNumbers.length)runComparison();
-  else document.getElementById('compResults').innerHTML='';
-}
-function clearCompNumbers(){
-  compNumbers=[];
-  renderCompTags();
-  document.getElementById('compResults').innerHTML='';
-}
-function renderCompTags(){
-  const COMP_COLORS=['#ffd700','#4ade80','#c084fc','#4dabff','#ff9f43'];
-  document.getElementById('compTags').innerHTML=compNumbers.map((n,i)=>
-    `<span style="display:inline-flex;align-items:center;gap:6px;background:${COMP_COLORS[i]}20;border:1px solid ${COMP_COLORS[i]};color:${COMP_COLORS[i]};padding:4px 12px;border-radius:20px;font-family:'JetBrains Mono';font-weight:600;">${n} <button onclick="removeCompNumber('${n}')" style="background:none;border:none;color:inherit;cursor:pointer;font-size:1rem;line-height:1;">✕</button></span>`
-  ).join('');
-}
-let compChartInstance=null;
-async function runComparison(){
-  if(!compNumbers.length)return;
-  const url=`/api/comparar?numeros=${compNumbers.join(',')}`;
-  document.getElementById('compResults').innerHTML='<div class="loader-wrap" style="padding:40px;"><div class="spinner"></div><p>Comparando...</p></div>';
-  try{
-    const res=await fetch(url);
-    const d=await res.json();
-    if(d.error){showToast(d.error,3000);return;}
-    renderCompResults(d);
-  }catch(e){showToast('Error en comparación',3000);}
-}
-function renderCompResults(d){
-  const COMP_COLORS=['#ffd700','#4ade80','#c084fc','#4dabff','#ff9f43'];
-  const nums=d.numbers||[];
-  if(!nums.length)return;
-
-  // Summary table
-  let h=`<div class="card reveal" style="margin-top:20px;">
-    <div class="card-header"><h3 class="card-title">Comparación</h3><span class="card-badge badge-gold">${nums.length} números</span></div>
-    <div style="overflow-x:auto;">
-    <table class="heatmap-table" role="table">
-      <thead><tr><th>Métrica</th>`;
-  nums.forEach((n,i)=>{h+=`<th style="color:${COMP_COLORS[i]};font-family:'JetBrains Mono';">${n.number}</th>`;});
-  h+='</tr></thead><tbody>';
-
-  // Rows
-  const rows=[
-    {label:'Aciertos Exactos',key:'total_exact'},
-    {label:'1er Premio',fn:n=>n.exact.primero},
-    {label:'2do Premio',fn:n=>n.exact.segundo},
-    {label:'3er Premio',fn:n=>n.exact.tercero},
-    {label:'Coincid. Terminación',key:'ending_matches'},
-    {label:'Frecuencia %',key:'frequency_pct',fmt:v=>v+'%'},
-    {label:'Última Aparición',key:'last_appearance',fmt:v=>v||'Nunca'},
-    {label:'Gap (sorteos)',key:'gap',fmt:v=>v!==null?v:'—'},
-    {label:'Mejor Mes',fn:n=>`${n.best_month} (${n.best_month_count})`},
-  ];
-
-  rows.forEach(r=>{
-    h+=`<tr><td style="font-weight:600;white-space:nowrap;">${r.label}</td>`;
-    nums.forEach((n,i)=>{
-      let v=r.fn?r.fn(n):(n[r.key]??'—');
-      if(r.fmt)v=r.fmt(v);
-      // Highlight best
-      let style='text-align:center;font-family:"JetBrains Mono";';
-      h+=`<td style="${style}">${v}</td>`;
-    });
-    h+='</tr>';
-  });
-  h+='</tbody></table></div></div>';
-
-  // Monthly distribution chart
-  h+=`<div class="card reveal" style="margin-top:20px;">
-    <div class="card-header"><h3 class="card-title">Distribución Mensual</h3><span class="card-badge badge-green">Por Mes</span></div>
-    <div class="chart-container"><canvas id="compMonthlyChart" role="img" aria-label="Distribución mensual comparativa"></canvas></div>
-  </div>`;
-
-  document.getElementById('compResults').innerHTML=h;
-  triggerReveals();
-
-  // Render monthly chart
-  const MONTHS=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  const datasets=nums.map((n,i)=>({
-    label:n.number,
-    data:MONTHS.map(m=>n.monthly[m]||0),
-    backgroundColor:COMP_COLORS[i]+'60',
-    borderColor:COMP_COLORS[i],
-    borderWidth:2,
-    borderRadius:4,
-  }));
-  const ctx=document.getElementById('compMonthlyChart');
-  if(ctx){
-    if(compChartInstance)compChartInstance.destroy();
-    compChartInstance=new Chart(ctx.getContext('2d'),{type:'bar',data:{labels:MONTHS,datasets},options:chartOpts()});
-  }
-}
-
-// GAPS ANALYSIS
-async function loadGaps(){
-  const container=document.getElementById('gapsContent');
-  if(!container)return;
-  if(container.dataset.loaded==='1'){return;}
-  container.innerHTML='<div class="loader-wrap" style="padding:40px;"><div class="spinner"></div><p>Calculando gaps...</p></div>';
-  try{
-    const res=await fetch('/api/gaps');
-    const d=await res.json();
-    renderGaps(d);
-    container.dataset.loaded='1';
-  }catch(e){container.innerHTML='<p style="color:#f87171;">Error cargando gaps</p>';}
-}
-function renderGaps(d){
-  const ov=d.overdue_numbers||[];
-  const ot=d.ontime_numbers||[];
-  const ovEnd=d.overdue_endings||[];
-
-  let h=`<div class="grid-2" style="margin-bottom:20px;">
-    <div class="stat-card"><div class="stat-value">${d.total_sorteos?.toLocaleString()}</div><div class="stat-label">Sorteos Analizados</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:#f87171;">${ov.length}</div><div class="stat-label">Números "Vencidos"</div></div>
-  </div>`;
-
-  // Overdue numbers
-  h+=`<div class="card reveal">
-    <div class="card-header"><h3 class="card-title">Números Vencidos</h3><span class="card-badge badge-hot">Ratio > 1</span></div>
-    <p style="color:var(--text-muted);font-size:0.8rem;margin-bottom:12px;">Números frecuentes (5+ apariciones) cuyo gap actual supera su promedio histórico. <strong>Ratio</strong> = gap actual ÷ gap promedio.</p>
-    <div style="overflow-x:auto;">
-    <table class="heatmap-table" role="table">
-      <thead><tr><th>Número</th><th>Gap Actual</th><th>Gap Promedio</th><th>Ratio</th><th>Total</th><th>Estado</th></tr></thead><tbody>`;
-  ov.forEach(g=>{
-    const severity=g.ratio>=2?'#ef4444':g.ratio>=1.5?'#f97316':'#eab308';
-    const bar=Math.min(g.ratio/3*100,100);
-    h+=`<tr>
-      <td style="font-family:'JetBrains Mono';font-weight:700;color:var(--gold-400);">${g.number}</td>
-      <td style="text-align:center;font-family:'JetBrains Mono';">${g.gap}</td>
-      <td style="text-align:center;font-family:'JetBrains Mono';">${g.avg_gap}</td>
-      <td style="text-align:center;"><span style="background:${severity}30;color:${severity};padding:2px 8px;border-radius:8px;font-weight:700;font-family:'JetBrains Mono';">${g.ratio}x</span></td>
-      <td style="text-align:center;">${g.count}</td>
-      <td><div style="background:var(--surface-2);border-radius:4px;height:8px;width:80px;"><div style="background:${severity};height:100%;border-radius:4px;width:${bar}%;"></div></div></td>
-    </tr>`;
-  });
-  h+='</tbody></table></div></div>';
-
-  // Overdue endings
-  h+=`<div class="card reveal" style="margin-top:20px;">
-    <div class="card-header"><h3 class="card-title">Terminaciones Vencidas</h3><span class="card-badge badge-hot">Ratio > 1</span></div>
-    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;">`;
-  ovEnd.forEach(e=>{
-    const severity=e.ratio>=2?'#ef4444':e.ratio>=1.5?'#f97316':'#eab308';
-    h+=`<div style="background:var(--surface-2);padding:10px 16px;border-radius:12px;text-align:center;min-width:80px;border-left:3px solid ${severity};">
-      <div style="font-family:'JetBrains Mono';font-size:1.3rem;font-weight:700;color:var(--text-primary);">${e.ending}</div>
-      <div style="font-size:0.7rem;color:var(--text-muted);">Gap: ${e.gap}</div>
-      <div style="font-size:0.75rem;font-weight:600;color:${severity};">${e.ratio}x</div>
-    </div>`;
-  });
-  h+='</div></div>';
-
-  // On-time numbers (recently appeared)
-  h+=`<div class="card reveal" style="margin-top:20px;">
-    <div class="card-header"><h3 class="card-title">Números Recientes</h3><span class="card-badge badge-green">Ratio ≤ 1</span></div>
-    <p style="color:var(--text-muted);font-size:0.8rem;margin-bottom:12px;">Números frecuentes que aparecieron recientemente (dentro de su ciclo promedio).</p>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;">`;
-  ot.slice(0,20).forEach(g=>{
-    h+=`<span style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);padding:6px 12px;border-radius:10px;font-family:'JetBrains Mono';font-size:0.85rem;">
-      ${g.number} <small style="color:var(--text-muted);">gap:${g.gap} · ${g.ratio}x</small>
-    </span>`;
-  });
-  h+='</div></div>';
-
-  document.getElementById('gapsContent').innerHTML=h;
-  triggerReveals();
 }
 
 // MONTHLY RECOMMENDATION
@@ -837,10 +846,10 @@ function renderMonthlySection(){
     recs.forEach((r,i)=>{
       const rank=i===0?'1RO':i===1?'2DO':i===2?'3RO':`${i+1}TO`;
       h+=`<div class="reco-card">
+        <button class="copy-btn" data-num="${r.number}" onclick="copyNumber('${r.number}')">Copiar</button>
         <div class="reco-rank">${rank} RECOMENDADO</div>
-        <div class="reco-number">${r.number}</div>
-        <div class="reco-bar-wrap"><div class="reco-bar" style="width:${r.confidence}%"></div></div>
-        <div class="reco-confidence">${r.confidence}%</div>
+        <div class="reco-number">${renderBalls(r.number,'gold','lg')}</div>
+        <div class="reco-confidence" title="Veces más probable que un número al azar (×1.00 = azar)"><div class="conf-bar"><div class="conf-bar-fill" style="width:${liftBar(r.confidence)}%"></div></div>${fmtLift(r.confidence)}</div>
       </div>`;
     });
     h+='</div>';
@@ -935,7 +944,8 @@ function initSimCats(){
   const sel=document.getElementById('simCat');if(!sel||!stats)return;
   const cats=Object.keys(stats.by_category||{});
   sel.innerHTML='<option value="">Todas</option>';
-  cats.forEach(c=>{sel.innerHTML+=`<option value="${c}">${c}</option>`;});
+  // DOM, not innerHTML: the category comes from the data (external API)
+  cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=catLabel(c);sel.appendChild(o);});
 }
 let simChartInstance=null;
 async function runSimulation(){
@@ -945,7 +955,7 @@ async function runSimulation(){
   const from=document.getElementById('simFrom').value;
   const to=document.getElementById('simTo').value;
   let url=`/api/simulador?numero=${num}`;
-  if(cat)url+=`&cat=${cat}`;
+  if(cat)url+=`&cat=${encodeURIComponent(cat)}`;
   if(from)url+=`&from=${from}`;
   if(to)url+=`&to=${to}`;
 
@@ -1025,7 +1035,7 @@ function renderSimResults(d){
     h+='<div class="card reveal" style="margin-top:20px;"><div class="card-header"><h3 class="card-title">Historial de Aciertos</h3><span class="card-badge badge-gold">Últimos '+matches.length+'</span></div>';
     h+='<div class="table-wrap"><table role="table"><thead><tr><th>Fecha</th><th>Categoría</th></tr></thead><tbody>';
     matches.forEach(m=>{
-      h+=`<tr><td>${m.fecha}</td><td><span class="cat-badge">${m.cat}</span></td></tr>`;
+      h+=`<tr><td>${esc(m.fecha)}</td><td><span class="cat-badge">${esc(m.cat)}</span></td></tr>`;
     });
     h+='</tbody></table></div></div>';
   }
@@ -1034,124 +1044,9 @@ function renderSimResults(d){
   triggerReveals();
 }
 
-// FAVORITOS / WATCHLIST
-function getFavorites(){try{return JSON.parse(localStorage.getItem('lp_favorites')||'[]')}catch{return[]}}
-function saveFavorites(f){localStorage.setItem('lp_favorites',JSON.stringify(f))}
-
-function addFavorite(){
-  const input=document.getElementById('favInput');
-  const num=input.value.trim().padStart(4,'0');
-  if(!/^\d{4}$/.test(num)){showToast('Ingresa un número de 4 dígitos',3000);return;}
-  const favs=getFavorites();
-  if(favs.includes(num)){showToast(`${num} ya está en tu lista`,2000);return;}
-  favs.push(num);
-  saveFavorites(favs);
-  input.value='';
-  renderFavorites();
-  showToast(`${num} agregado a favoritos`,2000);
-}
-
-function removeFavorite(num){
-  const favs=getFavorites().filter(n=>n!==num);
-  saveFavorites(favs);
-  renderFavorites();
-}
-
-function renderFavorites(){
-  const favs=getFavorites();
-  const container=document.getElementById('favContainer');
-  if(!container)return;
-  if(!favs.length){
-    container.innerHTML='<div class="card reveal" style="margin-top:20px;text-align:center;padding:40px;"><p style="color:var(--text-muted);font-size:1.1rem;">No tienes números favoritos aún.<br>Agrega números para rastrear sus apariciones.</p></div>';
-    return;
-  }
-
-  // Check against recent results and recommendations
-  const recentResults=allSorteos?allSorteos.slice(0,20):[];
-  const recos=stats?(stats.recommendations||[]):[];
-  const mlRecos=stats?(stats.ml_recommendations||[]):[];
-
-  let h='<div style="margin-top:20px;">';
-
-  favs.forEach(num=>{
-    // Check if number appeared in recent results
-    const appearances=[];
-    recentResults.forEach(s=>{
-      const prizes=[];
-      if(s.primero&&s.primero.padStart(4,'0')===num)prizes.push('1ro');
-      if(s.segundo&&s.segundo.padStart(4,'0')===num)prizes.push('2do');
-      if(s.tercero&&s.tercero.padStart(4,'0')===num)prizes.push('3ro');
-      // Check ending match
-      const ending=num.slice(-2);
-      if(!prizes.length){
-        if(s.primero&&s.primero.padStart(4,'0').slice(-2)===ending)prizes.push('Term 1ro');
-        if(s.segundo&&s.segundo.padStart(4,'0').slice(-2)===ending)prizes.push('Term 2do');
-        if(s.tercero&&s.tercero.padStart(4,'0').slice(-2)===ending)prizes.push('Term 3ro');
-      }
-      if(prizes.length)appearances.push({fecha:s.fecha,cat:s.cat||s.tipo,prizes});
-    });
-
-    // Check if recommended
-    const isReco=recos.some(r=>r.number===num);
-    const isMLReco=mlRecos.some(r=>r.number===num);
-
-    const hasAlert=appearances.length>0;
-    const borderColor=hasAlert?'border-left:4px solid #4ade80;':isReco||isMLReco?'border-left:4px solid var(--gold-400);':'';
-
-    h+=`<div class="card reveal" style="margin-bottom:12px;${borderColor}">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-        <div style="display:flex;align-items:center;gap:16px;">
-          <span style="font-family:'JetBrains Mono';font-size:1.6rem;font-weight:700;color:var(--gold-400);letter-spacing:4px;">${num}</span>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;">
-            ${hasAlert?'<span style="background:#4ade8030;color:#4ade80;padding:2px 10px;border-radius:12px;font-size:0.75rem;font-weight:600;">✓ SALIÓ RECIENTE</span>':''}
-            ${isReco?'<span style="background:rgba(212,175,55,0.2);color:var(--gold-400);padding:2px 10px;border-radius:12px;font-size:0.75rem;font-weight:600;">📊 Recomendado</span>':''}
-            ${isMLReco?'<span style="background:rgba(74,222,128,0.2);color:#4ade80;padding:2px 10px;border-radius:12px;font-size:0.75rem;font-weight:600;">🤖 ML Recomendado</span>':''}
-          </div>
-        </div>
-        <div style="display:flex;gap:8px;">
-          <button class="btn" onclick="document.getElementById('simNumero').value='${num}';document.querySelector('[data-tab=simulador]').click();runSimulation();" style="font-size:0.8rem;">🔍 Simular</button>
-          <button class="btn" onclick="removeFavorite('${num}')" style="font-size:0.8rem;color:#f87171;" aria-label="Eliminar ${num}">✕</button>
-        </div>
-      </div>`;
-
-    if(appearances.length){
-      h+='<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">';
-      appearances.slice(0,5).forEach(a=>{
-        h+=`<div style="display:flex;justify-content:space-between;font-size:0.85rem;padding:3px 0;">
-          <span style="color:var(--text-secondary);">${a.fecha} · <span class="cat-badge" style="font-size:0.7rem;">${a.cat}</span></span>
-          <span style="color:#4ade80;font-weight:600;">${a.prizes.join(', ')}</span>
-        </div>`;
-      });
-      h+='</div>';
-    }
-    h+='</div>';
-  });
-
-  h+='</div>';
-  container.innerHTML=h;
-  triggerReveals();
-  updateFavBadge();
-}
-
-function updateFavBadge(){
-  const tab=document.getElementById('tab-favoritos');
-  if(!tab)return;
-  const favs=getFavorites();
-  if(!allSorteos||!favs.length){tab.dataset.badge='';return;}
-  const recent=allSorteos.slice(0,5);
-  let alerts=0;
-  favs.forEach(num=>{
-    recent.forEach(s=>{
-      if(s.primero&&s.primero.padStart(4,'0')===num)alerts++;
-      if(s.segundo&&s.segundo.padStart(4,'0')===num)alerts++;
-      if(s.tercero&&s.tercero.padStart(4,'0')===num)alerts++;
-    });
-  });
-  tab.dataset.badge=alerts>0?alerts:'';
-}
-
 // BACKTESTING / PRECISION
 let backtestData=null;
+
 let precisionChartInstance=null;
 
 async function loadBacktesting(){

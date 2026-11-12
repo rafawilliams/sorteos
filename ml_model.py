@@ -18,11 +18,11 @@ from sklearn.preprocessing import LabelEncoder
 MODEL_DIR = Path(__file__).parent / "models"
 MODEL_PATH = MODEL_DIR / "predictor.joblib"
 
-# Category encoding
+# Category encoding. Variants of a draw share its code (rows already arrive canonical from
+# get_sorteos; this keeps any raw spelling consistent too).
 CAT_MAP = {
-    "dominical": 0, "miercolito": 1, "gordito": 2,
-    "extraordinario": 3, "extraordinaria": 4,
-    "zodiaco": 5, "extraordonario": 6,
+    "dominical": 0, "miercolito": 1, "gordito": 2, "extraordinario": 3,
+    "zodiaco": 2, "extraordinaria": 3, "extraordonario": 3,
 }
 
 
@@ -46,6 +46,9 @@ class LotteryPredictor:
             max_bins=64,
             random_state=42,
             class_weight="balanced",
+            # Always on: the default "auto" only enables it above 10 000 samples,
+            # and the 4-digit training set is ~9 750 rows (300 overfit iterations otherwise).
+            early_stopping=True,
         )
 
     # ------------------------------------------------------------------
@@ -58,9 +61,8 @@ class LotteryPredictor:
         for s in sorteos:
             for prize_idx, prize in enumerate(("primero", "segundo", "tercero")):
                 num = s.get(prize, "")
-                if not num:
+                if len(num) != 4:  # only real 4-digit prizes (skip empty, 2- and 5-digit formats)
                     continue
-                num = num.zfill(4)
                 rows.append({
                     "fecha": s.get("fecha", ""),
                     "cat": s.get("cat", ""),
@@ -199,10 +201,11 @@ class LotteryPredictor:
         return pos_probs
 
     def predict_from_probs(self, pos_probs: list[np.ndarray],
-                           sorteos: list[dict], prize: str = "primero",
+                           sorteos: list[dict], prize: str | None = "primero",
                            top: int = 5) -> list[dict]:
         """Generate top number recommendations from pre-computed probabilities.
-        Uses vectorized Monte Carlo for speed."""
+        Uses vectorized Monte Carlo for speed. `prize=None`: the "already drawn" bonus counts
+        the 1st, 2nd and 3rd 4-digit prizes."""
         if not pos_probs:
             return []
 
@@ -219,9 +222,9 @@ class LotteryPredictor:
         candidates = dict(zip(unique, counts))
 
         # Score top candidates
+        prizes = ("primero", "segundo", "tercero") if prize is None else (prize,)
         hist = Counter(
-            s.get(prize, "").zfill(4)
-            for s in sorteos if s.get(prize)
+            s[p] for s in sorteos for p in prizes if len(s.get(p) or "") == 4
         )
         # Pre-sort by MC count descending, take top 200
         top_idx = np.argsort(counts)[-200:][::-1]
@@ -280,7 +283,9 @@ class LotteryPredictor:
             {
                 "ending": f"{i // 10}{i % 10}",
                 "score": round(float(probs[i]) * 10000, 1),
-                "confidence": min(round(float(probs[i]) * 1000, 1), 15.0),
+                # Times more likely than chance (1 % per ending), same scale as numbers.
+                "lift": round(float(probs[i]) * 100, 2),
+                "confidence": min(round(float(probs[i]) * 100, 2), 15.0),
             }
             for i in indices
         ]
@@ -329,24 +334,28 @@ class LotteryPredictor:
 
         # --- Per-category predictions ---
         cat_reco = {}
+        cat_endings = {}
         if categories:
             for cat_key in categories:
                 cat_sorteos = [s for s in sorteos if s.get("cat") == cat_key]
                 df_cat = self._build_df(cat_sorteos)
                 if len(df_cat) < 50:
                     cat_reco[cat_key] = []
+                    cat_endings[cat_key] = []
                     continue
                 feat_cat = self._compute_features(df_cat)
                 cat_probs = self._avg_pos_probs(feat_cat)
                 cat_reco[cat_key] = self.predict_from_probs(
-                    cat_probs, cat_sorteos, "primero"
+                    cat_probs, cat_sorteos, None      # any 4-digit prize, like Seguimiento
                 )
+                cat_endings[cat_key] = self.predict_endings_from_probs(cat_probs)
 
         return {
             "general_reco": general_reco,
             "prize_reco": prize_reco,
             "endings": endings,
             "cat_reco": cat_reco,
+            "cat_endings": cat_endings,
         }
 
     # ------------------------------------------------------------------

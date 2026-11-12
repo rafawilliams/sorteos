@@ -1,7 +1,7 @@
 ---
 author: rafawilliams
 branch: chore/limpieza
-status: in-progress
+status: done
 ---
 # Limpieza tras la revisión del 2026-10-31
 
@@ -16,11 +16,11 @@ Cerrar los cabos sueltos pequeños que quedaron después de los PRs #1–#12.
 - [x] Sin `SyntaxWarning` en la suite — prueba: `pytest -W error::SyntaxWarning` en verde.
 - [x] `CLAUDE.md`: `app.py ~1200 lines` (tiene 1193).
 - [x] Favicon servido y enlazado — prueba: `GET /static/favicon.svg` → 200 `image/svg+xml`; el HTML lo enlaza.
-- [x] 11 documentos FTD → `done` con su PR; `proteger-actualizar.md` sigue abierto.
-- [ ] Botón «Actualizar datos» probado en el navegador — no verificado: el navegador automatizado falló dos veces (el `prompt()` lo cerraba el MCP; después se cerró el navegador). El log del servidor confirma que no llegó ninguna petición.
+- [x] 12 documentos FTD → `done` con su PR (`proteger-actualizar.md` incluido).
+- [x] Botón «Actualizar datos» probado en el navegador — verificado con Playwright/Edge manejando `dialog` (`prompt()`): clic con token inválido → `401`, limpia `sessionStorage` y muestra `"Error: Token inválido"`; segundo clic vuelve a pedir token y con `ACTUALIZAR_TOKEN` válido → `200` (`ml_retrained: true`), persiste en `sessionStorage` y muestra `"Datos actualizados correctamente"`.
 
 ## Evidence
 - Ver checklist.
 
 ## Next
-Probar el botón a mano (token de `.env`), cerrar `proteger-actualizar.md` y este documento; PR a main.
+Fusionado en PR #13 (2026-10-31); verificación en navegador y cierre de FTDs completados el 2026-11-01.

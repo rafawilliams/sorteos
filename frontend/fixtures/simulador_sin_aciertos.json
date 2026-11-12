@@ -1,0 +1,28 @@
+{
+ "by_category": {},
+ "date_range": {
+  "from": "2014-01-05",
+  "to": "2019-10-02"
+ },
+ "ending": {
+  "frequency_pct": 3.167,
+  "primero": 9,
+  "segundo": 5,
+  "tercero": 5,
+  "total": 19
+ },
+ "exact": {
+  "frequency_pct": 0.0,
+  "gap_draws": null,
+  "last_appearance": null,
+  "matches": [],
+  "primero": 0,
+  "segundo": 0,
+  "tercero": 0,
+  "total": 0
+ },
+ "monthly_distribution": {},
+ "numero": "0000",
+ "terminacion": "00",
+ "total_sorteos": 600
+}

@@ -1,0 +1,870 @@
+{
+ "comparados": [
+  {
+   "azar": {
+    "alguna_terminacion": 0.273469387755102,
+    "digitos_media": 0.4,
+    "exactos": 0.0015,
+    "terminacion_numeros": 0.15,
+    "terminaciones_aciertos": 0.3
+   },
+   "categoria": "extraordinario",
+   "metodos": {
+    "combinada": {
+     "alguna_terminacion": false,
+     "digitos_media": 0.3333333333333333,
+     "exactos": 0,
+     "numeros": [
+      "3929",
+      "8170",
+      "3681",
+      "8172",
+      "8633"
+     ],
+     "numeros_acertados": [],
+     "terminacion_numeros": 0,
+     "terminaciones": [
+      "53",
+      "63",
+      "72",
+      "13",
+      "32",
+      "93",
+      "76",
+      "73",
+      "47",
+      "54"
+     ],
+     "terminaciones_acertadas": [],
+     "terminaciones_aciertos": 0
+    },
+    "estadistico": {
+     "alguna_terminacion": false,
+     "digitos_media": 0.4,
+     "exactos": 0,
+     "numeros": [
+      "8170",
+      "8172",
+      "8140",
+      "4170",
+      "7170"
+     ],
+     "numeros_acertados": [],
+     "terminacion_numeros": 0,
+     "terminaciones": [
+      "53",
+      "72",
+      "32",
+      "76",
+      "47",
+      "05",
+      "39",
+      "30",
+      "00",
+      "10"
+     ],
+     "terminaciones_acertadas": [],
+     "terminaciones_aciertos": 0
+    },
+    "ml": {
+     "alguna_terminacion": true,
+     "digitos_media": 0.3333333333333333,
+     "exactos": 0,
+     "numeros": [
+      "3929",
+      "3681",
+      "8633",
+      "7159",
+      "6256"
+     ],
+     "numeros_acertados": [],
+     "terminacion_numeros": 0,
+     "terminaciones": [
+      "53",
+      "63",
+      "13",
+      "93",
+      "73",
+      "54",
+      "03",
+      "64",
+      "51",
+      "14"
+     ],
+     "terminaciones_acertadas": [
+      "14"
+     ],
+     "terminaciones_aciertos": 1
+    }
+   },
+   "peso_ml": 0.5,
+   "registrado_en": "2026-01-15T12:00",
+   "sorteo": {
+    "cat": "extraordinario",
+    "fecha": "2025-12-15",
+    "folio": "591",
+    "id": "592",
+    "letra": "ABCD",
+    "primero": "7861",
+    "segundo": "5714",
+    "serie": "26",
+    "tercero": "9183"
+   }
+  },
+  {
+   "azar": {
+    "alguna_terminacion": 0.273469387755102,
+    "digitos_media": 0.4,
+    "exactos": 0.0015,
+    "terminacion_numeros": 0.15,
+    "terminaciones_aciertos": 0.3
+   },
+   "categoria": "gordito",
+   "metodos": {
+    "combinada": {
+     "alguna_terminacion": false,
+     "digitos_media": 0.6,
+     "exactos": 0,
+     "numeros": [
+      "8004",
+      "4744",
+      "4059",
+      "4742",
+      "7368"
+     ],
+     "numeros_acertados": [],
+     "terminacion_numeros": 0,
+     "terminaciones": [
+      "28",
+      "53",
+      "38",
+      "31",
+      "98",
+      "94",
+      "22",
+      "46",
+      "24",
+      "41"
+     ],
+     "terminaciones_acertadas": [],
+     "terminaciones_aciertos": 0
+    },
+    "estadistico": {
+     "alguna_terminacion": false,
+     "digitos_media": 0.5333333333333333,
+     "exactos": 0,
+     "numeros": [
+      "4744",
+      "4742",
+      "4743",
+      "0744",
+      "0742"
+     ],
+     "numeros_acertados": [],
+     "terminacion_numeros": 0,
+     "terminaciones": [
+      "53",
+      "31",
+      "94",
+      "46",
+      "41",
+      "63",
+      "64",
+      "49",
+      "27",
+      "52"
+     ],
+     "terminaciones_acertadas": [],
+     "terminaciones_aciertos": 0
+    },
+    "ml": {
+     "alguna_terminacion": false,
+     "digitos_media": 0.6,
+     "exactos": 0,
+     "numeros": [
+      "8004",
+      "4059",
+      "7368",
+      "6018",
+      "8494"
+     ],
+     "numeros_acertados": [],
+     "terminacion_numeros": 0,
+     "terminaciones": [
+      "28",
+      "38",
+      "98",
+      "22",
+      "24",
+      "32",
+      "92",
+      "23",
+      "48",
+      "34"
+     ],
+     "terminaciones_acertadas": [],
+     "terminaciones_aciertos": 0
+    }
+   },
+   "peso_ml": 0.5,
+   "registrado_en": "2026-01-15T12:00",
+   "sorteo": {
+    "cat": "gordito",
+    "fecha": "2025-12-12",
+    "folio": "590",
+    "id": "591",
+    "letra": "ABCD",
+    "primero": "4735",
+    "segundo": "3396",
+    "serie": "11",
+    "tercero": "8011"
+   }
+  },
+  {
+   "azar": {
+    "alguna_terminacion": 0.273469387755102,
+    "digitos_media": 0.4,
+    "exactos": 0.0015,
+    "terminacion_numeros": 0.15,
+    "terminaciones_aciertos": 0.3
+   },
+   "categoria": "miercolito",
+   "metodos": {
+    "combinada": {
+     "alguna_terminacion": false,
+     "digitos_media": 0.6666666666666666,
+     "exactos": 0,
+     "numeros": [
+      "4161",
+      "6631",
+      "4183",
+      "6661",
+      "3111"
+     ],
+     "numeros_acertados": [],
+     "terminacion_numeros": 0,
+     "terminaciones": [
+      "81",
+      "11",
+      "33",
+      "41",
+      "38",
+      "21",
+      "51",
+      "61",
+      "78",
+      "64"
+     ],
+     "terminaciones_acertadas": [],
+     "terminaciones_aciertos": 0
+    },
+    "estadistico": {
+     "alguna_terminacion": false,
+     "digitos_media": 0.4,
+     "exactos": 0,
+     "numeros": [
+      "6631",
+      "6661",
+      "6681",
+      "5631",
+      "5661"
+     ],
+     "numeros_acertados": [],
+     "terminacion_numeros": 0,
+     "terminaciones": [
+      "33",
+      "81",
+      "38",
+      "11",
+      "78",
+      "64",
+      "42",
+      "66",
+      "61",
+      "51"
+     ],
+     "terminaciones_acertadas": [],
+     "terminaciones_aciertos": 0
+    },
+    "ml": {
+     "alguna_terminacion": false,
+     "digitos_media": 0.7333333333333333,
+     "exactos": 0,
+     "numeros": [
+      "4161",
+      "4183",
+      "3111",
+      "1127",
+      "3178"
+     ],
+     "numeros_acertados": [],
+     "terminacion_numeros": 0,
+     "terminaciones": [
+      "11",
+      "41",
+      "81",
+      "21",
+      "51",
+      "61",
+      "71",
+      "31",
+      "12",
+      "13"
+     ],
+     "terminaciones_acertadas": [],
+     "terminaciones_aciertos": 0
+    }
+   },
+   "peso_ml": 0.5,
+   "registrado_en": "2026-01-15T12:00",
+   "sorteo": {
+    "cat": "miercolito",
+    "fecha": "2025-12-08",
+    "folio": "589",
+    "id": "590",
+    "letra": "ABCD",
+    "primero": "9143",
+    "segundo": "4890",
+    "serie": "10",
+    "tercero": "3684"
+   }
+  },
+  {
+   "azar": {
+    "alguna_terminacion": 0.273469387755102,
+    "digitos_media": 0.4,
+    "exactos": 0.0015,
+    "terminacion_numeros": 0.15,
+    "terminaciones_aciertos": 0.3
+   },
+   "categoria": "dominical",
+   "metodos": {
+    "combinada": {
+     "alguna_terminacion": false,
+     "digitos_media": 0.4,
+     "exactos": 0,
+     "numeros": [
+      "2369",
+      "9235",
+      "7361",
+      "9835",
+      "7385"
+     ],
+     "numeros_acertados": [],
+     "terminacion_numeros": 0,
+     "terminaciones": [
+      "69",
+      "33",
+      "79",
+      "85",
+      "19",
+      "55",
+      "39",
+      "02",
+      "89",
+      "49"
+     ],
+     "terminaciones_acertadas": [],
+     "terminaciones_aciertos": 0
+    },
+    "estadistico": {
+     "alguna_terminacion": false,
+     "digitos_media": 0.5333333333333333,
+     "exactos": 0,
+     "numeros": [
+      "9235",
+      "9835",
+      "9233",
+      "9225",
+      "9833"
+     ],
+     "numeros_acertados": [],
+     "terminacion_numeros": 0,
+     "terminaciones": [
+      "33",
+      "85",
+      "55",
+      "02",
+      "49",
+      "25",
+      "73",
+      "88",
+      "75",
+      "01"
+     ],
+     "terminaciones_acertadas": [],
+     "terminaciones_aciertos": 0
+    },
+    "ml": {
+     "alguna_terminacion": false,
+     "digitos_media": 0.3333333333333333,
+     "exactos": 0,
+     "numeros": [
+      "2369",
+      "7361",
+      "7385",
+      "7325",
+      "9333"
+     ],
+     "numeros_acertados": [],
+     "terminacion_numeros": 0,
+     "terminaciones": [
+      "69",
+      "79",
+      "19",
+      "39",
+      "89",
+      "99",
+      "62",
+      "61",
+      "29",
+      "09"
+     ],
+     "terminaciones_acertadas": [],
+     "terminaciones_aciertos": 0
+    }
+   },
+   "peso_ml": 0.5,
+   "registrado_en": "2026-01-15T12:00",
+   "sorteo": {
+    "cat": "dominical",
+    "fecha": "2025-12-05",
+    "folio": "588",
+    "id": "589",
+    "letra": "ABCD",
+    "primero": "7932",
+    "segundo": "3150",
+    "serie": "9",
+    "tercero": "4038"
+   }
+  }
+ ],
+ "comparados_para_peso": 4,
+ "marcador": {
+  "combinada": {
+   "alguna_terminacion_pct": 0.0,
+   "alguna_terminacion_pct_azar": 27.3469387755102,
+   "digitos_media": 0.5,
+   "digitos_media_azar": 0.4,
+   "exactos": 0,
+   "exactos_azar": 0.006,
+   "sorteos": 4,
+   "sorteos_numeros": 4,
+   "terminacion_numeros": 0,
+   "terminacion_numeros_azar": 0.6,
+   "terminaciones_media": 0.0,
+   "terminaciones_media_azar": 0.3
+  },
+  "estadistico": {
+   "alguna_terminacion_pct": 0.0,
+   "alguna_terminacion_pct_azar": 27.3469387755102,
+   "digitos_media": 0.4666666666666667,
+   "digitos_media_azar": 0.4,
+   "exactos": 0,
+   "exactos_azar": 0.006,
+   "sorteos": 4,
+   "sorteos_numeros": 4,
+   "terminacion_numeros": 0,
+   "terminacion_numeros_azar": 0.6,
+   "terminaciones_media": 0.0,
+   "terminaciones_media_azar": 0.3
+  },
+  "ml": {
+   "alguna_terminacion_pct": 25.0,
+   "alguna_terminacion_pct_azar": 27.3469387755102,
+   "digitos_media": 0.5,
+   "digitos_media_azar": 0.4,
+   "exactos": 0,
+   "exactos_azar": 0.006,
+   "sorteos": 4,
+   "sorteos_numeros": 4,
+   "terminacion_numeros": 0,
+   "terminacion_numeros_azar": 0.6,
+   "terminaciones_media": 0.25,
+   "terminaciones_media_azar": 0.3
+  }
+ },
+ "minimo_peso": 10,
+ "pendientes": [
+  {
+   "categoria": "dominical",
+   "metodos": {
+    "combinada": {
+     "numeros": [
+      "4835",
+      "9235",
+      "9749",
+      "9835",
+      "9785"
+     ],
+     "terminaciones": [
+      "49",
+      "09",
+      "33",
+      "19",
+      "79",
+      "85",
+      "69",
+      "55",
+      "99",
+      "01"
+     ]
+    },
+    "estadistico": {
+     "numeros": [
+      "9235",
+      "9835",
+      "9205",
+      "9805",
+      "9535"
+     ],
+     "terminaciones": [
+      "33",
+      "49",
+      "85",
+      "55",
+      "01",
+      "02",
+      "25",
+      "73",
+      "88",
+      "75"
+     ]
+    },
+    "ml": {
+     "numeros": [
+      "4835",
+      "9749",
+      "9785",
+      "9774",
+      "9299"
+     ],
+     "terminaciones": [
+      "09",
+      "19",
+      "79",
+      "69",
+      "99",
+      "89",
+      "39",
+      "49",
+      "29",
+      "00"
+     ]
+    }
+   },
+   "numeros_aplican": true,
+   "peso_ml": 0.5,
+   "registrado_en": "2026-01-15T12:00",
+   "ultima_fecha": "2026-01-02"
+  },
+  {
+   "categoria": "extraordinario",
+   "metodos": {
+    "combinada": {
+     "numeros": [
+      "0100",
+      "8172",
+      "2653",
+      "4172",
+      "9481"
+     ],
+     "terminaciones": [
+      "53",
+      "63",
+      "43",
+      "72",
+      "03",
+      "32",
+      "13",
+      "76",
+      "69",
+      "47"
+     ]
+    },
+    "estadistico": {
+     "numeros": [
+      "8172",
+      "4172",
+      "7172",
+      "5172",
+      "8170"
+     ],
+     "terminaciones": [
+      "53",
+      "72",
+      "32",
+      "76",
+      "47",
+      "05",
+      "12",
+      "39",
+      "00",
+      "30"
+     ]
+    },
+    "ml": {
+     "numeros": [
+      "0100",
+      "2653",
+      "9481",
+      "3929",
+      "9143"
+     ],
+     "terminaciones": [
+      "63",
+      "43",
+      "03",
+      "13",
+      "69",
+      "49",
+      "53",
+      "61",
+      "83",
+      "41"
+     ]
+    }
+   },
+   "numeros_aplican": true,
+   "peso_ml": 0.5,
+   "registrado_en": "2026-01-15T12:00",
+   "ultima_fecha": "2026-01-12"
+  },
+  {
+   "categoria": "gordito",
+   "metodos": {
+    "combinada": {
+     "numeros": [
+      "6044",
+      "4744",
+      "8494",
+      "4742",
+      "0320"
+     ],
+     "terminaciones": [
+      "24",
+      "53",
+      "22",
+      "31",
+      "44",
+      "94",
+      "42",
+      "49",
+      "54",
+      "46"
+     ]
+    },
+    "estadistico": {
+     "numeros": [
+      "4744",
+      "4742",
+      "4743",
+      "4754",
+      "4741"
+     ],
+     "terminaciones": [
+      "53",
+      "31",
+      "94",
+      "49",
+      "46",
+      "41",
+      "63",
+      "64",
+      "89",
+      "27"
+     ]
+    },
+    "ml": {
+     "numeros": [
+      "6044",
+      "8494",
+      "0320",
+      "9528",
+      "6118"
+     ],
+     "terminaciones": [
+      "24",
+      "22",
+      "44",
+      "42",
+      "54",
+      "74",
+      "20",
+      "52",
+      "25",
+      "72"
+     ]
+    }
+   },
+   "numeros_aplican": true,
+   "peso_ml": 0.5,
+   "registrado_en": "2026-01-15T12:00",
+   "ultima_fecha": "2026-01-09"
+  },
+  {
+   "categoria": "miercolito",
+   "metodos": {
+    "combinada": {
+     "numeros": [
+      "3111",
+      "6661",
+      "1127",
+      "6631",
+      "7616"
+     ],
+     "terminaciones": [
+      "61",
+      "33",
+      "62",
+      "64",
+      "31",
+      "42",
+      "81",
+      "91",
+      "32",
+      "38"
+     ]
+    },
+    "estadistico": {
+     "numeros": [
+      "6661",
+      "6631",
+      "6681",
+      "6668",
+      "6638"
+     ],
+     "terminaciones": [
+      "33",
+      "64",
+      "42",
+      "81",
+      "38",
+      "11",
+      "43",
+      "78",
+      "08",
+      "84"
+     ]
+    },
+    "ml": {
+     "numeros": [
+      "3111",
+      "1127",
+      "7616",
+      "9195",
+      "4231"
+     ],
+     "terminaciones": [
+      "61",
+      "62",
+      "31",
+      "91",
+      "32",
+      "41",
+      "66",
+      "92",
+      "51",
+      "81"
+     ]
+    }
+   },
+   "numeros_aplican": true,
+   "peso_ml": 0.5,
+   "registrado_en": "2026-01-15T12:00",
+   "ultima_fecha": "2026-01-05"
+  }
+ ],
+ "peso_ml": 0.5,
+ "sin_registro": [
+  {
+   "cat": "extraordinario",
+   "fecha": "2026-01-12",
+   "folio": "599",
+   "id": "600",
+   "letra": "ABCD",
+   "primero": "9614",
+   "segundo": "3920",
+   "serie": "2",
+   "tercero": "3972"
+  },
+  {
+   "cat": "gordito",
+   "fecha": "2026-01-09",
+   "folio": "598",
+   "id": "599",
+   "letra": "ABCD",
+   "primero": "4450",
+   "segundo": "2249",
+   "serie": "20",
+   "tercero": "1789"
+  },
+  {
+   "cat": "miercolito",
+   "fecha": "2026-01-05",
+   "folio": "597",
+   "id": "598",
+   "letra": "ABCD",
+   "primero": "8824",
+   "segundo": "4442",
+   "serie": "23",
+   "tercero": "9208"
+  },
+  {
+   "cat": "dominical",
+   "fecha": "2026-01-02",
+   "folio": "596",
+   "id": "597",
+   "letra": "ABCD",
+   "primero": "4201",
+   "segundo": "7849",
+   "serie": "7",
+   "tercero": "3505"
+  },
+  {
+   "cat": "extraordinario",
+   "fecha": "2025-12-29",
+   "folio": "595",
+   "id": "596",
+   "letra": "ABCD",
+   "primero": "4712",
+   "segundo": "1294",
+   "serie": "15",
+   "tercero": "5674"
+  },
+  {
+   "cat": "gordito",
+   "fecha": "2025-12-26",
+   "folio": "594",
+   "id": "595",
+   "letra": "ABCD",
+   "primero": "5654",
+   "segundo": "2399",
+   "serie": "2",
+   "tercero": "4758"
+  },
+  {
+   "cat": "miercolito",
+   "fecha": "2025-12-22",
+   "folio": "593",
+   "id": "594",
+   "letra": "ABCD",
+   "primero": "8899",
+   "segundo": "6220",
+   "serie": "27",
+   "tercero": "6464"
+  },
+  {
+   "cat": "dominical",
+   "fecha": "2025-12-19",
+   "folio": "592",
+   "id": "593",
+   "letra": "ABCD",
+   "primero": "4480",
+   "segundo": "4715",
+   "serie": "19",
+   "tercero": "1996"
+  }
+ ],
+ "ventana_peso": 20
+}

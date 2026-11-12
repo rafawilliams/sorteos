@@ -1,0 +1,84 @@
+# Capturas de referencia (spec `frontend-react`, criterio AC1)
+
+`capturas.mjs` saca una captura por pestaña y tema (14 × 2 = 28) para comparar la interfaz antes y
+después de cada etapa de la migración. La comparación la hace el dueño a ojo.
+
+## Regla de oro: nunca contra la base real
+
+El servidor de capturas debe usar **otra base de datos**, sembrada con datos sintéticos fijos:
+
+- `tests/seed_db.py` se niega a sembrar una tabla con datos, así que no puede tocar la base real.
+- `/api/stats` guarda recomendaciones en la tabla `predicciones` al calcular; contra la base real
+  eso ensuciaría tus datos.
+- La base real cambia con cada sorteo nuevo: la referencia dejaría de ser comparable.
+
+## Preparación (una sola vez)
+
+1. Crea una base vacía en tu MariaDB local:
+
+   ```sql
+   CREATE DATABASE sorteos_capturas CHARACTER SET utf8mb4;
+   ```
+
+2. Siémbrala (la variable solo vale para ese comando; `.env` no se toca):
+
+   ```bash
+   DATABASE_URL="mariadb+mariadbconnector://USUARIO:CLAVE@127.0.0.1:3306/sorteos_capturas" \
+     python tests/seed_db.py 600
+   ```
+
+3. Instala el navegador de Playwright:
+
+   ```bash
+   npm --prefix frontend ci
+   npx --prefix frontend playwright install chromium
+   ```
+
+## Cuidado con el puerto 5000 (Windows)
+
+Si ya tienes `python app.py` corriendo en el puerto 5000, **Windows deja arrancar un segundo servidor
+en el mismo puerto sin avisar y las peticiones siguen yendo al primero**, es decir, a la base real.
+Pasó al preparar la primera referencia: el servidor de capturas mostraba 9.296 sorteos en vez de 600.
+Por eso el servidor de capturas va **siempre en otro puerto** (abajo, el 5001, que es también el valor
+por defecto de `--url`), y el script **se niega a capturar** si el servidor no sirve exactamente 600
+sorteos (`--sorteos`, los de `tests/seed_db.py`). Si apuntas por error al 5000 verás algo así, sin que
+se cree ninguna captura:
+
+```text
+Error: El servidor de http://127.0.0.1:5000 sirve 9296 sorteos y se esperaban 600 (la base sembrada).
+```
+
+Si sembraste otra cantidad (`python tests/seed_db.py 300`), pásala con `--sorteos 300`.
+
+## Uso
+
+1. Arranca el servidor contra esa base. Hazlo desde una copia limpia de la rama, sin un
+   `models/predictor.joblib` entrenado con datos reales: la primera petición a `/api/stats`
+   entrena el modelo con los datos sintéticos (50-100 s) y lo guarda ahí.
+
+   ```bash
+   DATABASE_URL="mariadb+mariadbconnector://USUARIO:CLAVE@127.0.0.1:3306/sorteos_capturas" \
+     python -c "import app; app.app.run(port=5001, debug=False)"
+   ```
+
+2. Saca las capturas:
+
+   ```bash
+   node frontend/scripts/capturas.mjs --salida <carpeta>
+   node frontend/scripts/capturas.mjs --salida <carpeta> --solo gaps,seguimiento --temas oscuro
+   ```
+
+   Deja `<pestaña>-oscuro.png` y `<pestaña>-claro.png`. La referencia se guarda en
+   `02-DOCS/attachments/react-baseline/` y cada etapa saca sus capturas con el mismo comando y la
+   misma base.
+
+## Qué hace el script para que sean comparables
+
+- Ventana fija de 1280 × 800 y local `es-PA`.
+- Desactiva las animaciones CSS y las de Chart.js (en cuanto carga la librería).
+- Fuerza visibles las tarjetas `.reveal`, que en la página solo aparecen al hacer scroll, y falla si
+  alguna sigue con opacidad menor que 1. No comprueba que la pestaña tenga contenido: mira siempre las
+  capturas nuevas antes de darlas por buenas.
+- Espera a que desaparezcan los esqueletos y los cargadores antes de capturar.
+- Captura solo la sección de la pestaña activa, no la cabecera (que lleva la fecha de última
+  actualización).

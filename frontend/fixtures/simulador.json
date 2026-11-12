@@ -1,0 +1,38 @@
+{
+ "by_category": {
+  "extraordinario": 1
+ },
+ "date_range": {
+  "from": "2014-01-05",
+  "to": "2019-10-02"
+ },
+ "ending": {
+  "frequency_pct": 2.333,
+  "primero": 7,
+  "segundo": 5,
+  "tercero": 2,
+  "total": 14
+ },
+ "exact": {
+  "frequency_pct": 0.167,
+  "gap_draws": 0,
+  "last_appearance": "2019-10-02",
+  "matches": [
+   {
+    "cat": "extraordinario",
+    "fecha": "2019-10-02",
+    "tipo": ""
+   }
+  ],
+  "primero": 1,
+  "segundo": 0,
+  "tercero": 0,
+  "total": 1
+ },
+ "monthly_distribution": {
+  "2019-10": 1
+ },
+ "numero": "9614",
+ "terminacion": "14",
+ "total_sorteos": 600
+}

@@ -25,8 +25,9 @@ Los dos meten sorteos falsos en las estadísticas, en el ML y en Seguimiento.
 - [x] Copia de otra categoría descartada; se queda el original aunque llegue después en la lista — prueba: pytest `TestCopiaOtraCategoria`.
 - [x] Sin falsos positivos: fuera de la ventana (8 días), límite de 7 días dentro, premios vacíos, mismo 1er premio con 2º/3º distintos, dos sorteos reales el mismo día, semana normal — prueba: pytest `TestSinFalsosPositivos`.
 - [x] `actualizar()` usa la protección y avisa — prueba: pytest `TestActualizar` (sesión y API simuladas: 3 filas → 1 insertada, 2 avisos).
-- [x] Suite completa en verde — prueba: `223 passed` (con `-W error::SyntaxWarning`).
-- [ ] `rsc risk` y un revisor si tier ≥ 1.
+- [x] Suite completa en verde — prueba: `224 passed` (con `-W error::SyntaxWarning`).
+- [x] `rsc risk` → tier 1; revisor de correctness sin bloqueantes. Should-fix corregido: una fecha rara de la API (`2026-10-01T00:00:00`, `2026-10`, `2026-13-45`) lanzaba `ValueError` y paraba la sincronización entera. Ahora esa fila no se compara y falla sola, como antes — prueba: `test_malformed_dates_do_not_abort_the_batch` (rojo sin el arreglo, verde con él).
+- Límite aceptado (should-fix de diseño): se da por bueno lo ya guardado. Si lo guardado es la copia o la fecha mala, el sorteo bueno se descarta en cada sincronización, con su AVISO. Por eso hay que limpiar los sorteos malos que ya están en la base (9379, uno de 9368/9378 y los dos históricos de la Evidence).
 
 ## Evidence
 - Rojo: el módulo de tests no cargaba (`descartar_sospechosos` no existía).
@@ -38,4 +39,4 @@ Los dos meten sorteos falsos en las estadísticas, en el ML y en Seguimiento.
 - `rsc risk --base origin/main` → tier 1, 1 revisor.
 
 ## Next
-Revisor de correctness (tier 1).
+Push y PR a main.

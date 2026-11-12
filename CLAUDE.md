@@ -12,7 +12,11 @@ Lotería de Panamá — a full-stack web app for analyzing and predicting Panama
 # Setup
 python -m venv .venv
 .venv\Scripts\activate        # Windows
-pip install -r requirements.txt
+pip install -r requirements-dev.txt   # app deps + pytest + pip-audit
+
+# Tests / security audit
+pytest
+pip-audit -r requirements.txt
 
 # Run dev server (port 5000)
 python app.py
@@ -23,7 +27,7 @@ python actualizar_db.py
 
 **Preview server** is configured in `.claude/launch.json` — use preview_start with name `sorteos`.
 
-**Environment**: Copy `.env.example` to `.env` and set `DATABASE_URL`. Default: `mariadb+mariadbconnector://root:root@127.0.0.1:3306/sorteos`
+**Environment**: Copy `.env.example` to `.env` and set `DATABASE_URL`, `LOTERIA_API_USER`, `LOTERIA_API_PASSWORD`. All are required (no hardcoded defaults); `base.require_env()` raises a clear error if one is missing. Optional `FLASK_DEBUG=1` enables Flask debug mode for local dev (off by default; parsed by `base.env_flag()`).
 
 ## Architecture
 
@@ -37,18 +41,23 @@ External API (loteriapanama.net) → actualizar_db.py → MariaDB
                                               ml_model.py (predictions)
 ```
 
-### Backend (app.py ~700 lines)
+### Backend (app.py ~440 lines + estadisticas.py ~930 lines)
 
-Single Flask file with all routes and statistics logic:
+`app.py` holds Flask routes, rate-limiting, caching and DB access; `estadisticas.py` holds all pure statistical calculations (4-digit frequencies, exact-probability recommendations, decenas, endings, 2/5-digit formats, monthly profiles, trends, gaps, comparador, simulador, and statistical backtest) with no Flask or SQLAlchemy dependencies (`app.py` re-exports them for compatibility):
 - **`GET /api/sorteos`** — Paginated draw results with filters (category, search, date range)
-- **`GET /api/stats`** — Comprehensive statistics: digit frequencies, hot/cold numbers, ML predictions, endings analysis, decena recommendations, trends. Expensive (~seconds), cached 5 minutes.
+- **`GET /api/stats`** — Comprehensive statistics: digit frequencies, hot/cold numbers, ML predictions, endings analysis (general, plus per category in `endings_by_category` with a walk-forward `backtest`), decena recommendations (with `backtest`; both backtests are `None` with fewer than 230 draws since 1995), trends. Expensive (~seconds), cached 5 minutes.
 - **`GET /api/backtesting?last_n=500`** — ML vs Statistical accuracy comparison over historical draws
-- **`POST /api/actualizar`** — Syncs new draws, clears cache, retrains ML model
+- **`GET /api/seguimiento`** — Frozen recommendations vs real results (see *Seguimiento* below); 500 with a generic message on error
+- **`POST /api/actualizar`** — Syncs new draws, clears cache, retrains ML model. Requires header `X-Update-Token` = `ACTUALIZAR_TOKEN` (.env); 401 on mismatch, 503 if unset; 502 if the sync script fails, 500 on unexpected errors (details only in the server log, never in the response). Response includes `ml_retrained` and `seguimiento_registrado` (categories frozen right after the sync; skipped if the model is untrained). Frontend prompts for the token and keeps it in `sessionStorage`.
 
 Key patterns:
 - **Cache layer**: `_cache_get`/`_cache_set` with 5-minute TTL on `sorteos`, `stats`, `backtesting_{n}` keys
 - **`_filter_recent()`**: Filters data from `RECO_DATE_FROM = "1995-01-01"` onwards for recommendations (not all 9000+ draws back to 1919)
 - **`_json_safe()`**: Recursively converts numpy types for JSON serialization
+
+### Seguimiento (seguimiento.py)
+
+Spec: `02-DOCS/wiki/sdd/specs/seguimiento-recomendaciones.md`. Table `predicciones` (created on first use, `checkfirst`). On every `/api/stats` cache miss (`_calcular_stats`), after `POST /api/actualizar`, and after `python actualizar_db.py` inserts draws (unless `--sin-seguimiento`), `_registrar_seguro` freezes, per category with a draw in the last 365 days and **no pending record**, the top-5 numbers and 10 endings of `ml`, `estadistico` and `combinada` for that category's next draw (never raises; errors only logged). A record's target draw is the first of its category with `id > ultimo_id` and `fecha >= ultima_fecha`. `combinada` = rank-weighted merge with `peso_ml` proportional to each method's mean digits-in-position over the last 20 compared draws (50/50 below 10; 0 without ML). Metrics compare numbers only with 4-digit prizes (none → number metrics `None`, out of the scoreboard; categories without 4-digit prizes in their last 10 draws, i.e. extraordinario, freeze endings only); endings use every format. Unique index `(categoria, ultimo_id, metodo)`: a concurrent second registration is dropped. Pure functions + session-injected `registrar`/`resumen` → tests use in-memory SQLite (`tests/test_seguimiento*.py`); `app.SeguimientoSession` is the session factory to monkeypatch. Expect it to perform like chance — it is a scoreboard, not a way to win.
 
 ### ML Model (ml_model.py)
 
@@ -64,9 +73,9 @@ Ensemble of **4 HistGradientBoostingClassifier** models, one per digit position 
 
 ### Database (base.py + loteria.py)
 
-SQLAlchemy ORM on MariaDB. Single table `sorteos` with columns: `id`, `tipo` (category), `fecha` (date), `primero`/`segundo`/`tercero` (4-digit prizes), `letras`, `serie`, `folio`.
+SQLAlchemy ORM on MariaDB. Single table `sorteos` with columns: `id`, `tipo` (category), `fecha` (date), `primero`/`segundo`/`tercero` (prize strings), `letras`, `serie`, `folio`.
 
-Numbers are stored/handled as **zero-padded 4-digit strings** (e.g., `"0042"`).
+The DB keeps prizes **as published by the source — do not pad them in the DB**. Formats vary: gordito since 1996 has 2-digit `segundo`/`tercero`; miercolito 1962–1966 has 2-digit prizes; extraordinario has 5-digit prizes; 57 gordito 1991–1995 and 2 extraordinario 1940 have empty `segundo`/`tercero`. `get_sorteos()` (via `_row_to_dict` → `loteria.premio_en_formato`) returns each prize padded to its **real format** (`"98"`, `"0074"`, `"05309"`; empty stays `""`), so `len(premio)` tells the format. The rule lives in `loteria.formato_premio`; short values outside the known 2-digit formats are 4-digit numbers that lost their zeros. Two draws can share fecha+categoría (1973-02-07 miercolito, 2002-12-29 dominical are both real per the API).
 
 ### Frontend (static/app.js + static/style.css + templates/index.html)
 
@@ -80,13 +89,25 @@ Single-page app with vanilla JS. State variables:
 
 **Accessibility**: ARIA roles on all interactive elements, keyboard navigation (Arrow keys in tablists), skip-link, `focus-visible` styles.
 
-**Sections** are tab-navigated: Predicciones, Decenas, Terminaciones, Resultados, Estadísticas, Tendencias, Análisis, Precisión.
+**Sections** are tab-navigated: Predicciones, Decenas, Terminaciones, Resultados, Estadísticas, Tendencias, Análisis, Comparador, Gaps, Simulador, Mis Números, Mensual, Precisión, Seguimiento.
 
 ## Key Conventions
 
-- **Categories**: `dominical`, `miercolito`, `gordito`, `extraordinario`, `extraordinaria`, `zodiaco`, `extraordonario` (note the typo in source data — `extraordonario` is intentional to match the API)
+- **Categories**: `dominical`, `miercolito`, `gordito`, `extraordinario`. The API has used other spellings for the same draw — `extraordinaria` and `extraordonario` are `extraordinario`, `zodiaco` is `gordito` (Gordito del Zodíaco; the 2 Dec-2023 draws are stored as `zodiaco`). `loteria.categoria_canonica` folds them (lowercase, trimmed) when reading (`_row_to_dict`) and when storing/comparing in `actualizar_db.py`; never compare raw `tipo` values.
 - **Date format**: ISO 8601 (`YYYY-MM-DD`) throughout
-- **Prize numbers**: Always `.zfill(4)` before processing
-- Each draw produces 3 rows in ML training data (one per prize tier)
-- Statistical recommendations use 50K Monte Carlo samples with recency-weighted digit frequencies
-- The `decena_recommendation()` function uses a 3-sorteo pattern matching approach with 2-sorteo and frequency fallbacks
+- **Prize numbers**: never `.zfill(4)` a prize from `get_sorteos()` — it is already in its real format. 4-digit stats (positions, hot/cold, recommendations, trends, gaps, ML training) use only `len == 4` prizes (`_es_4_cifras`); endings (`p[-2:]`) and decenas (`p[-2]`) use every format. Non-4-digit prizes get their own stats in `/api/stats` → `formatos` ("Premios de Otros Formatos" panel in Estadísticas). The frontend shows prizes as received (no `padStart`).
+- Each draw produces up to 3 rows in ML training data (one per 4-digit prize)
+- Per-category recommendations (statistical `by_category[cat].recommendations` and ML `cat_reco`) use the 1st, 2nd and 3rd 4-digit prizes (`_extract_numbers(..., prize=None)`, `predict_from_probs(..., prize=None)`), matching how Seguimiento scores them; general recommendations stay per prize. Other per-category stats (frequency, hot/cold, radar) still use the 1st prize.
+- Statistical recommendations (`number_recommendation`) rank all 10,000 numbers by the exact product of recency-weighted digit frequencies per position — deterministic, no sampling; ties by times already drawn. Number `confidence` (statistical and ML) = times more likely than chance (1.0 = chance, cap 15); the frontend shows it as "×N azar" (`fmtLift`).
+- Endings `confidence` uses the same scale: share of the recency weight × 100 (statistical) or `prob × 100` (ML), cap 15. `/api/stats` → `endings_by_category[cat]` holds the per-category endings (the ones Seguimiento freezes) and `backtest` = `endings_backtest()` walk-forward over the last 200 draws (None with < 230); the Terminaciones tab shows them with a category selector.
+- `decena_recommendation()` (draws since 1995): pattern = 1st-prize tens digit of the last 3 draws; followers = tens digits of the 3 prizes of the next draw (any format). Below 20 matching draws it drops to the last 2 draws, then to overall frequency (`method`: triple/pair/frecuencia; ties → smallest digit). `confidence` = lift vs chance (share ÷ 10 %, so at most ×10). `decena_backtest()` = 200-draw walk-forward check; hit = decena in any prize of the draw, chance = distinct decenas ÷ 10.
+
+
+## Knowledge map
+
+| Read first | Path |
+| --- | --- |
+| User profile | `02-DOCS/wiki/harness/user-profile.md` |
+| Project constitution (SDD non-negotiables) | `02-DOCS/wiki/sdd/constitution.md` |
+
+Full index → `02-DOCS/wiki/index.md`

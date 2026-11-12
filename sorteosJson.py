@@ -1,13 +1,12 @@
 import requests
-from base import Session, engine, Base
+from base import Session, engine, Base, api_credentials
 from loteria import Loteria
 
 
 def get_token():
     URLAUTH = 'https://api.loteriapanama.net/v1/auth/'
     agent = {'Content-type': 'application/x-www-form-urlencoded','Accept': 'text/plain',"User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36'}
-    parametros = {'username': 'loteriaUser', 'password': 'loteriaGeneric'}
-    respuesta = requests.post(URLAUTH, data=parametros, headers=agent)
+    respuesta = requests.post(URLAUTH, data=api_credentials(), headers=agent)
     return respuesta.json()
 
 
