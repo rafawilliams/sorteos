@@ -145,6 +145,28 @@ function initTabs(){
   // Cat tabs keyboard nav
   const catTabs=document.getElementById('recoCatTabs');
   if(catTabs)initTablistKeyboard(catTabs);
+  initMenu();
+}
+
+// MENÚ LATERAL: con la ventana estrecha la barra se esconde y el botón con el icono de menú la abre
+function initMenu(){
+  const btn=document.getElementById('menuToggle'),nav=document.getElementById('navTabs'),fondo=document.getElementById('menuBackdrop');
+  if(!btn||!nav||!fondo)return;
+  const abierto=()=>nav.classList.contains('open');
+  const poner=on=>{
+    nav.classList.toggle('open',on);fondo.hidden=!on;document.body.classList.toggle('menu-open',on);
+    btn.setAttribute('aria-expanded',String(on));
+    btn.setAttribute('aria-label',on?'Cerrar menú de secciones':'Abrir menú de secciones');
+  };
+  btn.addEventListener('click',()=>{
+    poner(!abierto());
+    if(abierto()){const t=nav.querySelector('.nav-tab.active')||nav.querySelector('.nav-tab');if(t)t.focus()}
+  });
+  fondo.addEventListener('click',()=>poner(false));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&abierto()){poner(false);btn.focus()}});
+  // Con el menú abierto, elegir una sección lo cierra (en escritorio no está "abierto": el foco no se mueve)
+  nav.querySelectorAll('.nav-tab').forEach(t=>t.addEventListener('click',()=>{if(abierto()){poner(false);btn.focus()}}));
+  if(window.matchMedia){const ancho=matchMedia('(min-width:901px)');if(ancho.addEventListener)ancho.addEventListener('change',e=>{if(e.matches)poner(false)})}
 }
 
 function skelCard(lines=3){
