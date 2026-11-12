@@ -55,10 +55,40 @@ describe('contrato y formulario', () => {
     expect(nombre).toBe('simulador')
   })
 
-  it('con `stats` nulo muestra su esqueleto y todavía no el formulario', () => {
+  it('con `stats` nulo el formulario ya se ve, con «Todas» como única categoría y sin esqueleto (Q11)', () => {
     montar({ stats: null })
-    expect(screen.getByRole('status', { name: 'Cargando simulador' })).toBeInTheDocument()
-    expect(screen.queryByRole('textbox', { name: 'Número a simular' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    expect(campo()).toBeInTheDocument()
+    expect(boton()).toBeEnabled()
+    expect(Array.from(categoria().options).map((o) => [o.value, o.textContent])).toEqual([['', 'Todas']])
+  })
+
+  it('con `stats` nulo se puede simular: `/api/simulador` no depende de `stats`', async () => {
+    montar({ stats: null })
+    simular('9614')
+    await screen.findByText('Número buscado')
+    expect(control.simular).toHaveBeenCalledWith({ numero: '9614', cat: '', from: '', to: '' })
+  })
+
+  it('cuando llegan las estadísticas el selector gana las categorías sin perder lo tecleado ni el resultado', async () => {
+    const { store } = montar({ stats: null })
+    fireEvent.change(campo(), { target: { value: '9614' } })
+    fireEvent.change(desde(), { target: { value: '2015-01-01' } })
+    fireEvent.click(boton())
+    await screen.findByText('Número buscado')
+    act(() => store.cambiar({ stats: STATS }))
+    expect(Array.from(categoria().options).map((o) => o.value)).toEqual(['', ...Object.keys(STATS.by_category)])
+    expect(campo()).toHaveValue('9614')
+    expect(desde()).toHaveValue('2015-01-01')
+    expect(screen.getByText('Número buscado')).toBeInTheDocument()
+  })
+
+  it('«Simular» de Mis Números también funciona antes de que lleguen las estadísticas', async () => {
+    const { store } = montar({ stats: null })
+    act(() => store.actions.simularNumero('0042'))
+    await screen.findByText('Número buscado')
+    expect(campo()).toHaveValue('0042')
+    expect(control.simular).toHaveBeenCalledWith({ numero: '0042', cat: '', from: '', to: '' })
   })
 
   it('con datos muestra el formulario con los mismos campos que antes', () => {

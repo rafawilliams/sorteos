@@ -483,3 +483,9 @@ Islas Mis Números y Comparador, componente `Chart`, retirada del código antigu
 - decisiones: `BotonCopiar` compartido y T030 absorbida (decisions.md).
 - risk: **pendiente** (`rsc risk` sin ejecutar); review: **pendiente**.
 - controls: tests ✅ build ✅ security ✅ traceability ✅ (AC2 isla; AC10 retirada del código antiguo).
+
+## T028 — revisión, cierre de Q11 (2026-11-12)
+- L2/Q11 **resuelta** por decisión del dueño (opción B): con `stats` nulo el Simulador muestra el formulario con «Todas» como única categoría y se puede simular; el esqueleto de toda la pestaña desaparece. Done-check de T028 enmendado en el plan; decisión en decisions.md.
+- red/green: 4 fallos en rojo («Unable to find» el campo de texto) y 44 en verde en la isla. Mutantes del cambio: 3/3 detectados (vuelve el esqueleto, el selector no ofrece categorías, el selector ignora categorías).
+- navegador real (Playwright, 5003, `/api/stats` retenida con `page.route`): 5/5 y 0 errores de consola: formulario visible y solo «Todas»; se simula; al soltar `/api/stats` el selector gana las 4 categorías y se conserva lo tecleado y el resultado.
+- risk: sigue **pendiente** (`rsc risk` sin ejecutar).

@@ -198,13 +198,9 @@ export function Componente() {
     void pedir({ numero, cat, from: desde, to: hasta })
   }, [peticion, pedir, toast, cat, desde, hasta])
 
-  if (!stats) {
-    return (
-      <div role="status" aria-label="Cargando simulador">
-        <Skeleton lineas={4} />
-      </div>
-    )
-  }
+  // Sin `stats` (la primera carga entrena el modelo y puede tardar minutos, o puede fallar) el formulario se ve igual:
+  // `/api/simulador` no depende de `stats`; solo las categorías del selector (Q11, igual que el código antiguo).
+  const categoriasDelSelector = Object.keys(stats?.by_category ?? {})
 
   return (
     <>
@@ -232,7 +228,7 @@ export function Componente() {
             <label style={ETIQUETA}>Categoría</label>
             <select className="filter-select" aria-label="Categoría para simulación" value={cat} onChange={(e) => setCat(e.target.value)}>
               <option value="">Todas</option>
-              {Object.keys(stats.by_category ?? {}).map((c) => (
+              {categoriasDelSelector.map((c) => (
                 <option key={c} value={c}>
                   {catLabel(c)}
                 </option>
