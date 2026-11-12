@@ -63,6 +63,10 @@ IDS_RETIRADOS = {
     "endP3Chart": "terminaciones",
     "endingsHeatmap": "terminaciones",
     "endingsTrendChart": "terminaciones",
+    "dashboardSummary": "predicciones-resumen",
+    "prizeTabs": "predicciones",
+    "recoCatTabs": "predicciones",
+    "recoContainer": "predicciones",
     # `pagination` (id) no se vigila: `.pagination` sigue siendo una clase de style.css que usa la isla.
     # `updateBtn` tampoco: el botón de actualizar es del armazón y se migra en T054.
 }
@@ -79,6 +83,8 @@ FUNCIONES_RETIRADAS = (
     "renderStatCounters", "getFilteredSorteos", "renderSorteos", "renderPagination", "goPage", "initFilters", "exportCSV", "currentPage", "PER_PAGE",
     "renderDecenas", "renderEndingsSection", "renderPrizeEndings", "renderEndingsHeatmap", "renderEndingsTrendChart",
     "initEndCatTabs", "endingsTrendChartInstance", "ENDING_COLORS",
+    "renderRecommendations", "renderDashboard", "selectPrize", "initPrizeTabs", "initRecoCatTabs", "buildCategoryUI",
+    "renderBalls", "copyNumber", "fmtLift", "liftBar", "skelCard", "catClase",
 )
 
 

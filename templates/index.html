@@ -58,23 +58,12 @@
     <section class="section active" id="sec-predicciones" role="tabpanel" aria-labelledby="tab-predicciones">
 
       <!-- DASHBOARD RESUMEN -->
-      <div id="dashboardSummary" role="region" aria-label="Resumen rápido" style="margin-bottom:28px;"></div>
+      <div data-react-root="predicciones-resumen" style="margin-bottom:28px;"></div>
 
       <h2 class="section-title">Números Recomendados</h2>
       <p class="section-subtitle">Basado en análisis de frecuencia posicional, tendencias recientes y patrones históricos.</p>
 
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;flex-wrap:wrap;">
-        <div class="prize-tabs" id="prizeTabs" role="tablist" aria-label="Seleccionar premio" style="margin-bottom:0;">
-          <button class="prize-tab active" data-prize="primero" role="tab" aria-selected="true">1er Premio</button>
-          <button class="prize-tab" data-prize="segundo" role="tab" aria-selected="false">2do Premio</button>
-          <button class="prize-tab" data-prize="tercero" role="tab" aria-selected="false">3er Premio</button>
-        </div>
-        <button class="ml-toggle" onclick="toggleML()" aria-pressed="false" aria-label="Alternar entre modelo ML y Estadístico">📊 Estadístico</button>
-      </div>
-      <div class="cat-tabs" id="recoCatTabs" role="tablist" aria-label="Filtrar por categoría">
-        <button class="cat-tab active" data-cat="all" role="tab" aria-selected="true">Todos</button>
-      </div>
-      <div id="recoContainer" role="region" aria-label="Números recomendados" aria-live="polite"></div>
+      <div data-react-root="predicciones"></div>
 
       <div class="card reveal" style="margin-top:28px;">
         <div class="card-header"><h3 class="card-title">¿Cómo funciona?</h3><span class="card-badge badge-gold">Metodología</span></div>

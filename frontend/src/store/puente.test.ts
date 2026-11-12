@@ -53,8 +53,8 @@ describe('de app.js a React', () => {
     expect(store.getSnapshot().useML).toBe(false)
   })
 
-  it('las pestañas de premio actualizan prize y statsPrize (statsPrize era un valor muerto en app.js)', () => {
-    clic('#prizeTabs .prize-tab[data-prize="segundo"]')
+  it('las pestañas de premio de Estadísticas actualizan statsPrize y no tocan prize (el premio de Predicciones es de la isla)', () => {
+    store.actions.setPrize('segundo' as Premio)
     expect(store.getSnapshot().prize).toBe('segundo')
     expect(store.getSnapshot().statsPrize).toBe('primero')
     clic('#statsPrizeTabs .prize-tab[data-prize="tercero"]')
@@ -89,13 +89,34 @@ describe('de React a app.js', () => {
     expect(store.getSnapshot().useML).toBe(true)
   })
 
-  it('setPrize y setStatsPrize marcan la pestaña antigua y cambian el estado', () => {
+  it('setPrize cambia el estado y avisa; setStatsPrize además marca la pestaña antigua', () => {
+    const escucha = vi.fn()
+    store.subscribe(escucha)
     store.actions.setPrize('tercero' as Premio)
     expect(store.getSnapshot().prize).toBe('tercero')
-    expect(document.querySelector('#prizeTabs .prize-tab[data-prize="tercero"]')?.getAttribute('aria-selected')).toBe('true')
+    expect(escucha).toHaveBeenCalledTimes(1)
+    store.actions.setPrize('tercero' as Premio) // repetir el mismo premio no avisa de nuevo
+    expect(escucha).toHaveBeenCalledTimes(1)
     store.actions.setStatsPrize('segundo' as Premio)
     expect(store.getSnapshot().statsPrize).toBe('segundo')
     expect(document.querySelector('#statsPrizeTabs .prize-tab[data-prize="segundo"]')?.getAttribute('aria-selected')).toBe('true')
+  })
+
+  it('setUseML no toca el interruptor de una isla (data-isla) y sí los de la plantilla', () => {
+    const deIsla = document.createElement('button')
+    deIsla.className = 'ml-toggle'
+    deIsla.setAttribute('data-isla', '')
+    deIsla.setAttribute('aria-pressed', 'false')
+    deIsla.textContent = '📊 Estadístico'
+    document.body.appendChild(deIsla)
+    store.actions.setUseML(true)
+    expect(deIsla.textContent).toBe('📊 Estadístico')
+    expect(deIsla.getAttribute('aria-pressed')).toBe('false')
+    expect(deIsla.classList.contains('active')).toBe(false)
+    const deLaPlantilla = Array.from(document.querySelectorAll('.ml-toggle:not([data-isla])'))
+    expect(deLaPlantilla.length).toBeGreaterThan(0)
+    deLaPlantilla.forEach((b) => expect(b.textContent).toBe('🤖 ML Activo'))
+    deIsla.remove()
   })
 
   it('un premio desconocido se ignora', () => {

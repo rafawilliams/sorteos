@@ -1,9 +1,9 @@
-// Botón «Copiar» de un número (spec frontend-react, T029; lo reutiliza T044). Equivale a `copyNumber` y `.copy-btn` de
-// static/app.js: copia el número al portapapeles, avisa «Copiado: …» y se marca «OK» durante 1,5 s.
-// Diferencias respecto a app.js (decisions.md): el nombre accesible lleva el número y el estado («Copiar 9541», luego
-// «Copiado 9541»; no varios botones «Copiar» iguales), solo se marca el botón pulsado, y si el portapapeles falta o
-// rechaza se avisa en vez de lanzar. Lleva `data-numero` y no `data-num`: `copyNumber` de app.js reescribe el texto de todo
-// `.copy-btn[data-num="…"]`, también el de los botones de React si el número coincide.
+// Botón «Copiar» de un número (spec frontend-react, T029; lo usan Mensual, Predicciones y Terminaciones). Equivale a
+// `copyNumber` y `.copy-btn` del antiguo static/app.js (ya retirado): copia el número al portapapeles, avisa «Copiado: …» y
+// se marca «OK» durante 1,5 s.
+// Diferencias respecto al código antiguo (decisions.md): el nombre accesible lleva el número y el estado («Copiar 9541»,
+// luego «Copiado 9541»; no varios botones «Copiar» iguales), solo se marca el botón pulsado, y si el portapapeles falta o
+// rechaza se avisa en vez de lanzar. Lleva `data-numero` y no `data-num`, que era el atributo del botón antiguo.
 import { useEffect, useRef, useState } from 'react'
 import { useToast } from '../store/hooks'
 

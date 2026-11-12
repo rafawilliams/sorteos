@@ -11,32 +11,17 @@ def _read(rel_path: str) -> str:
 
 
 class TestLottoBallsAndDashboardJS:
-    def test_render_balls_helper_defined_and_preserves_format(self):
-        js = _read("static/app.js")
-        assert "function renderBalls(" in js
-        assert "lotto-ball ball-" in js
-        assert 'aria-label="${esc(s)}"' in js
-        assert 'aria-hidden="true"' in js
-        # renderBalls itself must never padStart(4) a prize
-        m = re.search(r"function renderBalls\([^)]*\)\{.*?\n\}", js, re.DOTALL)
-        assert m is not None
-        assert "padStart" not in m.group(0)
-        assert "zfill" not in m.group(0)
-
-    def test_dashboard_uses_hero_grid_and_last_draw_balls(self):
-        js = _read("static/app.js")
-        assert "dashboard-hero-grid" in js
-        assert "last-draw-card" in js
-        assert "last-draw-prizes" in js
-        assert "last-draw-meta" in js
-        assert "dashboard-kpis" in js
-        assert "renderBalls(last.primero,'gold','md')" in js
-        assert "renderBalls(last.segundo,'green','md')" in js
-        assert "renderBalls(last.tercero,'purple','md')" in js
+    # `renderBalls`, el resumen (`renderDashboard`: dashboard-hero-grid, last-draw-*, kpi) y las esferas de las
+    # recomendaciones ya no están en app.js: los pinta la isla Predicciones (T043 a T045). Lo cubren sus pruebas:
+    #   - frontend/src/components/Balls.test.tsx: una esfera por carácter, aria-label con el premio, `aria-hidden` en cada
+    #     esfera y el premio tal como llega (sin padStart ni zfill; además lo vigila frontend/src/sin-relleno.test.ts).
+    #   - frontend/src/tabs/PrediccionesResumen.test.tsx: tarjeta del último sorteo con esferas medianas dorada, verde y
+    #     morada, letras, serie y folio, y los cuatro indicadores.
+    #   - frontend/src/tabs/Predicciones.test.tsx: esferas grandes doradas (verdes con reco-ml en ML) y «×N azar».
+    # Que las clases existan en la hoja de estilos lo sigue comprobando TestStyleCSSCompleteness.
 
     def test_recommendations_and_heatmaps_use_new_ui_components(self):
         js = _read("static/app.js")
-        assert "renderBalls(r.number,useML?'green':'gold','lg')" in js
         # Las esferas de las terminaciones ya no están en app.js: las pinta la isla Terminaciones (T040). Lo cubren sus
         # pruebas (frontend/src/tabs/Terminaciones.test.tsx: esferas doradas medianas en modo estadístico, verdes y
         # con la marca reco-ml en modo ML).
