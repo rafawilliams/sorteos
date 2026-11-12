@@ -113,7 +113,8 @@ function TarjetaMes({ perfil: p, esObjetivo }: { perfil: PerfilMensual; esObjeti
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {p.hot.slice(0, 5).map((n) => (
               <span key={n.number} style={CHIP}>
-                {n.number} <small style={{ color: 'var(--text-muted)' }}>({n.count})</small>
+                {`${n.number} `}
+                <small style={{ color: 'var(--text-muted)' }}>{`(${n.count})`}</small>
               </span>
             ))}
           </div>
@@ -125,7 +126,8 @@ function TarjetaMes({ perfil: p, esObjetivo }: { perfil: PerfilMensual; esObjeti
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {p.top_endings.slice(0, 5).map((e) => (
               <span key={e.ending} style={CHIP}>
-                {e.ending} <small style={{ color: 'var(--text-muted)' }}>({e.count})</small>
+                {`${e.ending} `}
+                <small style={{ color: 'var(--text-muted)' }}>{`(${e.count})`}</small>
               </span>
             ))}
           </div>
