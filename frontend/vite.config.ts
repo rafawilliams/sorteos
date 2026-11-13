@@ -20,7 +20,7 @@ export default defineConfig({
   },
   test: {
     environment: 'jsdom',
-    // Las pruebas de contrato levantan `app.js` y la plantilla reales en jsdom: bajo carga rozaban los 5 s por defecto.
+    // Las pruebas del armazón montan las 14 secciones en jsdom: bajo carga rozaban los 5 s por defecto.
     testTimeout: 15000,
     globals: true,
     setupFiles: ['src/test/setup.ts'],

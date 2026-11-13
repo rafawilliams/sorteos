@@ -23,7 +23,7 @@ Aplicación web para analizar los resultados históricos de la Lotería Nacional
 | Backend | Python 3.13, Flask, Flask-Limiter |
 | Datos | MariaDB, SQLAlchemy 2.0 |
 | ML | scikit-learn, pandas, numpy, joblib |
-| Frontend | React 19 + TypeScript (Vite, Vitest), Chart.js; las pestañas pendientes de migrar siguen en JavaScript vanilla (`static/app.js`) |
+| Frontend | React 19 + TypeScript (Vite, Vitest), Chart.js |
 
 ## Requisitos
 
@@ -47,7 +47,7 @@ npm --prefix frontend ci          # dependencias del frontend
 npm --prefix frontend run build   # genera static/dist/app.js
 ```
 
-> La interfaz se está migrando a React por etapas. Las pestañas ya migradas (Resultados, Predicciones, Decenas, Terminaciones, Precisión, Seguimiento, Comparador, Gaps, Simulador, Mensual y Mis Números) solo aparecen si existe `static/dist/app.js`, que está en `.gitignore`: vuelve a ejecutar el `build` tras cada `git pull` que toque `frontend/`. Faltan Estadísticas, Tendencias y Análisis, y el armazón (barra de pestañas, tema y botón de actualizar), que siguen en `static/app.js`.
+> Toda la interfaz es React: la página que sirve Flask solo trae un `<div id="root">` y el script `static/dist/app.js`, que está en `.gitignore`. Sin ese build la página muestra el comando para construirlo; vuelve a ejecutar el `build` tras cada `git pull` que toque `frontend/`.
 
 ## Configuración
 
@@ -119,8 +119,8 @@ seguimiento.py    Registro congelado de recomendaciones y comparación con resul
 base.py           Configuración (.env) y conexión SQLAlchemy
 loteria.py        Modelo ORM de la tabla sorteos
 actualizar_db.py  Sincronización desde api.loteriapanama.net
-frontend/         Interfaz React + TypeScript (islas por pestaña en src/tabs, componentes, store y cliente de la API)
-static/           style.css, app.js (pestañas aún sin migrar) y dist/ (build de React, no versionado)
+frontend/         Interfaz React + TypeScript: shell/ (armazón, barra de pestañas, menú, tema, botón de actualizar), tabs/ (una por sección), components/, store/ (ReactStore y contrato), lib/ y api/ (cliente tipado)
+static/           style.css y dist/ (build de React, no versionado)
 templates/        index.html
 tests/            Tests con pytest
 ```

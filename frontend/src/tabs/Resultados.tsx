@@ -3,9 +3,9 @@
 // fechas), la tabla de sorteos con paginación de 50 y la exportación a CSV. Los premios se muestran tal como llegan (AC4).
 //
 // Lee los sorteos del Store (no necesita `stats`). El botón «Exportar CSV» vive en la cabecera de la pestaña, junto al de
-// «↻ Actualizar datos» (que es del armazón y se migra en T054): la isla lo dibuja en la ranura `#resultadosCsv` de la
-// plantilla con un portal, y sin ranura (pruebas, otra plantilla) lo pinta en su sitio.
-import { useMemo, useRef, useState, type ReactNode } from 'react'
+// «↻ Actualizar datos»: la isla lo dibuja en la ranura `#resultadosCsv` de la cabecera de la sección con un portal, y sin
+// ranura (pruebas) lo pinta en su sitio. La ranura la crea React en el mismo ciclo que la isla, así que se busca tras montar.
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { Skeleton } from '../components/Skeleton'
 import { catClase, catLabel, formatDate } from '../lib/formato'
@@ -37,6 +37,10 @@ export function Componente() {
   const [pagina, setPagina] = useState(1)
   const tablaRef = useRef<HTMLDivElement>(null)
   const zonaRef = useRef<HTMLDivElement>(null)
+  const [ranura, setRanura] = useState<HTMLElement | null>(null)
+  useEffect(() => {
+    setRanura(document.getElementById('resultadosCsv'))
+  }, [])
 
   const categorias = useMemo(() => categoriasDe(sorteos), [sorteos])
   const contadores = useMemo(() => contarPorCategoria(sorteos), [sorteos])
@@ -76,7 +80,6 @@ export function Componente() {
       ⬇ Exportar CSV
     </button>
   )
-  const ranura = document.getElementById('resultadosCsv')
   const accion: ReactNode = ranura ? createPortal(boton, ranura) : <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>{boton}</div>
 
   if (!listo) {

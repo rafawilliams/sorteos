@@ -112,8 +112,8 @@ def test_dedup_against_a_stored_zodiaco_row():
     assert validos == [] and descartados[0][1] == "fecha corregida"     # same draw, not a copy
 
 
-def test_js_labels_have_no_variants():
+def test_ui_labels_have_no_variants():
     import re
-    js = open(os.path.join(os.path.dirname(__file__), "..", "static", "app.js"), encoding="utf-8").read()
-    etiquetas = re.search(r"const CAT_LABELS=\{([^}]*)\}", js).group(1)
-    assert set(re.findall(r"(\w+):'", etiquetas)) == {"dominical", "miercolito", "gordito", "extraordinario"}
+    ts = open(os.path.join(os.path.dirname(__file__), "..", "frontend", "src", "lib", "formato.ts"), encoding="utf-8").read()
+    etiquetas = re.search(r"export const CAT_LABELS[^=]*=\s*\{([^}]*)\}", ts).group(1)
+    assert set(re.findall(r"(\w+):\s*'", etiquetas)) == {"dominical", "miercolito", "gordito", "extraordinario"}

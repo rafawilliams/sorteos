@@ -1,6 +1,6 @@
 /**
- * `ReactStore` (spec frontend-react, T052): el `Store` de la interfaz cuando React es dueño del armazón. Toma el relevo de
- * `LegacyStore`: guarda el estado él mismo y replica `loadData()`, `toggleTheme()` y `activateNavTab()` de `static/app.js`.
+ * `ReactStore` (spec frontend-react, T052): el `Store` de la interfaz, con React como dueño del armazón. Guarda el estado y
+ * replica `loadData()`, `toggleTheme()` y `activateNavTab()` del antiguo `static/app.js` (retirado en T055).
  *
  * Carga en dos fases, como el código antiguo: primero los sorteos (`/api/sorteos?all=true`, ligero) y luego las
  * estadísticas (`/api/stats`, puede tardar minutos la primera vez), con un límite de 180 000 ms por intento y 3 intentos sin
