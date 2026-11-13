@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<!-- Página del servidor de desarrollo (`npm run dev`). No se usa en producción: allí la sirve Flask con templates/index.html.
+     Mantén las dos iguales en lo que importa (raíz, aviso emergente, fondo, fuentes y hoja de estilos); lo vigila tests/test_index_desarrollo.py. -->
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lotería de Panamá — Estadísticas & Predicciones</title>
+<link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="bg-orbs" aria-hidden="true"><div class="orb"></div><div class="orb"></div><div class="orb"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<div id="root">
+  <div class="loader-wrap" role="status" aria-label="Cargando"><div class="spinner" aria-hidden="true"></div><p>Cargando datos de sorteos…</p></div>
+</div>
+
+<script type="module" src="/src/main.tsx"></script>
+</body>
+</html>

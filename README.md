@@ -77,6 +77,14 @@ python actualizar_db.py  # sincroniza desde el mes del último sorteo guardado h
 python actualizar_db.py --desde 2026-01  # o desde un mes concreto (YYYY-MM)
 ```
 
+Para trabajar en la interfaz con recarga en caliente, deja `python app.py` corriendo y, en otra terminal:
+
+```bash
+npm --prefix frontend run dev    # http://localhost:5173, reenvía /api y /static a Flask (puerto 5000)
+```
+
+Si Flask corre en otro puerto (por ejemplo contra una base de pruebas), pasa `FLASK_URL`: `FLASK_URL=http://127.0.0.1:5001 npm --prefix frontend run dev`. Abre `localhost`, no `127.0.0.1` (Vite escucha ahí en Windows). El servidor de desarrollo solo sirve para desarrollar: la aplicación real la sirve Flask con el build.
+
 La primera llamada a `/api/stats` entrena el modelo ML si no está en caché (`models/predictor.joblib`), lo que tarda entre 50 y 100 segundos. Las siguientes tardan menos de 1 segundo.
 
 El botón **↻ Actualizar datos** de la web pide el `ACTUALIZAR_TOKEN` la primera vez y lo guarda solo durante la sesión de la pestaña.

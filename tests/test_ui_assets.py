@@ -10,7 +10,7 @@ def _read(rel_path: str) -> str:
         return f.read()
 
 
-# Las comprobaciones sobre el JavaScript de `static/app.js` (esferas, resumen, mapas de calor) se fueron con cada pestaña que
+# Las comprobaciones sobre el JavaScript antiguo (`app.js` de `static/`, esferas, resumen, mapas de calor) se fueron con cada pestaña que
 # pasó a React; las cubren las pruebas de sus islas, y aquí solo queda lo que sigue en la hoja de estilos:
 #   - T043 a T045 (Predicciones): `renderBalls`, el resumen (dashboard-hero-grid, last-draw-*, kpi) y las esferas de las
 #     recomendaciones. frontend/src/components/Balls.test.tsx (una esfera por carácter, aria-label con el premio, `aria-hidden`
