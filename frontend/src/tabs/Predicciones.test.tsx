@@ -46,6 +46,15 @@ describe('isla Predicciones: estructura', () => {
     expect(screen.queryByRole('region', { name: 'Números recomendados' })).toBeNull()
   })
 
+  it('con la carga de estadísticas fallida dice que no se pudo y ofrece reintentar, sin esqueleto', () => {
+    montar({ stats: null, errorStats: true })
+    expect(screen.getByRole('alert').textContent).toContain('No se pudieron cargar las estadísticas.')
+    expect(screen.getByRole('button', { name: 'Reintentar' })).toBeTruthy()
+    expect(screen.queryByRole('status')).toBeNull()
+    expect(screen.getByRole('tablist', { name: 'Seleccionar premio' })).toBeTruthy()
+    expect(screen.getByRole('tablist', { name: 'Filtrar por categoría' })).toBeTruthy()
+  })
+
   it('el selector de premio tiene 1er, 2do y 3er Premio con las clases de siempre', () => {
     const { container } = montar()
     const lista = screen.getByRole('tablist', { name: 'Seleccionar premio' })

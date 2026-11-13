@@ -2,7 +2,7 @@ import { act, renderHook } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { describe, expect, it } from 'vitest'
 import type { Sorteo, Stats } from '../api/types'
-import { useActiveTab, useErrorSorteos, useML, usePrize, useReady, useReload, useSorteos, useStats, useStatsPrize, useTheme, useToast } from './hooks'
+import { useActiveTab, useErrorSorteos, useErrorStats, useML, usePrize, useReady, useReload, useSorteos, useStats, useStatsPrize, useTheme, useToast } from './hooks'
 import { StoreProvider } from './StoreProvider'
 import { crearStoreFalso, type StoreFalso } from './storeFalso'
 
@@ -48,6 +48,18 @@ describe('hooks de lectura', () => {
 
   it('useErrorSorteos vale false mientras no haya fallado nada', () => {
     expect(montar(() => useErrorSorteos(), crearStoreFalso()).result.current).toBe(false)
+  })
+
+  it('useErrorStats dice si la carga de estadísticas falló y se actualiza al reintentar', () => {
+    const store = crearStoreFalso({ errorStats: true })
+    const { result } = montar(() => useErrorStats(), store)
+    expect(result.current).toBe(true)
+    act(() => store.cambiar({ errorStats: false }))
+    expect(result.current).toBe(false)
+  })
+
+  it('useErrorStats vale false mientras no haya fallado nada', () => {
+    expect(montar(() => useErrorStats(), crearStoreFalso()).result.current).toBe(false)
   })
 
   it('un componente no se vuelve a pintar por cambios de campos que no lee', () => {

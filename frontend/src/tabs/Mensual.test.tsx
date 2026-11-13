@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { PerfilMensual, Stats } from '../api/types'
 import { chartOptions, DIGIT_COLORS } from '../lib/chartOptions'
 import { fmtLift, liftBar } from '../lib/formato'
+import type { Snapshot } from '../store/tipos'
 import { StoreProvider } from '../store/StoreProvider'
 import { crearStoreFalso } from '../store/storeFalso'
 import { Componente, nombre } from './Mensual'
@@ -22,8 +23,8 @@ const MR = STATS.monthly_reco
 const conReco = (parcial: Partial<Stats['monthly_reco']>): Stats => ({ ...STATS, monthly_reco: { ...MR, ...parcial } })
 const perfil = (extra: Partial<PerfilMensual> = {}): PerfilMensual => ({ ...MR.monthly_profiles[0]!, ...extra })
 
-function montar(stats: Stats | null = STATS) {
-  const store = crearStoreFalso({ activeTab: 'mensual' as never, stats })
+function montar(stats: Stats | null = STATS, extra: Partial<Snapshot> = {}) {
+  const store = crearStoreFalso({ activeTab: 'mensual' as never, stats, ...extra })
   const arbol = (
     <StoreProvider store={store}>
       <Componente />
@@ -52,6 +53,14 @@ describe('contrato y estados', () => {
     montar(null)
     expect(screen.getByRole('status', { name: 'Cargando recomendación mensual' })).toBeInTheDocument()
     expect(screen.queryByRole('region')).not.toBeInTheDocument()
+    expect(graficos.props).toHaveLength(0)
+  })
+
+  it('con la carga de estadísticas fallida dice que no se pudo y ofrece reintentar, sin esqueleto', () => {
+    montar(null, { errorStats: true })
+    expect(screen.getByRole('alert').textContent).toContain('No se pudieron cargar las estadísticas.')
+    expect(screen.getByRole('button', { name: 'Reintentar' })).toBeTruthy()
+    expect(screen.queryByRole('status')).toBeNull()
     expect(graficos.props).toHaveLength(0)
   })
 

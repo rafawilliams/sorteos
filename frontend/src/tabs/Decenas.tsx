@@ -2,7 +2,7 @@
 // triángulo de los 3 últimos sorteos, la decena recomendada, su confianza («×N azar»), la prueba hacia atrás frente al azar,
 // los últimos 3 sorteos y la distribución de decenas que siguieron al patrón.
 // El título y el subtítulo de la sección siguen en la plantilla; la isla pinta la región `Decenas recomendadas`.
-import { Skeleton } from '../components/Skeleton'
+import { EsperaStats } from '../components/EsperaStats'
 import { useReveal } from '../components/useReveal'
 import type { DecenaCategoria } from '../api/types'
 import { catLabel, fmtLift, formatDate } from '../lib/formato'
@@ -115,11 +115,7 @@ function Tarjeta({ cat, d }: { cat: string; d: DecenaCategoria }) {
 export function Componente() {
   const stats = useStats()
   if (!stats) {
-    return (
-      <div role="status" aria-label="Cargando decenas">
-        <Skeleton lineas={4} />
-      </div>
-    )
+    return <EsperaStats etiqueta="Cargando decenas" />
   }
   const categorias = Object.entries(stats.decena_recomendada ?? {}).filter((par): par is [string, DecenaCategoria] => par[1] !== undefined)
   return (

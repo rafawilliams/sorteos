@@ -8,6 +8,7 @@ import type { Premio, Stats } from '../api/types'
 import { Balls } from '../components/Balls'
 import { BotonCopiar } from '../components/BotonCopiar'
 import { InterruptorML } from '../components/InterruptorML'
+import { EsperaStats } from '../components/EsperaStats'
 import { Skeleton } from '../components/Skeleton'
 import { Tablist } from '../components/Tablist'
 import { catLabel, fmtLift, liftBar } from '../lib/formato'
@@ -89,14 +90,14 @@ export function Componente() {
       </div>
       <Tablist etiqueta="Filtrar por categoría" pestañas={pestañasCategoria} valor={catValida} onCambio={setCat} idPrefijo="recoCat" controla={controlaRegion} />
       {!stats ? (
-        <div id={ID_REGION} role="status" aria-label="Cargando recomendaciones">
+        <EsperaStats id={ID_REGION} etiqueta="Cargando recomendaciones">
           <div className="skel-grid">
             <Skeleton lineas={4} />
             <Skeleton lineas={4} />
             <Skeleton lineas={4} />
             <Skeleton lineas={4} />
           </div>
-        </div>
+        </EsperaStats>
       ) : (
         <div id={ID_REGION} role="region" aria-label="Números recomendados" aria-live="polite">
           {recos.length === 0 ? (

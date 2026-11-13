@@ -2,6 +2,7 @@
 // `updateFavBadge` de static/app.js: una lista de números guardada en el navegador (`lp_favorites`) que se cruza con los
 // sorteos recientes y con las recomendaciones del modelo, y pone una insignia en la pestaña de la barra.
 import { useEffect, useId, useRef, useState } from 'react'
+import { EsperaStats } from '../components/EsperaStats'
 import { Skeleton } from '../components/Skeleton'
 import { useInsignia } from '../components/useInsignia'
 import { useReveal } from '../components/useReveal'
@@ -133,9 +134,9 @@ export function Componente() {
 
       <div role="region" aria-label="Lista de números favoritos" aria-live="polite" ref={regionRef} tabIndex={-1} style={{ outline: 'none' }}>
         {stats === null ? (
-          <div role="status" aria-label="Cargando favoritos" style={{ marginTop: 20 }}>
+          <EsperaStats etiqueta="Cargando favoritos" estilo={{ marginTop: 20 }}>
             <Skeleton lineas={3} />
-          </div>
+          </EsperaStats>
         ) : lista.length === 0 ? (
           <div className="card reveal" style={{ marginTop: 20, textAlign: 'center', padding: 40 }} ref={revelar}>
             <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>

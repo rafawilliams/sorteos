@@ -377,6 +377,45 @@ function queMarcaErrorTrasRecargar(): Store {
   } as Store
 }
 
+/** Defecto único: el almacén no tiene el campo `errorStats`. */
+function sinErrorStats(): Store {
+  const base = crearStoreFalso()
+  const derivadas = new WeakMap<Snapshot, Snapshot>()
+  return {
+    ...base,
+    getSnapshot() {
+      const real = base.getSnapshot()
+      let derivada = derivadas.get(real)
+      if (!derivada) {
+        const { errorStats: _omitido, ...resto } = real
+        derivada = resto as Snapshot
+        derivadas.set(real, derivada)
+      }
+      return derivada
+    },
+  } as Store
+}
+
+/** Defecto único: `errorStats` está en true aunque no haya fallado nada. */
+function conErrorStatsSinFallo(): Store {
+  return crearStoreFalso({ errorStats: true })
+}
+
+/** Defecto único: una recarga correcta deja `errorStats` en true. */
+function queMarcaErrorStatsTrasRecargar(): Store {
+  const base = crearStoreFalso()
+  return {
+    ...base,
+    actions: {
+      ...base.actions,
+      reload: async () => {
+        await base.actions.reload()
+        base.cambiar({ errorStats: true })
+      },
+    },
+  } as Store
+}
+
 function queCambiaOtrosCamposSinMotivo(): Store {
   const base = crearStoreFalso()
   return {
@@ -655,6 +694,18 @@ describe('la suite de contrato detecta cada defecto por su causa', () => {
 
   it('una recarga correcta que deja `errorSorteos` en true', async () => {
     await rechaza(() => comprobaciones.errorDeCargaDeSorteos!(queMarcaErrorTrasRecargar, control), /tras una recarga correcta/)
+  })
+
+  it('un almacén sin el campo `errorStats`', async () => {
+    await rechaza(() => comprobaciones.errorDeCargaDeStats!(sinErrorStats, control), /debe ser un booleano/)
+  })
+
+  it('un almacén con `errorStats` en true sin que haya fallado nada', async () => {
+    await rechaza(() => comprobaciones.errorDeCargaDeStats!(conErrorStatsSinFallo, control), /debe ser false/)
+  })
+
+  it('una recarga correcta que deja `errorStats` en true', async () => {
+    await rechaza(() => comprobaciones.errorDeCargaDeStats!(queMarcaErrorStatsTrasRecargar, control), /tras una recarga correcta/)
   })
 
   it('acciones que cambian de identidad entre lecturas', async () => {

@@ -12,7 +12,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { Snapshot, Store } from './tipos'
 
-const CAMPOS = ['sorteos', 'stats', 'useML', 'prize', 'statsPrize', 'theme', 'activeTab', 'ready', 'simulacion', 'errorSorteos'] as const satisfies readonly (keyof Snapshot)[]
+const CAMPOS = ['sorteos', 'stats', 'useML', 'prize', 'statsPrize', 'theme', 'activeTab', 'ready', 'simulacion', 'errorSorteos', 'errorStats'] as const satisfies readonly (keyof Snapshot)[]
 const ACCIONES = ['setUseML', 'setPrize', 'setStatsPrize', 'setTheme', 'setActiveTab', 'toast', 'simularNumero', 'reload'] as const
 
 /** Cómo llevar a un almacén concreto a un estado cargado y cómo hacer que falle su siguiente recarga. */
@@ -215,6 +215,22 @@ export const comprobaciones: Record<string, Comprobacion> = {
     expect(store.getSnapshot().errorSorteos, 'tras una recarga correcta «errorSorteos» sigue en false').toBe(false)
   },
 
+  /**
+   * `errorStats` (`tipos.ts`): igual que `errorSorteos`, para la carga de estadísticas. Un booleano que vale false mientras
+   * no haya fallado, vacío y cargado, y que una recarga correcta no toca. (Que pase a true al fallar todos los intentos de
+   * la primera carga, y a false al reintentar, se prueba contra cada implementación: `ReactStore` en reactStore.test.ts.)
+   */
+  async errorDeCargaDeStats(crear, control) {
+    await enEstados(crear, control, (store, momento) => {
+      expect(typeof store.getSnapshot().errorStats, `«errorStats» debe ser un booleano (${momento})`).toBe('boolean')
+      expect(store.getSnapshot().errorStats, `sin ningún fallo de carga «errorStats» debe ser false (${momento})`).toBe(false)
+    })
+    const store = crear()
+    await control.cargar(store)
+    await store.actions.reload()
+    expect(store.getSnapshot().errorStats, 'tras una recarga correcta «errorStats» sigue en false').toBe(false)
+  },
+
   /** Las acciones y `subscribe` van en dependencias de efectos: deben ser la misma función siempre, también tras cambios. */
   async identidadDeAcciones(crear, control) {
     const store = crear()
@@ -273,6 +289,7 @@ export function describirContratoDeStore(nombre: string, crear: () => Store, con
     it('subscribe avisa tras un cambio y deja de avisar al cancelar', () => comprobaciones.suscripcion!(crear, control))
     it('simularNumero deja el Simulador activo y una petición nueva en `simulacion`, también al repetir el número', () => comprobaciones.simulacion!(crear, control))
     it('errorSorteos es un booleano que vale false sin fallos de carga, vacío y cargado', () => comprobaciones.errorDeCargaDeSorteos!(crear, control))
+    it('errorStats es un booleano que vale false sin fallos de carga, vacío y cargado', () => comprobaciones.errorDeCargaDeStats!(crear, control))
     it('subscribe y las acciones funcionan sueltas, sin depender de this', () => comprobaciones.sinDependerDeThis!(crear, control))
     it('las acciones y subscribe conservan su identidad, también tras cambios de estado', () => comprobaciones.identidadDeAcciones!(crear, control))
     it('reload conserva los datos viejos, se resuelve y nunca rechaza, ni aunque falle', () => comprobaciones.recarga!(crear, control))

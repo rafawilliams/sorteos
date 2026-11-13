@@ -3,6 +3,7 @@
 // caliente del año y total de sorteos). Los premios se muestran tal como llegan (AC4).
 import { useRef } from 'react'
 import { Balls } from '../components/Balls'
+import { EsperaStats } from '../components/EsperaStats'
 import { Skeleton } from '../components/Skeleton'
 import { catClase, catLabel, fmtLift, formatDate } from '../lib/formato'
 import { terminacionCaliente } from '../lib/predicciones'
@@ -32,12 +33,12 @@ export function Componente() {
             </button>
           </div>
         ) : (
-          <div role="status" aria-label="Cargando resumen">
+          <EsperaStats etiqueta="Cargando resumen">
             <div className="skel-grid">
               <Skeleton lineas={4} />
               <Skeleton lineas={4} />
             </div>
-          </div>
+          </EsperaStats>
         )}
       </div>
     )

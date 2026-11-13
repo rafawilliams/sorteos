@@ -10,7 +10,7 @@ import type { PerfilMensual } from '../api/types'
 import { Balls } from '../components/Balls'
 import { BotonCopiar } from '../components/BotonCopiar'
 import { Chart } from '../components/Chart'
-import { Skeleton } from '../components/Skeleton'
+import { EsperaStats } from '../components/EsperaStats'
 import { useReveal } from '../components/useReveal'
 import { chartOptions, DIGIT_COLORS } from '../lib/chartOptions'
 import { fmtLift, liftBar } from '../lib/formato'
@@ -141,11 +141,7 @@ export function Componente() {
   const stats = useStats()
   const revelar = useReveal()
   if (!stats) {
-    return (
-      <div role="status" aria-label="Cargando recomendación mensual">
-        <Skeleton lineas={4} />
-      </div>
-    )
+    return <EsperaStats etiqueta="Cargando recomendación mensual" />
   }
   const mr = stats.monthly_reco
   if (!mr) return <p style={{ color: 'var(--text-muted)' }}>Aún no hay datos mensuales.</p>

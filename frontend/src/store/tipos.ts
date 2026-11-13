@@ -37,7 +37,7 @@ export interface Snapshot {
    * sin mirar la respuesta HTTP).
    *
    * Si la carga falla tras sus reintentos, `stats` conserva lo que tuviera (`null` la primera vez) y se registra en la
-   * consola; no hay un campo de error para las estadísticas (sí lo hay para los sorteos: `errorSorteos`).
+   * consola; si no había ninguna, `errorStats` pasa a `true` para que la isla lo diga en vez de quedarse en su esqueleto.
    */
   stats: Stats | null
   /** Modo de predicción: `true` = aprendizaje automático, `false` = estadístico. */
@@ -62,6 +62,13 @@ export interface Snapshot {
    * volver a pedir los sorteos lo devuelve a `false` mientras dura el intento. Vale `false` si no ha fallado nada.
    */
   errorSorteos: boolean
+  /**
+   * `true` cuando la carga de estadísticas ha fallado tras todos sus reintentos y NO hay ninguna (`stats` es `null`): una
+   * isla que lee `stats` no puede distinguir «todavía cargando» de «no va a llegar». Un fallo al RECARGAR con
+   * estadísticas ya cargadas no lo marca (se conservan las viejas), y volver a pedirlas lo devuelve a `false` mientras
+   * dura el intento. Vale `false` si no ha fallado nada. Mismo patrón que `errorSorteos`.
+   */
+  errorStats: boolean
 }
 
 /** Una petición de simulación: el número (ya normalizado a 4 cifras) y un contador que crece con cada petición. */

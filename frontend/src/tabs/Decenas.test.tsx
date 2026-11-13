@@ -3,6 +3,7 @@ import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import type { DecenaCategoria, Stats } from '../api/types'
 import { fmtLift, formatDate } from '../lib/formato'
+import type { Snapshot } from '../store/tipos'
 import { StoreProvider } from '../store/StoreProvider'
 import { crearStoreFalso } from '../store/storeFalso'
 import { Componente, nombre } from './Decenas'
@@ -14,8 +15,8 @@ const BACKTEST = { acierto_pct: 31.5, acierto_pct_azar: 29.2, aciertos: 63, sort
 const decena = (extra: Partial<DecenaCategoria> = {}): DecenaCategoria => ({ ...BASE, ...extra })
 const conDecenas = (d: Stats['decena_recomendada']): Stats => ({ ...STATS, decena_recomendada: d })
 
-function montar(stats: Stats | null = STATS) {
-  const store = crearStoreFalso({ activeTab: 'decenas' as never, stats })
+function montar(stats: Stats | null = STATS, extra: Partial<Snapshot> = {}) {
+  const store = crearStoreFalso({ activeTab: 'decenas' as never, stats, ...extra })
   return render(
     <StoreProvider store={store}>
       <Componente />
@@ -35,6 +36,13 @@ describe('isla Decenas', () => {
     montar(null)
     expect(screen.getByRole('status', { name: 'Cargando decenas' })).toBeTruthy()
     expect(screen.queryByRole('region', { name: 'Decenas recomendadas' })).toBeNull()
+  })
+
+  it('con la carga de estadísticas fallida dice que no se pudo y ofrece reintentar, sin esqueleto', () => {
+    montar(null, { errorStats: true })
+    expect(screen.getByRole('alert').textContent).toContain('No se pudieron cargar las estadísticas.')
+    expect(screen.getByRole('button', { name: 'Reintentar' })).toBeTruthy()
+    expect(screen.queryByRole('status')).toBeNull()
   })
 
   it('sin ninguna categoría dice que faltan datos', () => {

@@ -65,7 +65,7 @@ describirContratoDeStore('ReactStore', () => crearReactStore(), control)
 describe('ReactStore: estado de partida', () => {
   it('empieza vacío: sin sorteos ni estadísticas, premios primero, modo estadístico y Predicciones activa', () => {
     const s = crearReactStore().getSnapshot()
-    expect(s).toEqual({ sorteos: [], stats: null, useML: false, prize: 'primero', statsPrize: 'primero', theme: 'dark', activeTab: 'predicciones', ready: false, simulacion: null, errorSorteos: false })
+    expect(s).toEqual({ sorteos: [], stats: null, useML: false, prize: 'primero', statsPrize: 'primero', theme: 'dark', activeTab: 'predicciones', ready: false, simulacion: null, errorSorteos: false, errorStats: false })
   })
 
   it('crearlo no pide nada a la red: la carga la lanza quien lo usa', () => {
@@ -394,6 +394,61 @@ describe('ReactStore: estadísticas con reintentos', () => {
     red.guion.stats = ['red']
     await crearReactStore().cargar()
     expect(red.deStats()).toHaveLength(INTENTOS_STATS)
+  })
+
+  it('con las estadísticas por llegar `errorStats` es false; si llegan, sigue en false', async () => {
+    const store = crearReactStore()
+    expect(store.getSnapshot().errorStats).toBe(false)
+    await store.cargar()
+    expect(store.getSnapshot()).toMatchObject({ errorStats: false, stats: STATS })
+  })
+
+  it('si los 3 intentos fallan y no hay estadísticas, `errorStats` es true', async () => {
+    red.guion.stats = ['500']
+    const store = crearReactStore()
+    await store.cargar()
+    expect(store.getSnapshot()).toMatchObject({ errorStats: true, stats: null })
+  })
+
+  it('un intento que falla pero no es el último no activa `errorStats`', async () => {
+    red.guion.stats = ['red', 'red', 'ok']
+    const store = crearReactStore()
+    const vistos: boolean[] = []
+    store.subscribe(() => vistos.push(store.getSnapshot().errorStats))
+    await store.cargar()
+    expect(vistos).not.toContain(true)
+    expect(store.getSnapshot().errorStats).toBe(false)
+  })
+
+  it('un nuevo intento baja `errorStats` mientras dura y lo deja en false si funciona', async () => {
+    red.guion.stats = ['500']
+    const store = crearReactStore()
+    await store.cargar()
+    expect(store.getSnapshot().errorStats).toBe(true)
+    red.guion.stats = ['ok']
+    const vistos: boolean[] = []
+    store.subscribe(() => vistos.push(store.getSnapshot().errorStats))
+    await store.actions.reload()
+    expect(vistos[0]).toBe(false)
+    expect(store.getSnapshot()).toMatchObject({ errorStats: false, stats: STATS })
+  })
+
+  it('un nuevo intento que vuelve a fallar deja `errorStats` otra vez en true', async () => {
+    red.guion.stats = ['500']
+    const store = crearReactStore()
+    await store.cargar()
+    await store.actions.reload()
+    expect(store.getSnapshot()).toMatchObject({ errorStats: true, stats: null })
+  })
+
+  it('un fallo al recargar con estadísticas ya cargadas las conserva y no marca error', async () => {
+    const store = crearReactStore()
+    await store.cargar()
+    const viejas = store.getSnapshot().stats
+    red.guion.stats = ['500']
+    await store.actions.reload()
+    expect(store.getSnapshot().stats).toBe(viejas)
+    expect(store.getSnapshot().errorStats).toBe(false)
   })
 
   it.each<[Respuesta, string]>([
