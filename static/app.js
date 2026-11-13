@@ -39,13 +39,12 @@ function _lpEmit(...campos){
   _lpListeners.forEach(fn=>{try{fn()}catch(e){console.error(e)}});
   campos.forEach(c=>document.dispatchEvent(new CustomEvent('lp:change',{detail:c})));
 }
-function _lpTabPremio(contenedor,p){return Array.from(document.querySelectorAll(contenedor+' .prize-tab')).find(t=>t.dataset.prize===p)}
 window.LP={
   getSnapshot:_lpSnapshot,
   subscribe(fn){_lpListeners.add(fn);return()=>{_lpListeners.delete(fn)}},
   setUseML(v){setUseMLLP(!!v)},
   setPrize(p){if(!['primero','segundo','tercero'].includes(p))return;currentPrize=p;_lpEmit('prize')},
-  setStatsPrize(p){const tab=_lpTabPremio('#statsPrizeTabs',p);if(tab)selectStatsPrize(tab)},
+  setStatsPrize(p){if(!['primero','segundo','tercero'].includes(p))return;currentStatsPrize=p;_lpEmit('statsPrize')},
   toast(msg,ms){showToast(msg,ms)},
   simular(n){
     const t=document.querySelector('#navTabs [data-tab="simulador"]');if(!t)return;
@@ -67,11 +66,6 @@ function applyTheme(theme){
 function toggleTheme(){
   const current=document.documentElement.getAttribute('data-theme')||'dark';
   applyTheme(current==='dark'?'light':'dark');
-  // Rebuild charts and heatmaps with new theme colors
-  if(stats.trends){renderTrendChart();renderVolumeChart()}
-  if(stats.position_frequency){renderPositionGrids();renderHeatmap()}
-  if(stats.by_category)renderRadarChart();
-  if(allSorteos.length)renderScatterChart();
 }
 (function(){const saved=localStorage.getItem('theme');if(saved)applyTheme(saved)})();
 
@@ -79,7 +73,6 @@ function toggleTheme(){
 let allSorteos=[], stats={};
 let currentPrize='primero', currentStatsPrize='primero';
 let useML=false;
-let trendChartInstance=null, volumeChartInstance=null;
 
 const CAT_LABELS={dominical:'Dominical',miercolito:'Miercolito',gordito:'Gordito del Zodiaco',extraordinario:'Extraordinario'};
 function catLabel(k){return CAT_LABELS[k]||k.charAt(0).toUpperCase()+k.slice(1)}
@@ -132,10 +125,6 @@ function initTabs(){
     tab.addEventListener('click',()=>activateNavTab(tab));
   });
   initTablistKeyboard(navTabs);
-
-  // Prize tabs keyboard nav (solo el de Estadísticas: el de Predicciones es del componente Tablist de React)
-  const statsPrizeTabs=document.getElementById('statsPrizeTabs');
-  if(statsPrizeTabs)initTablistKeyboard(statsPrizeTabs);
 
   initMenu();
 }
@@ -207,18 +196,12 @@ async function loadData(){
 }
 
 function renderQuick(){
-  // Immediate renders that only need sorteos data
+  // Las pestañas son islas de React: aquí solo queda lo que pertenece al armazón
   renderLastUpdate();
-  renderScatterChart();
 }
 
 function renderFull(){
-  // Full renders once stats are available
   renderLastUpdate();
-  renderStatsForPrize(currentStatsPrize);renderSeriesLetras();renderFormatos();
-  renderRadarChart();renderScatterChart();
-  renderPositionGrids();renderHeatmap();renderTrendChart();renderVolumeChart();
-  initStatsPrizeTabs();
 }
 
 // LAST UPDATE
@@ -250,28 +233,7 @@ async function runUpdate(){
   btn.disabled=false;btn.textContent='↻ Actualizar datos';
 }
 
-// PRIZE TABS
-function _setAriaTab(container,active){
-  container.querySelectorAll('[role="tab"]').forEach(t=>{
-    t.classList.remove('active');
-    t.setAttribute('aria-selected','false');
-    t.setAttribute('tabindex','-1');
-  });
-  active.classList.add('active');
-  active.setAttribute('aria-selected','true');
-  active.setAttribute('tabindex','0');
-}
 function _statsListas(){return _lpStatsOk(stats)}
-function selectStatsPrize(tab){
-  _setAriaTab(document.getElementById('statsPrizeTabs'),tab);currentStatsPrize=tab.dataset.prize;
-  _lpEmit('statsPrize');
-  if(_statsListas()){renderStatsForPrize(currentStatsPrize);triggerReveals()}
-}
-function initStatsPrizeTabs(){
-  document.getElementById('statsPrizeTabs').querySelectorAll('.prize-tab').forEach(tab=>{
-    tab.addEventListener('click',()=>selectStatsPrize(tab));
-  });
-}
 // ML TOGGLE
 function toggleML(){setUseMLLP(!useML)}
 function setUseMLLP(valor){
@@ -287,161 +249,6 @@ function setUseMLLP(valor){
   // Show ML info badge
   const info=stats.ml_info||{};
   if(useML&&info.trained)showToast(`ML: ${info.train_samples} muestras · Entrenado: ${info.train_date}`,3000);
-}
-
-// STATS FOR PRIZE
-function renderStatsForPrize(prize){
-  const pd=(stats.prizes&&stats.prizes[prize])||{};
-  const df=pd.digit_frequency||stats.digit_frequency||{};
-  const ldp=pd.last_digit_pairs||stats.last_digit_pairs||{};
-  const hc=pd.hot_cold||stats.hot_cold||{hot:[],cold:[]};
-  const dMax=Math.max(...Object.values(df),1);
-  document.getElementById('digitChart').innerHTML=Object.entries(df).map(([d,c])=>`<div class="bar-row"><span class="bar-label">${d}</span><div class="bar-track"><div class="bar-fill gold" style="width:${(c/dMax*100).toFixed(1)}%">${c}</div></div></div>`).join('');
-  const ent=Object.entries(ldp).slice(0,12),eMax=Math.max(...ent.map(e=>e[1]),1);
-  document.getElementById('endingsChart').innerHTML=ent.map(([n,c])=>`<div class="bar-row"><span class="bar-label">${n}</span><div class="bar-track"><div class="bar-fill green" style="width:${(c/eMax*100).toFixed(1)}%">${c}</div></div></div>`).join('');
-  const hMax=Math.max(...hc.hot.map(h=>h.count),1),cMax=Math.max(...hc.cold.map(h=>h.count),1);
-  document.getElementById('hotChart').innerHTML=hc.hot.map(h=>`<div class="bar-row"><span class="bar-label">${h.number}</span><div class="bar-track"><div class="bar-fill hot" style="width:${(h.count/hMax*100).toFixed(1)}%">${h.count}</div></div></div>`).join('');
-  document.getElementById('coldChart').innerHTML=hc.cold.map(h=>`<div class="bar-row"><span class="bar-label">${h.number}</span><div class="bar-track"><div class="bar-fill cold" style="width:${(h.count/cMax*100).toFixed(1)}%">${h.count}</div></div></div>`).join('');
-}
-function renderSeriesLetras(){
-  const sf=stats.series_folio||{},series=sf.series||[],letras=stats.letras||[];
-  const sMax=Math.max(...series.map(s=>s.count),1);
-  document.getElementById('seriesChart').innerHTML=series.map(s=>`<div class="bar-row"><span class="bar-label">${esc(s.value)}</span><div class="bar-track"><div class="bar-fill gold" style="width:${(s.count/sMax*100).toFixed(1)}%">${s.count}</div></div></div>`).join('');
-  const lMax=Math.max(...letras.map(l=>l.count),1);
-  document.getElementById('letrasChart').innerHTML=letras.map(l=>`<div class="bar-row"><span class="bar-label">${esc(l.letra)}</span><div class="bar-track"><div class="bar-fill green" style="width:${(l.count/lMax*100).toFixed(1)}%">${l.count}</div></div></div>`).join('');
-}
-
-// ==================== OTHER PRIZE FORMATS (2 and 5 digits) ====================
-function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function renderFormatos(){
-  const el=document.getElementById('formatosGrid');if(!el)return;
-  const f=stats.formatos||{};
-  const names={'2':'2 cifras','5':'5 cifras'},posNames={'2':['Decenas','Unidades'],'5':['Dec. millar','Millares','Centenas','Decenas','Unidades']};
-  const prizeNames={primero:'1ro',segundo:'2do',tercero:'3ro'};
-  el.innerHTML=['2','5'].map(w=>{
-    const d=f[w];
-    if(!d||!d.total)return`<div><h4 class="card-title">${names[w]}</h4><p class="section-subtitle">Sin premios de este formato.</p></div>`;
-    const cats=Object.entries(d.by_category||{}).map(([c,n])=>`${esc(c)} (${n})`).join(', ');
-    const prizes=Object.entries(d.by_prize||{}).map(([p,n])=>`${prizeNames[p]||esc(p)}: ${n}`).join(' · ');
-    const range=d.date_range?`${esc(d.date_range.from)} → ${esc(d.date_range.to)}`:'';
-    const grids=(d.position_frequency||[]).map((pos,idx)=>{
-      const max=Math.max(...Object.values(pos),1);
-      const cells=Object.entries(pos).map(([dg,c])=>{const i=c/max;return`<div class="pos-cell" style="background:rgba(212,175,55,${(i*0.6+0.05).toFixed(2)});color:${i>0.5?(isLight()?'#fff':'var(--bg-deep)'):'var(--text-primary)'}" title="${posNames[w][idx]}: dígito ${dg} — ${c} veces">${dg}<br><small style="font-size:0.6rem;opacity:0.7">${c}</small></div>`}).join('');
-      return`<div style="margin-top:0.75rem"><small class="section-subtitle">${posNames[w][idx]}</small><div class="pos-grid">${cells}</div></div>`;
-    }).join('');
-    const hot=(d.hot_cold&&d.hot_cold.hot)||[],hMax=Math.max(...hot.map(h=>h.count),1);
-    const hotBars=hot.map(h=>`<div class="bar-row"><span class="bar-label">${esc(h.number)}</span><div class="bar-track"><div class="bar-fill hot" style="width:${(h.count/hMax*100).toFixed(1)}%">${h.count}</div></div></div>`).join('');
-    return`<div aria-label="Estadísticas de premios de ${names[w]}">
-      <h4 class="card-title">${names[w]} — ${d.total} premios</h4>
-      <p class="section-subtitle">${cats}<br>${prizes}<br>${range}</p>
-      ${grids}
-      <h4 class="card-title" style="margin-top:1rem">Más frecuentes</h4>
-      <div class="bar-chart" role="img" aria-label="Números de ${names[w]} más frecuentes">${hotBars}</div>
-    </div>`;
-  }).join('');
-}
-
-// ==================== RADAR & SCATTER CHARTS ====================
-let radarChartInstance=null, scatterChartInstance=null;
-
-function renderRadarChart(){
-  const byCat=stats.by_category||{};
-  const mainCats=['dominical','miercolito','gordito'];
-  const available=mainCats.filter(c=>byCat[c]&&byCat[c].digit_frequency);
-  if(!available.length)return;
-  const labels=['0','1','2','3','4','5','6','7','8','9'];
-  const catColors={dominical:['#ffd700','rgba(255,215,0,0.15)'],miercolito:['#34d399','rgba(52,211,153,0.15)'],gordito:['#ff4d4d','rgba(255,77,77,0.15)']};
-  const datasets=available.map(cat=>{
-    const df=byCat[cat].digit_frequency;
-    const total=Object.values(df).reduce((a,b)=>a+b,0)||1;
-    return{
-      label:catLabel(cat),data:labels.map(d=>(df[d]||0)/total*100),
-      borderColor:catColors[cat]?catColors[cat][0]:'#c084fc',backgroundColor:catColors[cat]?catColors[cat][1]:'rgba(192,132,252,0.15)',
-      borderWidth:2,pointRadius:4,pointHoverRadius:7,pointBackgroundColor:catColors[cat]?catColors[cat][0]:'#c084fc',
-    };
-  });
-  const ctx=document.getElementById('radarChart').getContext('2d');
-  if(radarChartInstance)radarChartInstance.destroy();
-  const light=isLight();
-  radarChartInstance=new Chart(ctx,{
-    type:'radar',data:{labels:labels.map(d=>'Dígito '+d),datasets},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{position:'bottom',labels:{color:light?'#5c554a':'#8a8693',font:{family:'DM Sans',size:11},boxWidth:12,padding:16}},
-        tooltip:{backgroundColor:light?'#fff':'#111118',borderColor:light?'rgba(139,105,20,0.2)':'#d4af3740',borderWidth:1,titleColor:light?'#1a1612':'#f0ece2',bodyColor:light?'#5c554a':'#8a8693',
-          callbacks:{label:function(c){return c.dataset.label+': '+c.raw.toFixed(1)+'%'}}}},
-      scales:{r:{angleLines:{color:light?'rgba(139,105,20,0.1)':'rgba(212,175,55,0.08)'},grid:{color:light?'rgba(139,105,20,0.1)':'rgba(212,175,55,0.08)'},
-        pointLabels:{color:light?'#5c554a':'#8a8693',font:{family:'DM Sans',size:11}},
-        ticks:{display:false},beginAtZero:true}},
-    },
-  });
-}
-
-function renderScatterChart(){
-  if(!allSorteos.length)return;
-  const points=allSorteos.slice(0,500).filter(s=>(s.primero||'').length===4&&(s.segundo||'').length===4).map(s=>({x:parseInt(s.primero)||0,y:parseInt(s.segundo)||0}));
-  if(!points.length)return;
-  const ctx=document.getElementById('scatterChart').getContext('2d');
-  if(scatterChartInstance)scatterChartInstance.destroy();
-  const light=isLight();
-  scatterChartInstance=new Chart(ctx,{
-    type:'scatter',data:{datasets:[{
-      label:'1er vs 2do Premio',data:points,
-      backgroundColor:light?'rgba(184,134,11,0.35)':'rgba(255,215,0,0.3)',
-      borderColor:light?'rgba(184,134,11,0.6)':'rgba(255,215,0,0.5)',
-      borderWidth:1,pointRadius:3,pointHoverRadius:6,
-    }]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},
-        tooltip:{backgroundColor:light?'#fff':'#111118',borderColor:light?'rgba(139,105,20,0.2)':'#d4af3740',borderWidth:1,titleColor:light?'#1a1612':'#f0ece2',bodyColor:light?'#5c554a':'#8a8693',
-          callbacks:{label:function(c){return'1ro: '+String(c.raw.x).padStart(4,'0')+' — 2do: '+String(c.raw.y).padStart(4,'0')}}}},
-      scales:{
-        x:{title:{display:true,text:'1er Premio',color:light?'#5c554a':'#8a8693',font:{family:'DM Sans',size:12}},ticks:{color:light?'#9a9189':'#4a4656',font:{family:'JetBrains Mono',size:10}},grid:{color:light?'rgba(139,105,20,0.08)':'rgba(212,175,55,0.06)'}},
-        y:{title:{display:true,text:'2do Premio',color:light?'#5c554a':'#8a8693',font:{family:'DM Sans',size:12}},ticks:{color:light?'#9a9189':'#4a4656',font:{family:'JetBrains Mono',size:10}},grid:{color:light?'rgba(139,105,20,0.08)':'rgba(212,175,55,0.06)'}},
-      },
-    },
-  });
-}
-
-// ==================== ENDINGS SECTION ====================
-// POSITION ANALYSIS
-function renderPositionGrids(){
-  const pf=stats.position_frequency||[];const posLabels=['Millares','Centenas','Decenas','Unidades'];
-  document.getElementById('positionGrids').innerHTML=pf.map((pos,idx)=>{
-    const max=Math.max(...Object.values(pos),1);
-    const cells=Object.entries(pos).map(([d,c])=>{const i=c/max;return`<div class="pos-cell" style="background:rgba(212,175,55,${(i*0.6+0.05).toFixed(2)});color:${i>0.5?(isLight()?'#fff':'var(--bg-deep)'):'var(--text-primary)'}" title="${posLabels[idx]}: dígito ${d} — ${c} veces">${d}<br><small style="font-size:0.6rem;opacity:0.7">${c}</small></div>`}).join('');
-    return`<div class="card reveal"><div class="card-header"><div class="card-title">${posLabels[idx]}</div><span class="card-badge badge-gold">Pos ${idx+1}</span></div><div class="pos-grid">${cells}</div></div>`;
-  }).join('');
-}
-function renderHeatmap(){
-  const pf=stats.position_frequency||[];if(!pf.length)return;
-  const posLabels=['Millares','Centenas','Decenas','Unidades'];let allMax=0;
-  pf.forEach(p=>{Object.values(p).forEach(v=>{if(v>allMax)allMax=v})});
-  let h=`<div class="heatmap-legend" aria-hidden="true"><span>Menor frec.</span><span class="heatmap-scale"><span class="heatmap-swatch" style="background:rgba(212,175,55,0.08)"></span><span class="heatmap-swatch" style="background:rgba(212,175,55,0.3)"></span><span class="heatmap-swatch" style="background:rgba(212,175,55,0.6)"></span></span><span>Mayor frec. (máx: ${allMax})</span></div>`;
-  h+='<table class="heatmap-table"><thead><tr><th style="padding:10px;color:var(--text-muted);font-size:0.72rem;">Posición</th>';
-  for(let d=0;d<10;d++)h+=`<th style="padding:10px;text-align:center;color:var(--text-muted);font-family:var(--font-mono);font-size:0.82rem;">${d}</th>`;
-  h+='</tr></thead><tbody>';
-  pf.forEach((pos,idx)=>{h+=`<tr><td style="padding:10px;color:var(--text-secondary);font-size:0.82rem;font-weight:600;">${posLabels[idx]}</td>`;
-    for(let d=0;d<10;d++){const v=pos[String(d)]||0;const i=v/(allMax||1);const peak=i>=0.9?' cell-peak':'';h+=`<td class="${peak.trim()}" style="padding:10px;text-align:center;font-family:var(--font-mono);font-size:0.85rem;font-weight:600;background:rgba(${Math.round(212*i)},${Math.round(175*i)},${Math.round(55*i)},${(i*0.5+0.03).toFixed(2)});border-radius:8px;color:${i>0.4?(isLight()?'#fff':'#0a0a0f'):(isLight()?'#1a1612':'#f0ece2')};cursor:default;" title="${posLabels[idx]} dígito ${d}: ${v}">${v}</td>`}h+='</tr>'});
-  h+='</tbody></table>';document.getElementById('heatmap').innerHTML=h;
-}
-
-// TREND CHARTS
-const DIGIT_COLORS=['#ffd700','#ff4d4d','#4dabff','#34d399','#c084fc','#ff9f43','#ee5a6f','#0abde3','#10ac84','#f368e0'];
-function isLight(){return document.documentElement.getAttribute('data-theme')==='light'}
-function chartOpts(legend=true){const light=isLight();const textCol=light?'#5c554a':'#8a8693';const mutedCol=light?'#9a9189':'#4a4656';const gridCol=light?'rgba(139,105,20,0.1)':'rgba(212,175,55,0.06)';const tipBg=light?'#ffffff':'#111118';const tipBorder=light?'rgba(139,105,20,0.2)':'#d4af3740';const tipTitle=light?'#1a1612':'#f0ece2';return{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:legend,position:'bottom',labels:{color:textCol,font:{family:'DM Sans',size:11},boxWidth:12,padding:16}},tooltip:{backgroundColor:tipBg,borderColor:tipBorder,borderWidth:1,titleColor:tipTitle,bodyColor:textCol}},scales:{x:{ticks:{color:mutedCol,font:{family:'DM Sans',size:10}},grid:{color:gridCol}},y:{ticks:{color:mutedCol,font:{family:'JetBrains Mono',size:10}},grid:{color:gridCol}}}}}
-function renderTrendChart(){
-  const t=stats.trends||[];if(!t.length)return;
-  const ds=[];for(let d=0;d<10;d++)ds.push({label:'Dígito '+d,data:t.map(x=>x.digits[String(d)]||0),borderColor:DIGIT_COLORS[d],backgroundColor:DIGIT_COLORS[d]+'20',tension:0.4,borderWidth:2,pointRadius:3,pointHoverRadius:6});
-  const ctx=document.getElementById('trendChart').getContext('2d');
-  if(trendChartInstance)trendChartInstance.destroy();
-  trendChartInstance=new Chart(ctx,{type:'line',data:{labels:t.map(x=>x.month),datasets:ds},options:chartOpts()});
-}
-function renderVolumeChart(){
-  const t=stats.trends||[];if(!t.length)return;
-  const data=t.map(x=>x.sorteos);
-  const ctx=document.getElementById('volumeChart').getContext('2d');
-  if(volumeChartInstance)volumeChartInstance.destroy();
-  volumeChartInstance=new Chart(ctx,{type:'bar',data:{labels:t.map(x=>x.month),datasets:[{label:'Sorteos por mes',data,backgroundColor:data.map((_,i)=>`rgba(${Math.round(212-50*i/data.length)},${Math.round(175-30*i/data.length)},${Math.round(55+100*i/data.length)},0.7)`),borderColor:'rgba(212,175,55,0.3)',borderWidth:1,borderRadius:6}]},options:chartOpts(false)});
 }
 
 // SCROLL REVEAL

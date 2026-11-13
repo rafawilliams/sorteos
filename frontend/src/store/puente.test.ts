@@ -53,11 +53,11 @@ describe('de app.js a React', () => {
     expect(store.getSnapshot().useML).toBe(false)
   })
 
-  it('las pestañas de premio de Estadísticas actualizan statsPrize y no tocan prize (el premio de Predicciones es de la isla)', () => {
+  it('el premio de Estadísticas y el de Predicciones son independientes (los dos son de su isla)', () => {
     store.actions.setPrize('segundo' as Premio)
     expect(store.getSnapshot().prize).toBe('segundo')
     expect(store.getSnapshot().statsPrize).toBe('primero')
-    clic('#statsPrizeTabs .prize-tab[data-prize="tercero"]')
+    store.actions.setStatsPrize('tercero' as Premio)
     expect(store.getSnapshot().statsPrize).toBe('tercero')
     expect(store.getSnapshot().prize).toBe('segundo')
   })
@@ -67,14 +67,6 @@ describe('de app.js a React', () => {
     expect(s.ready).toBe(true)
     expect(s.sorteos).toHaveLength(NUM_SORTEOS)
     expect(s.stats?.total_sorteos).toBe(600)
-  })
-
-  it('al elegir otra pestaña de estadísticas, la zona de estadísticas se repinta con ese premio', () => {
-    const antes = document.getElementById('digitChart')!.innerHTML
-    expect(antes).not.toBe('')
-    clic('#statsPrizeTabs .prize-tab[data-prize="segundo"]')
-    expect(document.querySelector('#statsPrizeTabs .prize-tab[data-prize="segundo"]')?.getAttribute('aria-selected')).toBe('true')
-    expect(document.getElementById('digitChart')!.innerHTML, 'las barras no cambiaron al elegir otro premio').not.toBe(antes)
   })
 })
 
@@ -89,7 +81,7 @@ describe('de React a app.js', () => {
     expect(store.getSnapshot().useML).toBe(true)
   })
 
-  it('setPrize cambia el estado y avisa; setStatsPrize además marca la pestaña antigua', () => {
+  it('setPrize y setStatsPrize cambian el estado y avisan una sola vez; repetir el mismo premio no avisa', () => {
     const escucha = vi.fn()
     store.subscribe(escucha)
     store.actions.setPrize('tercero' as Premio)
@@ -99,7 +91,14 @@ describe('de React a app.js', () => {
     expect(escucha).toHaveBeenCalledTimes(1)
     store.actions.setStatsPrize('segundo' as Premio)
     expect(store.getSnapshot().statsPrize).toBe('segundo')
-    expect(document.querySelector('#statsPrizeTabs .prize-tab[data-prize="segundo"]')?.getAttribute('aria-selected')).toBe('true')
+    expect(escucha).toHaveBeenCalledTimes(2)
+    store.actions.setStatsPrize('segundo' as Premio)
+    expect(escucha).toHaveBeenCalledTimes(2)
+  })
+
+  it('un premio de Estadísticas desconocido se ignora', () => {
+    store.actions.setStatsPrize('cuarto' as Premio)
+    expect(store.getSnapshot().statsPrize).toBe('primero')
   })
 
   it('setUseML no toca el interruptor de una isla (data-isla) y sí los de la plantilla', () => {

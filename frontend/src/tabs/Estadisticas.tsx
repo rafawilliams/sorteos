@@ -104,8 +104,9 @@ const opcionesDispersion = (tema: Tema): ChartOptions => {
         ...base.plugins?.tooltip,
         callbacks: {
           label: (c) => {
-            const p = c.raw as { x: number; y: number }
-            return `1ro: ${String(p.x).padStart(4, '0')} — 2do: ${String(p.y).padStart(4, '0')}`
+            // Los premios se muestran como llegan (principio 7): sin rellenar con ceros el número ya convertido.
+            const p = c.raw as { primero: string; segundo: string }
+            return `1ro: ${p.primero} — 2do: ${p.segundo}`
           },
         },
       },
@@ -115,7 +116,7 @@ const opcionesDispersion = (tema: Tema): ChartOptions => {
 }
 
 function Dispersion({ sorteos }: { sorteos: Sorteo[] }) {
-  const puntos = useMemo(() => sorteos.slice(0, 500).filter((s) => (s.primero || '').length === 4 && (s.segundo || '').length === 4).map((s) => ({ x: parseInt(s.primero) || 0, y: parseInt(s.segundo) || 0 })), [sorteos])
+  const puntos = useMemo(() => sorteos.slice(0, 500).filter((s) => (s.primero || '').length === 4 && (s.segundo || '').length === 4).map((s) => ({ x: parseInt(s.primero) || 0, y: parseInt(s.segundo) || 0, primero: s.primero, segundo: s.segundo })), [sorteos])
   const datos = useCallback(
     (tema: Tema): ChartData => ({
       datasets: [
@@ -252,7 +253,7 @@ export function Componente() {
           <Dispersion sorteos={sorteos} />
         </Tarjeta>
       </div>
-      <div className="card reveal" id="formatosCard" ref={revelar}>
+      <div className="card reveal" ref={revelar}>
         <div className="card-header">
           <h3 className="card-title">Premios de Otros Formatos</h3>
           <span className="card-badge badge-purple">2 y 5 cifras</span>

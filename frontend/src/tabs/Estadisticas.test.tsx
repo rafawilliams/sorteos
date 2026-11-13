@@ -204,11 +204,11 @@ describe('isla Estadísticas: gráficos', () => {
     expect(g.type).toBe('scatter')
     const puntos = g.datos('dark').datasets[0].data
     expect(puntos).toHaveLength(498)
-    expect(puntos[0]).toEqual({ x: 1002, y: 2002 })
-    expect(puntos.at(-1)).toEqual({ x: 1499, y: 2499 })
+    expect(puntos[0]).toEqual({ x: 1002, y: 2002, primero: '1002', segundo: '2002' })
+    expect(puntos.at(-1)).toEqual({ x: 1499, y: 2499, primero: '1499', segundo: '2499' })
   })
 
-  it('la dispersión cambia de color con el tema y su tooltip rellena a 4 cifras', () => {
+  it('la dispersión cambia de color con el tema y su tooltip enseña los premios tal como llegan', () => {
     montar()
     const g = graficoDe('Gráfico de dispersión correlación premios')
     expect(g.datos('dark').datasets[0].backgroundColor).toBe('rgba(255,215,0,0.3)')
@@ -217,7 +217,7 @@ describe('isla Estadísticas: gráficos', () => {
     expect(o.plugins.legend.display).toBe(false)
     expect(o.scales.x.title.text).toBe('1er Premio')
     expect(o.scales.y.title.text).toBe('2do Premio')
-    expect(o.plugins.tooltip.callbacks.label({ raw: { x: 7, y: 42 } })).toBe('1ro: 0007 — 2do: 0042')
+    expect(o.plugins.tooltip.callbacks.label({ raw: { x: 7, y: 42, primero: '0007', segundo: '0042' } })).toBe('1ro: 0007 — 2do: 0042')
   })
 
   it('sin sorteos con dos premios de 4 cifras no hay dispersión', () => {
