@@ -12,7 +12,7 @@ const PESTANAS = [
 ]
 
 /** Un envoltorio con estado, como lo usan las islas: el valor lo guarda el padre. */
-function Controlado({ inicial = 'all', onCambio }: { inicial?: string; onCambio?: (id: string) => void }) {
+function Controlado({ inicial = 'all', onCambio }: { inicial?: string; onCambio?: (id: string, porTeclado: boolean) => void }) {
   const [valor, setValor] = useState(inicial)
   return (
     <Tablist
@@ -20,9 +20,9 @@ function Controlado({ inicial = 'all', onCambio }: { inicial?: string; onCambio?
       pestañas={PESTANAS}
       valor={valor}
       idPrefijo="cat"
-      onCambio={(id) => {
+      onCambio={(id, porTeclado) => {
         setValor(id)
-        onCambio?.(id)
+        onCambio?.(id, porTeclado)
       }}
     />
   )
@@ -77,7 +77,7 @@ describe('Tablist: ratón y teclado', () => {
     const onCambio = vi.fn()
     render(<Controlado onCambio={onCambio} />)
     await userEvent.click(pestana('Dominical'))
-    expect(onCambio).toHaveBeenCalledExactlyOnceWith('dominical')
+    expect(onCambio).toHaveBeenCalledExactlyOnceWith('dominical', false)
     expect(pestana('Dominical').getAttribute('aria-selected')).toBe('true')
     expect(pestana('Todos').getAttribute('aria-selected')).toBe('false')
   })
@@ -88,7 +88,7 @@ describe('Tablist: ratón y teclado', () => {
     pestana('Todos').focus()
     await userEvent.keyboard('{ArrowRight}')
     expect(document.activeElement).toBe(pestana('Dominical'))
-    expect(onCambio).toHaveBeenLastCalledWith('dominical')
+    expect(onCambio).toHaveBeenLastCalledWith('dominical', true)
     expect(pestana('Dominical').getAttribute('tabindex')).toBe('0')
   })
 
@@ -140,7 +140,7 @@ describe('Tablist: ratón y teclado', () => {
     pestana('Todos').focus()
     await userEvent.keyboard('{ArrowRight}')
     expect(document.activeElement).toBe(pestana('Dominical'))
-    expect(onCambio).toHaveBeenCalledWith('dominical')
+    expect(onCambio).toHaveBeenCalledWith('dominical', true)
   })
 
   it('las teclas de navegación evitan el desplazamiento de la página y las demás no', () => {
@@ -179,10 +179,10 @@ describe('Tablist: ratón y teclado', () => {
     render(<Controlado onCambio={onCambio} />)
     pestana('Gordito').focus()
     await userEvent.keyboard('{Enter}')
-    expect(onCambio).toHaveBeenLastCalledWith('gordito')
+    expect(onCambio).toHaveBeenLastCalledWith('gordito', false)
     pestana('Miercolito').focus()
     await userEvent.keyboard(' ')
-    expect(onCambio).toHaveBeenLastCalledWith('miercolito')
+    expect(onCambio).toHaveBeenLastCalledWith('miercolito', false)
   })
 })
 
@@ -215,5 +215,59 @@ describe('Tablist: variantes de marcado', () => {
   it('con controla que devuelve undefined no pone aria-controls', () => {
     render(<Tablist etiqueta="Sin panel" pestañas={PESTANAS.slice(0, 2)} valor="all" idPrefijo="s" controla={() => undefined} onCambio={() => {}} />)
     expect(screen.getAllByRole('tab').every((t) => !t.hasAttribute('aria-controls'))).toBe(true)
+  })
+})
+
+describe('Tablist: origen del cambio, id, orientación y clase por pestaña', () => {
+  it('un clic avisa con porTeclado en false y una flecha, Inicio o Fin con true', async () => {
+    const onCambio = vi.fn()
+    render(<Controlado onCambio={onCambio} />)
+    await userEvent.click(pestana('Miercolito'))
+    await userEvent.keyboard('{ArrowRight}{Home}{End}')
+    expect(onCambio.mock.calls).toEqual([
+      ['miercolito', false],
+      ['gordito', true],
+      ['all', true],
+      ['gordito', true],
+    ])
+  })
+
+  it('Enter y Espacio sobre la pestaña enfocada llegan como clic: porTeclado en false', async () => {
+    const onCambio = vi.fn()
+    render(<Tablist etiqueta="Fija" pestañas={PESTANAS} valor="all" idPrefijo="f" onCambio={onCambio} />)
+    pestana('Dominical').focus()
+    await userEvent.keyboard('{Enter}')
+    await userEvent.keyboard(' ')
+    expect(onCambio.mock.calls).toEqual([
+      ['dominical', false],
+      ['dominical', false],
+    ])
+  })
+
+  it('sin prefijo los id de las pestañas son tab-<id>; con prefijo, <prefijo>-tab-<id>', () => {
+    const { unmount } = render(<Tablist etiqueta="Sin prefijo" pestañas={PESTANAS} valor="all" idPrefijo="" onCambio={() => {}} />)
+    expect(screen.getAllByRole('tab').map((t) => t.id)).toEqual(['tab-all', 'tab-dominical', 'tab-miercolito', 'tab-gordito'])
+    unmount()
+    render(<Tablist etiqueta="Con prefijo" pestañas={PESTANAS} valor="all" idPrefijo="x" onCambio={() => {}} />)
+    expect(screen.getAllByRole('tab').map((t) => t.id)).toEqual(['x-tab-all', 'x-tab-dominical', 'x-tab-miercolito', 'x-tab-gordito'])
+  })
+
+  it('id y orientación se escriben en el contenedor solo si se piden', () => {
+    const { unmount } = render(<Tablist etiqueta="Normal" pestañas={PESTANAS} valor="all" idPrefijo="n" onCambio={() => {}} />)
+    const normal = screen.getByRole('tablist', { name: 'Normal' })
+    expect(normal.hasAttribute('id')).toBe(false)
+    expect(normal.hasAttribute('aria-orientation')).toBe(false)
+    unmount()
+    render(<Tablist etiqueta="Lateral" pestañas={PESTANAS} valor="all" idPrefijo="l" id="navTabs" orientacion="vertical" onCambio={() => {}} />)
+    const lateral = screen.getByRole('tablist', { name: 'Lateral' })
+    expect(lateral.id).toBe('navTabs')
+    expect(lateral.getAttribute('aria-orientation')).toBe('vertical')
+  })
+
+  it('la clase extra de una pestaña va entre la clase base y «active»', () => {
+    const conClase = [{ id: 'a', texto: 'A' }, { id: 'b', texto: 'B', clase: 'nav-tab-group' }]
+    render(<Tablist etiqueta="Clases" pestañas={conClase} valor="b" idPrefijo="c" claseTab="nav-tab" onCambio={() => {}} />)
+    expect(screen.getByRole('tab', { name: 'A' }).className).toBe('nav-tab')
+    expect(screen.getByRole('tab', { name: 'B' }).className).toBe('nav-tab nav-tab-group active')
   })
 })

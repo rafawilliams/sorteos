@@ -45,6 +45,8 @@ window.LP={
   setUseML(v){setUseMLLP(!!v)},
   setPrize(p){if(!['primero','segundo','tercero'].includes(p))return;currentPrize=p;_lpEmit('prize')},
   setStatsPrize(p){if(!['primero','segundo','tercero'].includes(p))return;currentStatsPrize=p;_lpEmit('statsPrize')},
+  setTheme(t){if(t==='light'||t==='dark')applyTheme(t)},
+  setActiveTab(t){const tab=document.querySelector('#navTabs [data-tab="'+t+'"]');if(tab)activateNavTab(tab)},
   toast(msg,ms){showToast(msg,ms)},
   simular(n){
     const t=document.querySelector('#navTabs [data-tab="simulador"]');if(!t)return;

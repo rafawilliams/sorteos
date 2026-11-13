@@ -62,6 +62,14 @@ export function crearStoreFalso(inicial: Partial<Snapshot> = {}): StoreFalso {
         registrar('setStatsPrize', premio)
         cambiar({ statsPrize: premio })
       },
+      setTheme(tema) {
+        registrar('setTheme', tema)
+        cambiar({ theme: tema })
+      },
+      setActiveTab(pestaña) {
+        registrar('setActiveTab', pestaña)
+        cambiar({ activeTab: pestaña })
+      },
       toast(mensaje, ms) {
         registrar('toast', mensaje, ms)
       },
