@@ -659,3 +659,8 @@ Islas Mis Números y Comparador, componente `Chart`, retirada del código antigu
 - mutación: 7 defectos en `vite.config.ts` e `index.html`; uno sobrevivió (ignorar `FLASK_URL`: en las pruebas la variable no está definida) y se cubrió con pruebas que fijan el valor por defecto y la variable; todos se detectan al final.
 - a tener en cuenta: en Windows Vite escucha en `localhost` (IPv6); `http://127.0.0.1:5173` no responde. Está dicho en el README.
 - no ejecutado: revisión de tier 1 con un revisor, `pip-audit` y `npm audit`.
+
+## T042, T051 y T057 — aprobación del dueño — 2026-11-12
+- status: complete (aprobadas por el dueño: «si y apruebo todo»)
+- T042 (Decenas y Terminaciones), T051 (Estadísticas, Tendencias y Análisis) y T057 (las 14 pestañas): el dueño revisó la aplicación en marcha durante las etapas 7 a 10 (servidores de revisión en los puertos 5000, 5001 y 5002 y las capturas de escritorio revisadas a ojo) y las aprobó.
+- no ejecutado: las 28 capturas finales (14 pestañas × 2 temas) de T057 no se generaron con `frontend/scripts/capturas.mjs`, y no hay una revisión manual de teclado con teclas reales anotada para T042, T051 y T057 (las flechas, Inicio, Fin, Escape y el cambio de tema están cubiertos por pruebas automáticas y por comprobaciones en Chromium que usaron eventos del DOM, no teclas reales). Se aprueba sin ellas por decisión del dueño; si se quisiera la referencia visual, se puede generar con ese script contra la base sembrada.
