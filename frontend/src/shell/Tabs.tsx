@@ -1,7 +1,7 @@
 // Barra de pestañas principal y menú lateral (spec frontend-react, T053). Equivale a `initTabs`, `activateNavTab`,
 // `initTablistKeyboard` e `initMenu` de static/app.js: 14 pestañas en una lista vertical con flechas, Inicio y Fin, y, con la
 // ventana estrecha, una barra escondida que abre el botón ☰, con fondo oscuro, foco bien devuelto, Escape y resto de la
-// página inerte. `Armazon` (T055) las compone; aquí cada pieza es independiente.
+// página inerte. `Armazon` las compone; aquí cada pieza es independiente.
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Tablist } from '../components/Tablist'
 import { useActiveTab, useSetActiveTab } from '../store/hooks'

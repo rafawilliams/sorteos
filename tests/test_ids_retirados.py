@@ -1,7 +1,7 @@
 """Guardia de ids retirados (spec frontend-react, T018).
 
 Cada pestaña que pasó a React dejó de tener en `static/style.css` y `templates/index.html` sus `id` antiguos, y
-`static/app.js` (el JavaScript antiguo) ya no existe. Esta prueba falla si alguien los reintroduce (por ejemplo al resolver
+el JavaScript antiguo (`app.js` de `static/`) ya no existe. Esta prueba falla si alguien los reintroduce (por ejemplo al resolver
 un conflicto de fusión con una rama vieja): código muerto que además vuelve a pelear con la sección por el mismo contenedor.
 """
 import re
@@ -136,7 +136,7 @@ def test_ningun_id_retirado_vuelve(archivo, id_retirado):
 
 
 def test_el_javascript_antiguo_ya_no_existe():
-    assert not (RAIZ / "static" / "app.js").exists(), "static/app.js está retirado: toda la interfaz es React (frontend/src)."
+    assert not (RAIZ / "static" / "app.js").exists(), "el app.js de static/ está retirado: toda la interfaz es React (frontend/src)."
 
 
 @pytest.mark.parametrize("isla", sorted(set(IDS_RETIRADOS.values())))

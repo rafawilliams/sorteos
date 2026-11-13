@@ -36,8 +36,8 @@ export interface Snapshot {
    * Un cuerpo de error en JSON o sin `total_sorteos` numérico nunca ocupa su lugar (el `app.js` antiguo lo asignaba
    * sin mirar la respuesta HTTP).
    *
-   * Si la carga falla tras sus reintentos, `stats` conserva lo que tuviera (`null` la primera vez, como hoy); un
-   * estado de error explícito (campo nuevo, sin romper esta interfaz) se decide en T052 con el armazón en React.
+   * Si la carga falla tras sus reintentos, `stats` conserva lo que tuviera (`null` la primera vez) y se registra en la
+   * consola; no hay un campo de error para las estadísticas (sí lo hay para los sorteos: `errorSorteos`).
    */
   stats: Stats | null
   /** Modo de predicción: `true` = aprendizaje automático, `false` = estadístico. */

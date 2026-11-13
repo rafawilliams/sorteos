@@ -21,6 +21,10 @@ pip-audit -r requirements.txt
 # Run dev server (port 5000)
 python app.py
 
+# Frontend dev server with hot reload (http://localhost:5173), proxies /api and /static to Flask
+# (FLASK_URL overrides http://127.0.0.1:5000; the build for Flask is `npm --prefix frontend run build`)
+npm --prefix frontend run dev
+
 # Sync new lottery draws from external API
 python actualizar_db.py
 ```
