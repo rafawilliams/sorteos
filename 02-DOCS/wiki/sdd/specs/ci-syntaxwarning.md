@@ -7,12 +7,12 @@ timestamp: 2026-11-12T12:00:00Z
 topic: sdd
 slug: ci-syntaxwarning
 branch: ci/syntaxwarning-error
-status: draft
+status: approved
 ---
 
 # Spec — El CI falla ante un SyntaxWarning de Python
 
-> Slug: `ci-syntaxwarning` · Status: draft — pendiente de aprobación del dueño · Created: 2026-11-12
+> Slug: `ci-syntaxwarning` · Status: approved — aprobada por el dueño el 2026-11-12 («si continua») · Created: 2026-11-12
 > Inherits: [constitution](../constitution.md)
 
 ## Problem & why

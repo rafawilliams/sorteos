@@ -197,4 +197,4 @@ Revisión   — tier 1, un revisor: changes-needed, 0 bloqueantes, 2 should-fix 
 Context    — El gate de ASDD clasifica el cambio de `tests.yml` como tier 2 (ci) y exige una spec vinculada a la rama antes de subirla.
 Decision   — Spec mínima `ci-syntaxwarning` con la prueba en negativo (`"\d"` falla bajo el flag) como criterio. Se descartó apagar el gate (`.rsc/.no-asdd-gate`): desactivaría la protección en todo el proyecto.
 Why        — Cierra el criterio 8 de T058, que solo se había comprobado a mano.
-Estado     — draft, pendiente de aprobación del dueño.
+Estado     — aprobada por el dueño el 2026-11-12.
