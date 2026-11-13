@@ -118,64 +118,21 @@
       <h2 class="section-title">Estadísticas Generales</h2>
       <p class="section-subtitle">Frecuencia de dígitos, números calientes y fríos.</p>
 
-      <div class="prize-tabs" id="statsPrizeTabs" role="tablist" aria-label="Seleccionar premio para estadísticas">
-        <button class="prize-tab active" data-prize="primero" role="tab" aria-selected="true">1er Premio</button>
-        <button class="prize-tab" data-prize="segundo" role="tab" aria-selected="false">2do Premio</button>
-        <button class="prize-tab" data-prize="tercero" role="tab" aria-selected="false">3er Premio</button>
-      </div>
-
-      <div class="grid-2">
-        <div class="card reveal"><div class="card-header"><h3 class="card-title">Frecuencia de Dígitos</h3><span class="card-badge badge-gold">0–9</span></div><div class="bar-chart" id="digitChart" role="img" aria-label="Frecuencia de dígitos 0-9"></div></div>
-        <div class="card reveal"><div class="card-header"><h3 class="card-title">Terminaciones Populares</h3><span class="card-badge badge-gold">Últimos 2 dígitos</span></div><div class="bar-chart" id="endingsChart" role="img" aria-label="Terminaciones más populares"></div></div>
-      </div>
-      <div class="grid-2">
-        <div class="card reveal"><div class="card-header"><h3 class="card-title">Números Calientes</h3><span class="card-badge badge-hot">Hot</span></div><div class="bar-chart" id="hotChart" role="img" aria-label="Números más frecuentes"></div></div>
-        <div class="card reveal"><div class="card-header"><h3 class="card-title">Números Fríos</h3><span class="card-badge badge-cold">Cold</span></div><div class="bar-chart" id="coldChart" role="img" aria-label="Números menos frecuentes"></div></div>
-      </div>
-      <div class="grid-2">
-        <div class="card reveal"><div class="card-header"><h3 class="card-title">Series Más Frecuentes</h3></div><div class="bar-chart" id="seriesChart" role="img" aria-label="Series más frecuentes"></div></div>
-        <div class="card reveal"><div class="card-header"><h3 class="card-title">Letras Más Frecuentes</h3></div><div class="bar-chart" id="letrasChart" role="img" aria-label="Letras más frecuentes"></div></div>
-      </div>
-      <div class="grid-2">
-        <div class="card reveal">
-          <div class="card-header"><h3 class="card-title">Comparación por Categoría</h3><span class="card-badge badge-purple">Radar</span></div>
-          <div class="chart-container" style="height:380px;"><canvas id="radarChart" aria-label="Gráfico radar comparación por categoría" role="img"></canvas></div>
-        </div>
-        <div class="card reveal">
-          <div class="card-header"><h3 class="card-title">Correlación 1er vs 2do Premio</h3><span class="card-badge badge-green">Scatter</span></div>
-          <div class="chart-container" style="height:380px;"><canvas id="scatterChart" aria-label="Gráfico de dispersión correlación premios" role="img"></canvas></div>
-        </div>
-      </div>
-      <div class="card reveal" id="formatosCard">
-        <div class="card-header"><h3 class="card-title">Premios de Otros Formatos</h3><span class="card-badge badge-purple">2 y 5 cifras</span></div>
-        <p class="section-subtitle">El 2º y 3º del Gordito (y el Miercolito de 1962–1966) son de 2 cifras; el Extraordinario es de 5. Se analizan aparte para no distorsionar las estadísticas de 4 cifras.</p>
-        <div class="grid-2" id="formatosGrid"></div>
-      </div>
+      <div data-react-root="estadisticas"></div>
     </section>
 
     <!-- ==================== TENDENCIAS ==================== -->
     <section class="section" id="sec-tendencias" role="tabpanel" aria-labelledby="tab-tendencias">
       <h2 class="section-title">Tendencias Temporales</h2>
       <p class="section-subtitle">Evolución de la frecuencia de dígitos a lo largo del tiempo.</p>
-      <div class="card reveal" style="margin-bottom:28px;">
-        <div class="card-header"><h3 class="card-title">Frecuencia de Dígitos por Mes</h3><span class="card-badge badge-green">Últimos 24 meses</span></div>
-        <div class="chart-container"><canvas id="trendChart" aria-label="Gráfico de tendencia de dígitos por mes" role="img"></canvas></div>
-      </div>
-      <div class="card reveal">
-        <div class="card-header"><h3 class="card-title">Sorteos por Mes</h3><span class="card-badge badge-purple">Volumen</span></div>
-        <div class="chart-container"><canvas id="volumeChart" aria-label="Gráfico de volumen de sorteos por mes" role="img"></canvas></div>
-      </div>
+      <div data-react-root="tendencias"></div>
     </section>
 
     <!-- ==================== ANÁLISIS ==================== -->
     <section class="section" id="sec-analisis" role="tabpanel" aria-labelledby="tab-analisis">
       <h2 class="section-title">Análisis por Posición</h2>
       <p class="section-subtitle">Probabilidad de cada dígito (0–9) en cada una de las 4 posiciones del número ganador.</p>
-      <div class="grid-4" id="positionGrids" role="region" aria-label="Grids de frecuencia por posición"></div>
-      <div class="card reveal">
-        <div class="card-header"><h3 class="card-title">Mapa de Calor — Posición vs Dígito</h3></div>
-        <div id="heatmap" style="overflow-x:auto;" role="img" aria-label="Mapa de calor posición vs dígito"></div>
-      </div>
+      <div data-react-root="analisis"></div>
     </section>
 
     <!-- ==================== COMPARADOR ==================== -->
