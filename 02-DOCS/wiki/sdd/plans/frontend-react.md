@@ -6,7 +6,7 @@ tags: [sdd, plan]
 timestamp: 2026-11-11T13:00:00Z
 topic: sdd
 slug: frontend-react
-status: draft
+status: implemented (cerrada 2026-11-12, ver verifications/frontend-react-2026-11-12.md)
 branch: feat/react-frontend
 ---
 
