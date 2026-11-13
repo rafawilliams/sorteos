@@ -55,6 +55,16 @@ export function useActiveTab(): TabId {
   return useCampo('activeTab')
 }
 
+/** Cambia el tema (claro u oscuro). */
+export function useSetTheme(): (tema: Tema) => void {
+  return useStore().actions.setTheme
+}
+
+/** Activa una pestaña de la barra principal. */
+export function useSetActiveTab(): (pestaña: TabId) => void {
+  return useStore().actions.setActiveTab
+}
+
 /** La última petición de «simular este número» (`null` si no hubo ninguna): la isla Simulador simula por cada `id` nuevo. */
 export function useSimulacion(): Snapshot['simulacion'] {
   return useCampo('simulacion')

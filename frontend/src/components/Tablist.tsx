@@ -7,14 +7,17 @@ import { useRef, type CSSProperties, type KeyboardEvent } from 'react'
 export interface PestanaDeLista {
   id: string
   texto: string
+  /** Clase extra de esta pestaña (la barra principal marca con `nav-tab-group` las que abren grupo). */
+  clase?: string
 }
 
 export interface TablistProps {
   etiqueta: string
   pestañas: PestanaDeLista[]
   valor: string
-  onCambio: (id: string) => void
-  /** Prefijo de los `id`: cada pestaña es `${idPrefijo}-tab-${id}` y, por defecto, controla `${idPrefijo}-panel-${id}`. */
+  /** `porTeclado` es `true` si el cambio vino de una flecha, Inicio o Fin y `false` si vino de un clic (o de Enter o Espacio, que el navegador entrega como clic). */
+  onCambio: (id: string, porTeclado: boolean) => void
+  /** Prefijo de los `id`: cada pestaña es `${idPrefijo}-tab-${id}` (sin prefijo, `tab-${id}`) y, por defecto, controla `${idPrefijo}-panel-${id}`. */
   idPrefijo: string
   /** Clase del contenedor (`cat-tabs` por defecto; `prize-tabs` en los selectores de premio). */
   clase?: string
@@ -24,9 +27,13 @@ export interface TablistProps {
   controla?: (id: string) => string | undefined
   /** Estilo en línea del contenedor (el código antiguo ponía `margin-bottom:0` al selector de premio). */
   estilo?: CSSProperties
+  /** `id` del contenedor (la barra principal es `navTabs`). */
+  id?: string
+  /** Orientación de la lista; sin ella no se escribe `aria-orientation`. */
+  orientacion?: 'horizontal' | 'vertical'
 }
 
-export function Tablist({ etiqueta, pestañas, valor, onCambio, idPrefijo, clase = 'cat-tabs', claseTab = 'cat-tab', controla, estilo }: TablistProps) {
+export function Tablist({ etiqueta, pestañas, valor, onCambio, idPrefijo, clase = 'cat-tabs', claseTab = 'cat-tab', controla, estilo, id, orientacion }: TablistProps) {
   const botones = useRef<Array<HTMLButtonElement | null>>([])
   // Si el valor ya no está en la lista, la primera pestaña conserva el acceso con Tab: sin esto la lista quedaría inalcanzable.
   const hayElegida = pestañas.some((p) => p.id === valor)
@@ -45,11 +52,11 @@ export function Tablist({ etiqueta, pestañas, valor, onCambio, idPrefijo, clase
     if (!destino) return
     e.preventDefault()
     botones.current[siguiente]?.focus()
-    onCambio(destino.id)
+    onCambio(destino.id, true)
   }
 
   return (
-    <div className={clase} style={estilo} role="tablist" aria-label={etiqueta} onKeyDown={alTeclear}>
+    <div className={clase} style={estilo} id={id} role="tablist" aria-orientation={orientacion} aria-label={etiqueta} onKeyDown={alTeclear}>
       {pestañas.map((p, i) => {
         const elegida = p.id === valor
         const panel = controla ? controla(p.id) : `${idPrefijo}-panel-${p.id}`
@@ -57,16 +64,16 @@ export function Tablist({ etiqueta, pestañas, valor, onCambio, idPrefijo, clase
           <button
             type="button"
             key={p.id}
-            id={`${idPrefijo}-tab-${p.id}`}
+            id={idPrefijo ? `${idPrefijo}-tab-${p.id}` : `tab-${p.id}`}
             ref={(el) => {
               botones.current[i] = el
             }}
-            className={`${claseTab}${elegida ? ' active' : ''}`}
+            className={`${claseTab}${p.clase ? ` ${p.clase}` : ''}${elegida ? ' active' : ''}`}
             role="tab"
             aria-selected={elegida}
             aria-controls={panel}
             tabIndex={elegida || (!hayElegida && i === 0) ? 0 : -1}
-            onClick={() => onCambio(p.id)}
+            onClick={() => onCambio(p.id, false)}
           >
             {p.texto}
           </button>
