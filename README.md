@@ -23,11 +23,12 @@ Aplicación web para analizar los resultados históricos de la Lotería Nacional
 | Backend | Python 3.13, Flask, Flask-Limiter |
 | Datos | MariaDB, SQLAlchemy 2.0 |
 | ML | scikit-learn, pandas, numpy, joblib |
-| Frontend | HTML, CSS y JavaScript vanilla, Chart.js |
+| Frontend | React 19 + TypeScript (Vite, Vitest), Chart.js; las pestañas pendientes de migrar siguen en JavaScript vanilla (`static/app.js`) |
 
 ## Requisitos
 
 - Python 3.13
+- Node.js 22.x (versión exacta en `.nvmrc`) para construir la interfaz
 - Un servidor MariaDB con una base de datos `sorteos`
 
 ## Instalación
@@ -41,7 +42,12 @@ python -m venv .venv
 # source .venv/bin/activate     # Linux / macOS
 
 pip install -r requirements-dev.txt
+
+npm --prefix frontend ci          # dependencias del frontend
+npm --prefix frontend run build   # genera static/dist/app.js
 ```
+
+> La interfaz se está migrando a React por etapas. Las pestañas ya migradas (Resultados, Predicciones, Decenas, Terminaciones, Precisión, Seguimiento, Comparador, Gaps, Simulador, Mensual y Mis Números) solo aparecen si existe `static/dist/app.js`, que está en `.gitignore`: vuelve a ejecutar el `build` tras cada `git pull` que toque `frontend/`. Faltan Estadísticas, Tendencias y Análisis, y el armazón (barra de pestañas, tema y botón de actualizar), que siguen en `static/app.js`.
 
 ## Configuración
 
@@ -93,11 +99,15 @@ Todas las rutas tienen límite de peticiones por IP: 120/min por defecto, `/api/
 ## Tests
 
 ```bash
-pytest                         # suite completa
+pytest                         # suite completa del backend
 pip-audit -r requirements.txt  # vulnerabilidades conocidas en dependencias
+
+npm --prefix frontend run typecheck       # tipos de TypeScript
+npm --prefix frontend test -- --run       # pruebas del frontend (Vitest)
+npm --prefix frontend audit --audit-level=high
 ```
 
-GitHub Actions ejecuta ambos en cada Pull Request, contra un MariaDB con sorteos sintéticos (`tests/seed_db.py`).
+GitHub Actions ejecuta ambos conjuntos en cada Pull Request: el backend contra un MariaDB con sorteos sintéticos (`tests/seed_db.py`) y el frontend con typecheck, pruebas, build y `npm audit`.
 
 ## Estructura
 
@@ -109,7 +119,8 @@ seguimiento.py    Registro congelado de recomendaciones y comparación con resul
 base.py           Configuración (.env) y conexión SQLAlchemy
 loteria.py        Modelo ORM de la tabla sorteos
 actualizar_db.py  Sincronización desde api.loteriapanama.net
-static/           app.js y style.css
+frontend/         Interfaz React + TypeScript (islas por pestaña en src/tabs, componentes, store y cliente de la API)
+static/           style.css, app.js (pestañas aún sin migrar) y dist/ (build de React, no versionado)
 templates/        index.html
 tests/            Tests con pytest
 ```
