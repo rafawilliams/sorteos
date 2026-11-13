@@ -618,3 +618,12 @@ Islas Mis Números y Comparador, componente `Chart`, retirada del código antigu
 - el dueño revisó la pestaña Predicciones en la aplicación real (puerto 5000, rama `feat/react-etapa-8-predicciones`, base real) y la aprobó.
 - no ejecutado en esta sesión: capturas nuevas píxel a píxel ni revisión de teclado/tema anotada; la aprobación se dio sobre la aplicación en marcha. Las capturas de la etapa 8 son las registradas al cerrar T045.
 - T042 (aprobación de Decenas y Terminaciones) sigue pendiente de confirmación explícita.
+
+## T047 a T050 — 2026-11-12 (etapa 9: Estadísticas, Tendencias y Análisis)
+- status: complete salvo lo de «no ejecutado» (T051, la aprobación del dueño, queda pendiente)
+- T047 isla Estadísticas (27 pruebas) con los componentes nuevos `Barras` y `CeldasPosicion`; T048 Tendencias (10) y T049 Análisis (18). T050: `app.js` pierde las 9 funciones `render*` de estas pestañas, las pestañas de premio antiguas, `esc`, `isLight`, `chartOpts` y `DIGIT_COLORS`; `LP.setStatsPrize` guarda el premio y avisa (como `setPrize`) en vez de buscar un botón; la plantilla monta las tres islas; la guardia de ids retirados cubre 15 id y 22 nombres nuevos.
+- decisión de diseño: el tooltip de la dispersión enseña los premios tal como llegan (`primero`/`segundo` del sorteo) y no `String(x).padStart(4,'0')` del número ya convertido; la guardia `sin-relleno` prohíbe el relleno. El texto resultante es el mismo para premios de 4 cifras.
+- hallazgo por las pruebas: el corte de T050 se llevó `_statsListas`, que `setUseMLLP` sigue usando; lo detectaron las pruebas del puente y se restituyó.
+- controles: typecheck ✅ · pruebas del front 1088/1088 ✅ · build ✅ · pytest 719 passed, 1 skipped (base sembrada `sorteos_capturas`, 600 sorteos) ✅ · `node --check static/app.js` ✅.
+- navegador real (puerto 5001, base real, 9.297 sorteos, Chromium): Estadísticas 9 tarjetas, 87 barras, 2 gráficos y 70 celdas de posición; Tendencias 2 tarjetas y 2 gráficos; Análisis 4 cuadrículas (40 celdas) y mapa de calor de 44 celdas; ningún esqueleto atascado; al elegir «2do Premio» cambia la primera barra (3552 → 3613) y la pestaña queda `aria-selected`; 0 errores de consola.
+- no ejecutado: mutación (como en las etapas 7 y 8), revisión de tier 1 con un revisor, capturas píxel a píxel contra `main` y revisión manual del teclado y del tema (T051); `pip-audit` y `npm audit` tras los cambios (el CI los corre).
