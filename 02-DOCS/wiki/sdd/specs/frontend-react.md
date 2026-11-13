@@ -6,7 +6,7 @@ tags: [sdd, spec]
 timestamp: 2026-11-11T12:00:00Z
 topic: sdd
 slug: frontend-react
-status: planned (aprobada 2026-11-11 por el dueño: "el backend queda en Python y Flask API, continúa con el plan")
+status: implemented (cerrada 2026-11-12, ver verifications/frontend-react-2026-11-12.md; aprobada 2026-11-11 por el dueño: "el backend queda en Python y Flask API, continúa con el plan")
 branch: feat/react-frontend
 ---
 

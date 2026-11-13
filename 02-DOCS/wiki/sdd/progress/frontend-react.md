@@ -664,3 +664,15 @@ Islas Mis Números y Comparador, componente `Chart`, retirada del código antigu
 - status: complete (aprobadas por el dueño: «si y apruebo todo»)
 - T042 (Decenas y Terminaciones), T051 (Estadísticas, Tendencias y Análisis) y T057 (las 14 pestañas): el dueño revisó la aplicación en marcha durante las etapas 7 a 10 (servidores de revisión en los puertos 5000, 5001 y 5002 y las capturas de escritorio revisadas a ojo) y las aprobó.
 - no ejecutado: las 28 capturas finales (14 pestañas × 2 temas) de T057 no se generaron con `frontend/scripts/capturas.mjs`, y no hay una revisión manual de teclado con teclas reales anotada para T042, T051 y T057 (las flechas, Inicio, Fin, Escape y el cambio de tema están cubiertos por pruebas automáticas y por comprobaciones en Chromium que usaron eventos del DOM, no teclas reales). Se aprueba sin ellas por decisión del dueño; si se quisiera la referencia visual, se puede generar con ese script contra la base sembrada.
+
+## T037 — aprobación del dueño — 2026-11-12
+- status: complete (aprobada por el dueño: «si y apruebo todo»; hasta hoy figuraba «pendiente de la aprobación del dueño»)
+- T037 (capturas de Resultados): las capturas y la revisión de la etapa 6 estaban preparadas desde el 2026-11-12; el dueño las aprobó junto con T042, T051 y T057.
+
+## T058 — cierre — 2026-11-12
+- status: complete (rama `feat/react-etapa-10-cierre`; verificación en `verifications/frontend-react-2026-11-12.md`)
+- puertas ejecutadas sobre `main` (fc70b90): pytest con `-W error::SyntaxWarning` 579 passed y 1 skipped, typecheck, pruebas del front 1192/1192, build, `pip-audit` (sin vulnerabilidades, 1 ignorada) y `npm audit --audit-level=high` (0 vulnerabilidades). CI en success en los PR #57 a #60.
+- comprobado hoy en vivo: sin `static/dist/` la página da 200 con el aviso de cómo construirla, sin el script, y `/api/sorteos` responde; un tipo roto en `api/types.ts` hace fallar `tsc` (exit 1) y revertido pasa.
+- plan y spec pasan a `implemented`. La constitución ya estaba en v2.0.0 con su entrada en el registro de cambios.
+- no ejecutado (ver la verificación): las 28 capturas finales y la revisión de teclado con teclas reales (T057), la revisión de tier 1 de T047 a T057, `POST /api/actualizar` con un token válido y los 503, 502 y 500 contra el servidor real, y `-W error::SyntaxWarning` dentro del CI.
+- decisiones abiertas al cierre: Q1, Q3, Q4, Q5, Q7, Q9, Q11, Q14, Q15 y Q16 siguen en la cola (no bloquean); Q6, Q8, Q10, Q12, Q13 y Q17 quedaron resueltas por el código.
