@@ -1,13 +1,23 @@
-// Punto de entrada de la interfaz React (spec frontend-react, T016). `static/app.js` se carga antes y publica el
-// puente `window.LP`; aquí se descubren las islas de `tabs/` y se montan en sus marcadores `data-react-root`.
-import { montarIslas } from './montaje'
-import { crearLegacyStore } from './store/legacyStore'
+// Punto de entrada de la interfaz React (spec frontend-react, T055). Crea el almacén, pinta el armazón en `#root` y lanza la
+// primera carga de datos. Antes `static/app.js` era el dueño del armazón y de la carga, y aquí se montaban las islas.
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import { Armazon } from './shell/Armazon'
+import { StoreProvider } from './store/StoreProvider'
+import { crearReactStore } from './store/reactStore'
 
-// Las pruebas viven junto a cada isla (`Gaps.test.tsx`): se excluyen o entrarían en el bundle de producción.
-const modulos = import.meta.glob(['./tabs/*.tsx', '!./tabs/*.test.tsx'], { eager: true })
+const raiz = document.getElementById('root')
 
-try {
-  montarIslas(modulos, crearLegacyStore())
-} catch (error) {
-  console.error('No se pudieron montar las islas React', error)
+if (raiz) {
+  const store = crearReactStore()
+  createRoot(raiz).render(
+    <StrictMode>
+      <StoreProvider store={store}>
+        <Armazon />
+      </StoreProvider>
+    </StrictMode>,
+  )
+  void store.cargar()
+} else {
+  console.error('Falta el elemento #root: no se puede montar la interfaz.')
 }

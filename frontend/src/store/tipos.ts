@@ -1,9 +1,8 @@
 /**
  * Contrato del estado compartido de la interfaz (spec frontend-react, T014; plan §3).
  *
- * Mientras convivan `static/app.js` y las islas React, `app.js` es la fuente de verdad y la implementación
- * `LegacyStore` (T015) lee su estado por un puente. Al final de la migración, `ReactStore` (T052) toma el
- * relevo. Las pestañas solo conocen esta interfaz y no cambian entre una y otra.
+ * `ReactStore` (T052) guarda el estado y hace la carga de datos. Durante la migración, `LegacyStore` (T015) leía el estado
+ * de `static/app.js` por un puente; se retiró con él (T055). Las pestañas solo conocen esta interfaz.
  */
 import type { Premio, Sorteo, Stats } from '../api/types'
 
@@ -34,9 +33,8 @@ export interface Snapshot {
   /**
    * `null` mientras no llegó `/api/stats` (puede tardar minutos la primera vez): toda isla muestra su esqueleto.
    *
-   * Ojo con el código heredado: en `static/app.js` la variable `stats` empieza como `{}` (no `null`) y se asigna
-   * sin comprobar la respuesta HTTP, así que un cuerpo de error en JSON también quedaría ahí. `LegacyStore` debe
-   * traducir `{}` y cualquier cuerpo sin `total_sorteos` numérico a `null`.
+   * Un cuerpo de error en JSON o sin `total_sorteos` numérico nunca ocupa su lugar (el `app.js` antiguo lo asignaba
+   * sin mirar la respuesta HTTP).
    *
    * Si la carga falla tras sus reintentos, `stats` conserva lo que tuviera (`null` la primera vez, como hoy); un
    * estado de error explícito (campo nuevo, sin romper esta interfaz) se decide en T052 con el armazón en React.
@@ -93,10 +91,9 @@ export interface AccionesStore {
    * (`stats` y `ready` no vuelven a `null` ni a `false`) hasta que llegan los nuevos. La promesa se resuelve cuando la
    * carga termina, con éxito o sin él, y nunca rechaza: un fallo se registra y los datos viejos se quedan. Un fallo
    * es una red caída o una respuesta de error (p. ej. un 500 con cuerpo JSON): ese cuerpo NO sustituye a `stats`.
-   * Esto es MÁS estricto que `static/app.js`, que asigna `stats` sin comprobar la respuesta HTTP; `LegacyStore` debe
-   * ignorar cualquier cuerpo sin `total_sorteos` numérico y conservar el estado anterior. Otra diferencia aceptada:
-   * `app.js` repinta sus propios contenedores como esqueletos mientras recarga (`showSkeletons`); las islas
-   * conservan los datos a la vista.
+   * Toda implementación debe ignorar un cuerpo sin `total_sorteos` numérico y conservar el estado anterior (el `app.js`
+   * antiguo no comprobaba la respuesta HTTP y repintaba sus contenedores como esqueletos mientras recargaba; las islas
+   * conservan los datos a la vista).
    */
   reload(): Promise<void>
 }

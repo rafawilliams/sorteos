@@ -1,6 +1,6 @@
 /**
  * Suite de contrato de `Store` (spec frontend-react, T014): lo que toda implementación tiene que cumplir para que
- * los hooks y las islas funcionen con ella. La pasan el doble de pruebas, `LegacyStore` (T015) y `ReactStore` (T052).
+ * los hooks y las islas funcionen con ella. La pasan el doble de pruebas y `ReactStore` (T052); `LegacyStore` (T015), que leía el estado de `static/app.js`, se retiró con él.
  *
  * Cada comprobación es una función que lanza si el contrato se rompe, para poder probarla también contra almacenes
  * defectuosos (`contratoStore.test.ts`) y asegurar que no pasa en vacío. `describirContratoDeStore` las registra como
@@ -182,9 +182,6 @@ export const comprobaciones: Record<string, Comprobacion> = {
   async simulacion(crear, control) {
     await enEstados(crear, control, (store, momento) => {
       expect(store.getSnapshot().simulacion, `sin pedir nada, «simulacion» debe ser null (${momento})`).toBeNull()
-      // `LegacyStore` solo tiene enganchadas las pestañas tras el arranque de app.js (`DOMContentLoaded`), y nadie
-      // puede pulsar «Simular» antes de que lleguen los datos: lo demás se exige con el almacén ya cargado.
-      if (momento === 'recién creado') return
       const vistos: Snapshot[] = []
       const cancelar = store.subscribe(() => vistos.push(store.getSnapshot()))
       store.actions.simularNumero('0042')
@@ -205,7 +202,7 @@ export const comprobaciones: Record<string, Comprobacion> = {
   /**
    * `errorSorteos` (`tipos.ts`): un booleano que vale false mientras no haya fallado la carga de sorteos, vacío y cargado, y
    * que una recarga correcta no toca. (Que pase a true al fallar la primera carga, y a false al reintentar, depende de cómo
-   * cargue cada implementación y se prueba contra ella: el puente de app.js lo hace en puente-error-sorteos.test.ts.)
+   * cargue cada implementación y se prueba contra ella: `ReactStore` lo hace en reactStore.test.ts.)
    */
   async errorDeCargaDeSorteos(crear, control) {
     await enEstados(crear, control, (store, momento) => {

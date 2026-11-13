@@ -7,7 +7,6 @@
 <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -15,187 +14,15 @@
 <div class="bg-orbs" aria-hidden="true"><div class="orb"></div><div class="orb"></div><div class="orb"></div></div>
 <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
-<a href="#content" class="skip-link">Saltar al contenido principal</a>
-
 {% if not react_built %}
 <div class="build-notice" role="alert">La interfaz React no está construida. Ejecuta <code>npm --prefix frontend ci &amp;&amp; npm --prefix frontend run build</code> y recarga la página.</div>
 {% endif %}
 
-<button class="menu-toggle" id="menuToggle" type="button" aria-label="Abrir menú de secciones" aria-expanded="false" aria-controls="navTabs"><svg class="ic-menu" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg><svg class="ic-close" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-
-<div class="app">
-  <div class="menu-backdrop" id="menuBackdrop" hidden></div>
-  <header class="hero" style="position:relative;">
-    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Cambiar tema claro/oscuro"><span id="themeIcon" aria-hidden="true">☀️</span> <span class="label" id="themeLabel">Claro</span></button>
-    <div class="hero-badge" aria-hidden="true"><span class="dot"></span> En vivo — Lotería de Panamá</div>
-    <h1>Sorteos & Predicciones</h1>
-    <p>Consulta resultados, analiza tendencias estadísticas y descubre los números con mayor probabilidad para el próximo sorteo.</p>
-    <div class="last-update" id="lastUpdate" role="status" aria-live="polite"></div>
-  </header>
-
-  <nav class="nav-tabs" id="navTabs" role="tablist" aria-orientation="vertical" aria-label="Secciones principales">
-    <button class="nav-tab active" data-tab="predicciones" role="tab" aria-selected="true" aria-controls="sec-predicciones" id="tab-predicciones">★ Predicciones</button>
-    <button class="nav-tab" data-tab="decenas" role="tab" aria-selected="false" aria-controls="sec-decenas" id="tab-decenas">Decenas</button>
-    <button class="nav-tab" data-tab="terminaciones" role="tab" aria-selected="false" aria-controls="sec-terminaciones" id="tab-terminaciones">Terminaciones</button>
-    <button class="nav-tab nav-tab-group" data-tab="resultados" role="tab" aria-selected="false" aria-controls="sec-resultados" id="tab-resultados">Resultados</button>
-    <button class="nav-tab" data-tab="estadisticas" role="tab" aria-selected="false" aria-controls="sec-estadisticas" id="tab-estadisticas">Estadísticas</button>
-    <button class="nav-tab" data-tab="tendencias" role="tab" aria-selected="false" aria-controls="sec-tendencias" id="tab-tendencias">Tendencias</button>
-    <button class="nav-tab" data-tab="analisis" role="tab" aria-selected="false" aria-controls="sec-analisis" id="tab-analisis">Análisis</button>
-    <button class="nav-tab nav-tab-group" data-tab="comparador" role="tab" aria-selected="false" aria-controls="sec-comparador" id="tab-comparador">⚖ Comparador</button>
-    <button class="nav-tab" data-tab="gaps" role="tab" aria-selected="false" aria-controls="sec-gaps" id="tab-gaps">⏳ Gaps</button>
-    <button class="nav-tab" data-tab="simulador" role="tab" aria-selected="false" aria-controls="sec-simulador" id="tab-simulador">🎰 Simulador</button>
-    <button class="nav-tab" data-tab="favoritos" role="tab" aria-selected="false" aria-controls="sec-favoritos" id="tab-favoritos">⭐ Mis Números</button>
-    <button class="nav-tab" data-tab="mensual" role="tab" aria-selected="false" aria-controls="sec-mensual" id="tab-mensual">📅 Mensual</button>
-    <button class="nav-tab nav-tab-group" data-tab="precision" role="tab" aria-selected="false" aria-controls="sec-precision" id="tab-precision">Precisión</button>
-    <button class="nav-tab" data-tab="seguimiento" role="tab" aria-selected="false" aria-controls="sec-seguimiento" id="tab-seguimiento">🎯 Seguimiento</button>
-  </nav>
-
-  <div id="loader" class="loader-wrap" role="status" aria-label="Cargando"><div class="spinner" aria-hidden="true"></div><p>Cargando datos de sorteos…</p></div>
-
-  <main id="content" style="display:none;">
-
-    <!-- ==================== PREDICCIONES ==================== -->
-    <section class="section active" id="sec-predicciones" role="tabpanel" aria-labelledby="tab-predicciones">
-
-      <!-- DASHBOARD RESUMEN -->
-      <div data-react-root="predicciones-resumen" style="margin-bottom:28px;"></div>
-
-      <h2 class="section-title">Números Recomendados</h2>
-      <p class="section-subtitle">Basado en análisis de frecuencia posicional, tendencias recientes y patrones históricos.</p>
-
-      <div data-react-root="predicciones"></div>
-
-      <div class="card reveal" style="margin-top:28px;">
-        <div class="card-header"><h3 class="card-title">¿Cómo funciona?</h3><span class="card-badge badge-gold">Metodología</span></div>
-        <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.7;">
-          Nuestro algoritmo analiza la <strong style="color:var(--gold-300)">frecuencia de dígitos por posición</strong> para cada premio (1ro, 2do, 3ro),
-          aplica <strong style="color:var(--gold-300)">pesos de recencia</strong> (los sorteos más recientes tienen mayor influencia),
-          y ordena los 10.000 números por la <strong style="color:var(--gold-300)">probabilidad exacta</strong> de sus dígitos, con el historial <strong style="color:var(--gold-300)">desde 1995 hasta la fecha</strong>.
-          La confianza indica cuántas veces más probable es un número que uno al azar (×1.00 = azar).
-          <br><br><span style="color:var(--text-muted);font-size:0.8rem;">⚠ Nota: La lotería es un juego de azar. Estas recomendaciones son puramente estadísticas y no garantizan resultados.</span>
-        </p>
-      </div>
-    </section>
-
-    <!-- ==================== DECENAS ==================== -->
-    <section class="section" id="sec-decenas" role="tabpanel" aria-labelledby="tab-decenas">
-      <h2 class="section-title">Decena Recomendada</h2>
-      <p class="section-subtitle">Decena (penúltimo dígito) más frecuente tras el patrón de los últimos sorteos de cada categoría, contando los 3 premios desde 1995. Si el patrón tiene menos de 20 coincidencias, se usa la frecuencia general. Cada tarjeta muestra su prueba frente al azar: las decenas aciertan como el azar.</p>
-      <div data-react-root="decenas"></div>
-    </section>
-
-    <!-- ==================== TERMINACIONES ==================== -->
-    <section class="section" id="sec-terminaciones" role="tabpanel" aria-labelledby="tab-terminaciones">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:8px;">
-        <div>
-          <h2 class="section-title">Análisis de Últimos 2 Dígitos</h2>
-          <p class="section-subtitle">Frecuencia, predicción y tendencias de las terminaciones (00–99) de los 3 premios.</p>
-        </div>
-        <button class="ml-toggle" onclick="toggleML()" aria-pressed="false" aria-label="Alternar entre modelo ML y Estadístico">📊 Estadístico</button>
-      </div>
-
-      <div data-react-root="terminaciones"></div>
-    </section>
-
-    <!-- ==================== RESULTADOS ==================== -->
-    <section class="section" id="sec-resultados" role="tabpanel" aria-labelledby="tab-resultados">
-      <div class="section-header">
-        <div>
-          <h2 class="section-title">Resultados Recientes</h2>
-          <p class="section-subtitle">Historial completo de sorteos de la Lotería de Panamá.</p>
-        </div>
-        <div style="display:flex;gap:8px;">
-          <span id="resultadosCsv" style="display:contents"></span>
-          <button class="btn btn-gold" id="updateBtn" onclick="runUpdate()" aria-label="Actualizar datos de sorteos">↻ Actualizar datos</button>
-        </div>
-      </div>
-
-      <div data-react-root="resultados"></div>
-    </section>
-
-    <!-- ==================== ESTADÍSTICAS ==================== -->
-    <section class="section" id="sec-estadisticas" role="tabpanel" aria-labelledby="tab-estadisticas">
-      <h2 class="section-title">Estadísticas Generales</h2>
-      <p class="section-subtitle">Frecuencia de dígitos, números calientes y fríos.</p>
-
-      <div data-react-root="estadisticas"></div>
-    </section>
-
-    <!-- ==================== TENDENCIAS ==================== -->
-    <section class="section" id="sec-tendencias" role="tabpanel" aria-labelledby="tab-tendencias">
-      <h2 class="section-title">Tendencias Temporales</h2>
-      <p class="section-subtitle">Evolución de la frecuencia de dígitos a lo largo del tiempo.</p>
-      <div data-react-root="tendencias"></div>
-    </section>
-
-    <!-- ==================== ANÁLISIS ==================== -->
-    <section class="section" id="sec-analisis" role="tabpanel" aria-labelledby="tab-analisis">
-      <h2 class="section-title">Análisis por Posición</h2>
-      <p class="section-subtitle">Probabilidad de cada dígito (0–9) en cada una de las 4 posiciones del número ganador.</p>
-      <div data-react-root="analisis"></div>
-    </section>
-
-    <!-- ==================== COMPARADOR ==================== -->
-    <section class="section" id="sec-comparador" role="tabpanel" aria-labelledby="tab-comparador">
-      <h2 class="section-title">Comparador de Números</h2>
-      <p class="section-subtitle">Ingresa hasta 5 números y compara su historial, frecuencia, última aparición y meses favorables.</p>
-
-      <div data-react-root="comparador"></div>
-    </section>
-
-    <!-- ==================== GAPS ==================== -->
-    <section class="section" id="sec-gaps" role="tabpanel" aria-labelledby="tab-gaps">
-      <h2 class="section-title">Análisis de Gaps</h2>
-      <p class="section-subtitle">¿Cuántos sorteos llevan sin aparecer los números más populares? Los números con gap alto respecto a su promedio están "vencidos".</p>
-
-      <div data-react-root="gaps"></div>
-    </section>
-
-    <!-- ==================== SIMULADOR ==================== -->
-    <section class="section" id="sec-simulador" role="tabpanel" aria-labelledby="tab-simulador">
-      <h2 class="section-title">Simulador: ¿Cuánto habría ganado?</h2>
-      <p class="section-subtitle">Ingresa un número y descubre cuántas veces ha salido en toda la historia de la lotería.</p>
-
-      <div data-react-root="simulador"></div>
-    </section>
-
-    <!-- ==================== MIS NÚMEROS (WATCHLIST) ==================== -->
-    <section class="section" id="sec-favoritos" role="tabpanel" aria-labelledby="tab-favoritos">
-      <h2 class="section-title">Mis Números Favoritos</h2>
-      <p class="section-subtitle">Guarda tus números y recibe alertas cuando salgan en los resultados o sean recomendados por el modelo.</p>
-
-      <div data-react-root="favoritos"></div>
-    </section>
-
-    <!-- ==================== RECOMENDACIÓN MENSUAL ==================== -->
-    <section class="section" id="sec-mensual" role="tabpanel" aria-labelledby="tab-mensual">
-      <h2 class="section-title">Recomendación Mensual</h2>
-      <p class="section-subtitle">Análisis histórico por mes del año: descubre qué números, dígitos y terminaciones son más frecuentes en cada mes.</p>
-
-      <div data-react-root="mensual"></div>
-    </section>
-
-    <!-- ==================== SEGUIMIENTO ==================== -->
-    <section class="section" id="sec-seguimiento" role="tabpanel" aria-labelledby="tab-seguimiento">
-      <h2 class="section-title">Seguimiento de Recomendaciones</h2>
-      <p class="section-subtitle">Lo que la web recomendó <strong>antes</strong> de cada sorteo frente a lo que salió. La recomendación se congela la primera vez que se calcula tras el último sorteo de cada categoría. Los sorteos son independientes: lo esperable es rendir como el azar.</p>
-
-      <div data-react-root="seguimiento"></div>
-    </section>
-
-    <!-- ==================== PRECISIÓN ==================== -->
-    <section class="section" id="sec-precision" role="tabpanel" aria-labelledby="tab-precision">
-      <h2 class="section-title">Precisión Histórica</h2>
-      <p class="section-subtitle">Backtesting: comparamos las predicciones del modelo contra los resultados reales para medir su rendimiento.</p>
-
-      <div data-react-root="precision"></div>
-    </section>
-
-  </main>
-  <footer class="footer" id="footerText" role="contentinfo">Lotería de Panamá — Análisis Estadístico © 2026</footer>
+<!-- La interfaz entera la pinta React en #root (frontend/src/shell/Armazon.tsx); esto se ve hasta que carga el script. -->
+<div id="root">
+  <div class="loader-wrap" role="status" aria-label="Cargando"><div class="spinner" aria-hidden="true"></div><p>Cargando datos de sorteos…</p></div>
 </div>
 
-<script src="{{ url_for('static', filename='app.js') }}"></script>
 {% if react_built %}<script type="module" src="{{ url_for('static', filename='dist/app.js') }}"></script>{% endif %}
 </body>
 </html>
