@@ -50,6 +50,8 @@ class StoreClaseConFlechas implements Store {
     setUseML: (v: boolean) => this.poner({ useML: v }),
     setPrize: (p: Snapshot['prize']) => this.poner({ prize: p }),
     setStatsPrize: (p: Snapshot['statsPrize']) => this.poner({ statsPrize: p }),
+    setTheme: (t: Snapshot['theme']) => this.poner({ theme: t }),
+    setActiveTab: (p: Snapshot['activeTab']) => this.poner({ activeTab: p }),
     toast: () => {},
     simularNumero: (n: string) => {
       this.peticiones += 1
@@ -129,6 +131,8 @@ class StoreManual implements Store {
     setUseML: (v: boolean) => this.poner('setUseML', { useML: v }),
     setPrize: (p: Snapshot['prize']) => this.poner('setPrize', { prize: p }),
     setStatsPrize: (p: Snapshot['statsPrize']) => this.poner('setStatsPrize', { statsPrize: p }),
+    setTheme: (t: Snapshot['theme']) => this.poner('setTheme', { theme: t }),
+    setActiveTab: (p: Snapshot['activeTab']) => this.poner('setActiveTab', { activeTab: p }),
     toast: () => {},
     simularNumero: (n: string) => {
       this.peticiones += 1

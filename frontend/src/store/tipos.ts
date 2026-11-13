@@ -76,6 +76,10 @@ export interface AccionesStore {
   setUseML(valor: boolean): void
   setPrize(premio: Premio): void
   setStatsPrize(premio: Premio): void
+  /** Cambia el tema (claro u oscuro), lo aplica al documento y lo recuerda en el navegador. Un valor desconocido se ignora. */
+  setTheme(tema: Tema): void
+  /** Activa una pestaña de la barra principal. Una desconocida se ignora. */
+  setActiveTab(pestaña: TabId): void
   /** Aviso emergente de la página (`#toast`). */
   toast(mensaje: string, ms?: number): void
   /**

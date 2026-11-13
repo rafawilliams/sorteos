@@ -5,7 +5,7 @@
  * Al final de la migración, `ReactStore` (T052) lo sustituye sin que las pestañas cambien.
  */
 import type { Premio } from '../api/types'
-import type { Snapshot, Store } from './tipos'
+import type { Snapshot, Store, TabId, Tema } from './tipos'
 
 /** Lo que `static/app.js` publica en `window.LP`. */
 export interface PuenteLP {
@@ -14,6 +14,8 @@ export interface PuenteLP {
   setUseML(valor: boolean): void
   setPrize(premio: Premio): void
   setStatsPrize(premio: Premio): void
+  setTheme(tema: Tema): void
+  setActiveTab(pestaña: TabId): void
   toast(mensaje: string, ms?: number): void
   simular(numero: string): void
   reload(): Promise<void>
@@ -36,6 +38,8 @@ export function crearLegacyStore(puente: PuenteLP | undefined = window.LP): Stor
       setUseML: (valor) => puente.setUseML(valor),
       setPrize: (premio) => puente.setPrize(premio),
       setStatsPrize: (premio) => puente.setStatsPrize(premio),
+      setTheme: (tema) => puente.setTheme(tema),
+      setActiveTab: (pestaña) => puente.setActiveTab(pestaña),
       toast: (mensaje, ms) => puente.toast(mensaje, ms),
       simularNumero: (numero) => puente.simular(numero),
       reload: () => puente.reload(),

@@ -13,7 +13,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { Snapshot, Store } from './tipos'
 
 const CAMPOS = ['sorteos', 'stats', 'useML', 'prize', 'statsPrize', 'theme', 'activeTab', 'ready', 'simulacion', 'errorSorteos'] as const satisfies readonly (keyof Snapshot)[]
-const ACCIONES = ['setUseML', 'setPrize', 'setStatsPrize', 'toast', 'simularNumero', 'reload'] as const
+const ACCIONES = ['setUseML', 'setPrize', 'setStatsPrize', 'setTheme', 'setActiveTab', 'toast', 'simularNumero', 'reload'] as const
 
 /** Cómo llevar a un almacén concreto a un estado cargado y cómo hacer que falle su siguiente recarga. */
 export interface ControlDeCarga {
@@ -28,6 +28,10 @@ export interface ControlDeCarga {
 }
 
 type Comprobacion = (crear: () => Store, control: ControlDeCarga) => Promise<void> | void
+
+/** El otro tema y otra pestaña, para forzar un cambio. */
+const otroTema = (t: Snapshot['theme']): Snapshot['theme'] => (t === 'light' ? 'dark' : 'light')
+const otraPestaña = (p: Snapshot['activeTab']): Snapshot['activeTab'] => (p === 'gaps' ? 'mensual' : 'gaps')
 
 /** El otro valor posible de un premio, para forzar un cambio. */
 const otroPremio = (p: Snapshot['prize']): Snapshot['prize'] => (p === 'primero' ? 'segundo' : 'primero')
@@ -96,6 +100,8 @@ export const comprobaciones: Record<string, Comprobacion> = {
       ['useML', (s) => s.actions.setUseML(!s.getSnapshot().useML), (a) => !a.useML],
       ['prize', (s) => s.actions.setPrize(otroPremio(s.getSnapshot().prize)), (a) => otroPremio(a.prize)],
       ['statsPrize', (s) => s.actions.setStatsPrize(otroPremio(s.getSnapshot().statsPrize)), (a) => otroPremio(a.statsPrize)],
+      ['theme', (s) => s.actions.setTheme(otroTema(s.getSnapshot().theme)), (a) => otroTema(a.theme)],
+      ['activeTab', (s) => s.actions.setActiveTab(otraPestaña(s.getSnapshot().activeTab)), (a) => otraPestaña(a.activeTab)],
     ]
     for (const [campo, cambiar, esperado] of cambios) {
       await enEstados(crear, control, (store, momento) => {
@@ -121,6 +127,8 @@ export const comprobaciones: Record<string, Comprobacion> = {
       ['setUseML', (s) => s.actions.setUseML(!s.getSnapshot().useML), 'useML', (a) => !a.useML],
       ['setPrize', (s) => s.actions.setPrize(otroPremio(s.getSnapshot().prize)), 'prize', (a) => otroPremio(a.prize)],
       ['setStatsPrize', (s) => s.actions.setStatsPrize(otroPremio(s.getSnapshot().statsPrize)), 'statsPrize', (a) => otroPremio(a.statsPrize)],
+      ['setTheme', (s) => s.actions.setTheme(otroTema(s.getSnapshot().theme)), 'theme', (a) => otroTema(a.theme)],
+      ['setActiveTab', (s) => s.actions.setActiveTab(otraPestaña(s.getSnapshot().activeTab)), 'activeTab', (a) => otraPestaña(a.activeTab)],
     ]
     for (const [nombre, ejecutar, campo, esperado] of cambios) {
       const store = crear()
@@ -145,19 +153,22 @@ export const comprobaciones: Record<string, Comprobacion> = {
   async sinDependerDeThis(crear) {
     const store = crear()
     const { subscribe } = store
-    const { setUseML, setPrize, setStatsPrize, toast, simularNumero, reload } = store.actions
+    const { setUseML, setPrize, setStatsPrize, setTheme, setActiveTab, toast, simularNumero, reload } = store.actions
     const escucha = vi.fn()
     const cancelar = suelta('subscribe', () => subscribe(escucha))
     suelta('setUseML', () => setUseML(true))
     suelta('setPrize', () => setPrize('tercero'))
     suelta('setStatsPrize', () => setStatsPrize('segundo'))
+    suelta('setTheme', () => setTheme('light'))
+    suelta('setActiveTab', () => setActiveTab('gaps'))
+    expect(store.getSnapshot().activeTab, '`setActiveTab` suelta no activó la pestaña').toBe('gaps')
     suelta('toast', () => toast('aviso', 100))
     suelta('simularNumero', () => simularNumero('0042'))
     const recarga = suelta('reload', () => reload())
     expect(recarga, 'reload debe devolver una promesa').toBeInstanceOf(Promise)
     await recarga
     const s = store.getSnapshot()
-    expect([s.useML, s.prize, s.statsPrize]).toEqual([true, 'tercero', 'segundo'])
+    expect([s.useML, s.prize, s.statsPrize, s.theme]).toEqual([true, 'tercero', 'segundo', 'light'])
     expect(escucha).toHaveBeenCalled()
     cancelar()
   },
