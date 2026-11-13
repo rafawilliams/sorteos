@@ -192,3 +192,9 @@ Decision   — (b) y (d): `predicciones-resumen` (T043) y `predicciones` (T044, 
 Why        — Se mantiene lo que el usuario veía y se corrigen dos fallos de accesibilidad heredados sin cambiar el aspecto. Una captura alineada a píxel entero, con las dos páginas a la misma fracción, difiere en 47 y 73 píxeles de 1,08 millones.
 Descartado — La revisión propuso que la barra de confianza «animaba al aparecer» en el código antiguo y que se había perdido. Medido fotograma a fotograma en Chromium real: en el código antiguo la barra solo oscilaba entre el 90 y el 100 % en la carga inicial y entre el 99 y el 100 % al cambiar de categoría (el `requestAnimationFrame` que ponía el ancho a 0 y lo devolvía no producía una animación visible). Se probó añadir una animación de 0 a 100 % y se retiró: era un comportamiento nuevo (en la isla la barra crecía de 0 a 100 %) y no «se ve igual». No hay animación, igual que antes.
 Revisión   — tier 1, un revisor: changes-needed, 0 bloqueantes, 2 should-fix y 4 nits. Arreglados: el `aria-controls` colgante con `stats` nulo y el estado de error del resumen; los comentarios huérfanos de `app.js`, el selector `.prize-tabs` de `initTabs` (ahora `#statsPrizeTabs`, para no enganchar el teclado antiguo al `Tablist` de React) y el comentario de `BotonCopiar`. Descartado con la medida de arriba: la animación. Anotado sin cambios: Q16.
+
+## 2026-11-12 — Spec ci-syntaxwarning (borrador)
+Context    — El gate de ASDD clasifica el cambio de `tests.yml` como tier 2 (ci) y exige una spec vinculada a la rama antes de subirla.
+Decision   — Spec mínima `ci-syntaxwarning` con la prueba en negativo (`"\d"` falla bajo el flag) como criterio. Se descartó apagar el gate (`.rsc/.no-asdd-gate`): desactivaría la protección en todo el proyecto.
+Why        — Cierra el criterio 8 de T058, que solo se había comprobado a mano.
+Estado     — aprobada por el dueño el 2026-11-12.

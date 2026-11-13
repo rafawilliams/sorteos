@@ -51,7 +51,7 @@ jobs:
         run: python tests/seed_db.py
 
       - name: Run tests
-        run: pytest -q
+        run: pytest -q -W error::SyntaxWarning
 
       - name: Audit dependencies
         # PYSEC-2026-217 (mariadb): no fixed release exists; only exploitable with manual
