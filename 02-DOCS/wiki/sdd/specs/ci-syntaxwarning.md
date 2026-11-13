@@ -46,7 +46,7 @@ Un PR sin avisos sale en verde. Un PR con un aviso de sintaxis sale en rojo, y e
 ## What it must respect
 - `main` está cerrada: el cambio entra por rama y PR.
 - Constitución: la suite de tests sigue en verde y el CI no depende del harness.
-- Los 569 tests actuales siguen pasando, con los 11 omitidos como hasta ahora.
+- Los tests actuales siguen pasando. Las cifras dependen de la base: 569 pasados y 11 omitidos sin base sembrada, 579 pasados y 1 omitido con `tests/seed_db.py` y las variables del CI. El flag no cambia ninguna de las dos.
 - El resto del workflow (instalación, base de datos de prueba, auditoría de dependencias, job del frontend) no cambia.
 
 ## How it proves it
@@ -57,7 +57,7 @@ Salidas de comandos, guardadas en la verificación del PR:
 
 ## Behaviour
 - Main path: el job de tests ejecuta la suite con los `SyntaxWarning` tratados como error y termina en verde si no hay ninguno.
-- Edge cases: un `SyntaxWarning` en el código de un test o de la app falla igual. Uno que surge dentro de una dependencia instalada se compila al importarla y también falla; si un día pasa, se decide entonces si se excluye esa dependencia.
+- Edge cases: el flag vigila lo que la suite compila. Un `SyntaxWarning` en un test, o en un módulo que algún test importa (por ejemplo `estadisticas.py`), rompe el job. Un módulo que ningún test importa (hoy `sorteosJson.py`) no queda cubierto. Una dependencia se compila al instalarla, con los avisos silenciados, así que un aviso dentro de ella tampoco rompe el job. Con un `.pyc` ya cacheado, una ejecución local puede pasar en falso; el CI parte de un checkout limpio y no lo sufre.
 - Error paths: si el aviso aparece, el job falla con el archivo y la línea en el log. No hay reintento automático.
 
 ## Acceptance criteria
@@ -70,3 +70,5 @@ Salidas de comandos, guardadas en la verificación del PR:
 ## Points to clarify
 - **suposición tomada** — Ninguna dependencia instalada genera hoy un `SyntaxWarning` al importarse. *Base:* la suite completa pasa en local con el flag. *Riesgo:* la versión de Python o de las dependencias del CI (3.13 en ubuntu) puede diferir de la local; el CI del PR lo confirma.
 - **decisión diferida** — Tratar como error otros avisos (`DeprecationWarning`); fuera de este ciclo.
+- **decisión diferida** — Cubrir los módulos que ningún test importa (por ejemplo con `python -W error::SyntaxWarning -m compileall` sobre los archivos versionados); fuera de este ciclo. *Origen:* hallazgo del panel de revisión, reproducido con un `"\d"` en `sorteosJson.py`.
+- **suposición tomada** — La prueba en negativo del criterio 2 se hace con un archivo limpio, sin `__pycache__` previo. *Base:* un `.pyc` cacheado oculta el aviso en local (reproducido por dos revisores). *Riesgo:* ninguno en el CI.
