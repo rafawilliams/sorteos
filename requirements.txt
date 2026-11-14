@@ -8,3 +8,4 @@ mariadb==1.1.14
 scikit-learn==1.8.0
 joblib==1.5.3
 numpy==2.2.1
+waitress==3.0.2

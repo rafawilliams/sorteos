@@ -21,6 +21,10 @@ pip-audit -r requirements.txt
 # Run dev server (port 5000)
 python app.py
 
+# Fixed server (waitress, 127.0.0.1 only, no debugger; LOTERIA_PUERTO overrides the port) and keep-alive on Windows
+python servir.py
+powershell -ExecutionPolicy Bypass -File scripts	area_servidor.ps1          # scheduled task "Loteria-Servidor" (add -Quitar to remove)
+
 # Frontend dev server with hot reload (http://localhost:5173), proxies /api and /static to Flask
 # (FLASK_URL overrides http://127.0.0.1:5000; the build for Flask is `npm --prefix frontend run build`)
 npm --prefix frontend run dev
