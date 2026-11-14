@@ -21,7 +21,7 @@ Si `/api/stats` falla tras sus 3 intentos (límite de 180 s cada uno), las pesta
 - [x] Cada pestaña del alcance muestra el aviso cuando `errorStats` es `true` y `stats` es nulo — prueba: una prueba por pestaña, 9 (fallaban antes del cambio).
 - [x] Typecheck, suite de Vitest, build y `pytest` en verde — prueba: ver Evidence.
 - [x] Revisión tier 1 con un revisor de contexto limpio — Approved, sin blockers ni should-fix.
-- [ ] En el navegador, con `/api/stats` fallando, aparece el aviso y «Reintentar» recupera la página — **no ejecutado**: queda por hacer en un servidor de prueba en el puerto 5001.
+- [x] En el navegador, con `/api/stats` fallando, aparece el aviso y «Reintentar» recupera la página — prueba: servidor en el puerto 5001 con la base sembrada `sorteos_capturas` (600 sorteos), ver Evidence.
 
 ## Evidence
 - `npx vitest run src/store/reactStore.test.ts` antes de implementar: 7 pruebas rojas (todas por falta de `errorStats`). Las 9 pruebas de pestañas: 9 rojas. `EsperaStats.test.tsx`: error de importación (el componente no existía).
@@ -34,5 +34,7 @@ Si `/api/stats` falla tras sus 3 intentos (límite de 180 s cada uno), las pesta
   - (c) En Mis Números el `role="alert"` queda dentro de una región `aria-live="polite"`; puede anunciarse dos veces.
   - Un suscriptor que llamara a `reload()` dentro del aviso de `cambiar({ errorStats: false })` arrancaría una segunda carga; hoy ninguno lo hace.
 
+- Prueba en el navegador (2026-11-14), servidor en el 5001 con `/api/sorteos` → `total` 600 (no la base real) y `/api/stats` forzado a 500: la página mostró «No se pudieron cargar las estadísticas.» con «Reintentar» tras 3 respuestas 500 (consola). Al quitar el fallo y pulsar «Reintentar», `/api/stats` respondió 200 y Predicciones mostró las recomendaciones. El nit (d) se vio tal cual: dos avisos iguales en Predicciones.
+
 ## Next
-Hacer commit, subir la rama y abrir el PR. Después, si se quiere, probar en el navegador con `/api/stats` fallando y decidir si el nit (d) merece una rama aparte.
+Abrir el PR. Decidir si el nit (d) merece una rama aparte.
