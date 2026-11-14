@@ -47,10 +47,10 @@ describe('isla Predicciones: panel de resumen', () => {
     expect(screen.queryByRole('region', { name: 'Resumen rápido' })).toBeNull()
   })
 
-  it('con la carga de estadísticas fallida dice que no se pudo y ofrece reintentar, sin esqueleto', () => {
+  it('con la carga de estadísticas fallida no pinta aviso ni esqueleto: el aviso con «Reintentar» lo da la lista de recomendaciones, justo debajo', () => {
     montar({ stats: null, errorStats: true })
-    expect(screen.getByRole('alert').textContent).toContain('No se pudieron cargar las estadísticas.')
-    expect(screen.getByRole('button', { name: 'Reintentar' })).toBeTruthy()
+    expect(screen.queryByRole('alert')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Reintentar' })).toBeNull()
     expect(screen.queryByRole('status')).toBeNull()
     expect(screen.queryByRole('region', { name: 'Resumen rápido' })).toBeNull()
   })

@@ -5,7 +5,7 @@ import { StoreProvider } from '../store/StoreProvider'
 import { crearStoreFalso, type StoreFalso } from '../store/storeFalso'
 import { EsperaStats } from './EsperaStats'
 
-function montar(store: StoreFalso, hijos?: React.ReactNode, extra: { id?: string } = {}) {
+function montar(store: StoreFalso, hijos?: React.ReactNode, extra: { id?: string; avisar?: boolean } = {}) {
   return render(
     <StoreProvider store={store}>
       <EsperaStats etiqueta="Cargando prueba" {...extra}>
@@ -35,6 +35,16 @@ describe('EsperaStats', () => {
     expect(screen.queryByRole('status')).toBeNull()
     expect(screen.queryByText('mi esqueleto')).toBeNull()
     expect(container.querySelectorAll('.skel-line')).toHaveLength(0)
+  })
+
+  it('con `avisar={false}` y `errorStats` no pinta aviso ni esqueleto, pero conserva el `id`; sin error sigue pintando el esqueleto', () => {
+    const { container } = montar(crearStoreFalso({ errorStats: true }), undefined, { id: 'region-x', avisar: false })
+    expect(screen.queryByRole('alert')).toBeNull()
+    expect(screen.queryByRole('status')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Reintentar' })).toBeNull()
+    expect(container.querySelector('#region-x')).not.toBeNull()
+    montar(crearStoreFalso(), undefined, { avisar: false })
+    expect(screen.getByRole('status', { name: 'Cargando prueba' })).toBeInTheDocument()
   })
 
   it('«Reintentar» pide una recarga y pasa el foco al contenedor, no a <body>', async () => {
