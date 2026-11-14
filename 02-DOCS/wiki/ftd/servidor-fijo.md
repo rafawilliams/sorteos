@@ -1,7 +1,9 @@
 ---
 author: rafawilliams
 branch: feat/servidor-fijo
-status: in-progress
+status: done
+merged: 2026-11-14
+pr: #68
 ---
 # Servidor fijo: siempre arriba, solo en este equipo
 
@@ -27,4 +29,4 @@ status: in-progress
 - No se probó el script de la tarea con `Register-ScheduledTask`: solo el análisis de sintaxis.
 
 ## Next
-Abrir el PR. Tras fusionar: parar el `python app.py` actual, ejecutar `scripts\tarea_servidor.ps1` desde el checkout principal y comprobar que responde y que se reinicia al matar el proceso.
+Fusionado en main el 2026-11-14 (470bf98).
