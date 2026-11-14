@@ -1,7 +1,9 @@
 ---
 author: rafawilliams
 branch: fix/aviso-stats-duplicado
-status: in-progress
+status: done
+merged: 2026-11-14
+pr: #67
 ---
 # Un solo aviso cuando falla `/api/stats` en Predicciones
 
@@ -24,4 +26,4 @@ Cuando `/api/stats` falla, la sección Predicciones mostraba dos avisos idéntic
 - Después: `npm test -- --run` → 46 archivos, **1224 pruebas** en verde. `npm run typecheck` limpio. `npm run build` correcto. `pytest` no se ejecutó: el backend no cambia.
 
 ## Next
-Revisar, subir la rama y abrir el PR. Probar en el navegador (puerto 5001, base sembrada) si se quiere.
+Fusionado en main el 2026-11-14 (898fc4b).
