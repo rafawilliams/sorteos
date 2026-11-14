@@ -33,7 +33,8 @@ export function Componente() {
             </button>
           </div>
         ) : (
-          <EsperaStats etiqueta="Cargando resumen">
+          // Con `errorStats` este panel calla: el aviso con «Reintentar» lo da la lista de recomendaciones, justo debajo.
+          <EsperaStats etiqueta="Cargando resumen" avisar={false}>
             <div className="skel-grid">
               <Skeleton lineas={4} />
               <Skeleton lineas={4} />

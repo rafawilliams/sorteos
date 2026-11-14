@@ -13,9 +13,14 @@ export interface EsperaStatsProps {
   estilo?: CSSProperties
   /** El esqueleto propio de la isla; sin él, cuatro líneas. */
   children?: ReactNode
+  /**
+   * `false` para una isla que comparte sección con otra que ya da el aviso con «Reintentar»: con `errorStats` no pinta
+   * nada (ni aviso ni esqueleto, que quedaría cargando para siempre). Sin error se comporta igual. Por defecto `true`.
+   */
+  avisar?: boolean
 }
 
-export function EsperaStats({ etiqueta, id, estilo, children }: EsperaStatsProps) {
+export function EsperaStats({ etiqueta, id, estilo, children, avisar = true }: EsperaStatsProps) {
   const error = useErrorStats()
   const recargar = useReload()
   const zonaRef = useRef<HTMLDivElement>(null)
@@ -27,7 +32,7 @@ export function EsperaStats({ etiqueta, id, estilo, children }: EsperaStatsProps
 
   return (
     <div id={id} ref={zonaRef} tabIndex={-1} style={{ outline: 'none', ...estilo }}>
-      {error ? (
+      {error && !avisar ? null : error ? (
         <div role="alert">
           <p style={{ color: '#f87171' }}>No se pudieron cargar las estadísticas.</p>
           <button type="button" className="btn" onClick={reintentar}>

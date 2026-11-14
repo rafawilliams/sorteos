@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Sorteo, Stats } from '../api/types'
 import { StoreProvider } from '../store/StoreProvider'
 import { crearReactStore, URL_SORTEOS } from '../store/reactStore'
+import { crearStoreFalso } from '../store/storeFalso'
 import { Secciones } from './Secciones'
 
 // Chart.js no pinta en jsdom: el componente se sustituye por un doble.
@@ -63,5 +64,19 @@ describe('Secciones: un fallo queda dentro de su sección', () => {
       </StoreProvider>,
     )
     expect(console.error).toHaveBeenCalledWith('La sección «decenas» falló', expect.any(Error))
+  })
+})
+
+describe('Secciones: Predicciones con las estadísticas caídas', () => {
+  it('enseña un único aviso con «Reintentar», no uno por cada isla que lee las estadísticas', () => {
+    const store = crearStoreFalso({ stats: null, errorStats: true, sorteos: SORTEOS, ready: true })
+    render(
+      <StoreProvider store={store}>
+        <Secciones />
+      </StoreProvider>,
+    )
+    const seccion = document.getElementById('sec-predicciones')!
+    expect(within(seccion).getAllByRole('alert')).toHaveLength(1)
+    expect(within(seccion).getAllByRole('button', { name: 'Reintentar' })).toHaveLength(1)
   })
 })
