@@ -4,6 +4,7 @@ __pycache__/
 *.pyc
 .pytest_cache/
 models/
+logs/
 *.joblib
 .claude/settings.local.json
 .rsc/backups/
