@@ -3,7 +3,7 @@ author: rafawilliams
 branch: feat/error-stats
 status: done
 merged: 2026-11-14
-pr: #64
+pr: #63
 ---
 # Aviso y reintento cuando falla `/api/stats`
 
@@ -39,4 +39,4 @@ Si `/api/stats` falla tras sus 3 intentos (límite de 180 s cada uno), las pesta
 - Prueba en el navegador (2026-11-14), servidor en el 5001 con `/api/sorteos` → `total` 600 (no la base real) y `/api/stats` forzado a 500: la página mostró «No se pudieron cargar las estadísticas.» con «Reintentar» tras 3 respuestas 500 (consola). Al quitar el fallo y pulsar «Reintentar», `/api/stats` respondió 200 y Predicciones mostró las recomendaciones. El nit (d) se vio tal cual: dos avisos iguales en Predicciones.
 
 ## Next
-Fusionado en main el 2026-11-14 (2caf520).
+Fusionado en main el 2026-11-14 (c334313).
