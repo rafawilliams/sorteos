@@ -2,7 +2,7 @@
 // una tarjeta por posición del número ganador (millares, centenas, decenas y unidades) con la cuadrícula de dígitos, y el
 // mapa de calor posición contra dígito. El título y el subtítulo de la sección siguen en la plantilla.
 import { CeldasPosicion } from '../components/CeldasPosicion'
-import { Skeleton } from '../components/Skeleton'
+import { EsperaStats } from '../components/EsperaStats'
 import { useReveal } from '../components/useReveal'
 import type { Frecuencia } from '../api/types'
 import { useStats, useTheme } from '../store/hooks'
@@ -93,11 +93,7 @@ export function Componente() {
   const revelar = useReveal()
 
   if (!stats) {
-    return (
-      <div role="status" aria-label="Cargando análisis">
-        <Skeleton lineas={4} />
-      </div>
-    )
+    return <EsperaStats etiqueta="Cargando análisis" />
   }
   const posiciones = stats.position_frequency ?? []
 

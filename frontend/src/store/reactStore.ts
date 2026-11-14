@@ -65,6 +65,7 @@ export function crearReactStore(): ReactStore {
     ready: false,
     simulacion: null,
     errorSorteos: false,
+    errorStats: false,
   }
   const escuchas = new Set<() => void>()
   let peticionesSimulacion = 0
@@ -117,7 +118,11 @@ export function crearReactStore(): ReactStore {
         return
       } catch (error) {
         if (intento < INTENTOS_STATS) console.warn(`Stats attempt ${intento} failed, retrying...`)
-        else console.error('Error loading stats:', error)
+        else {
+          console.error('Error loading stats:', error)
+          // Sin estadísticas una isla no distingue «cargando» de «no va a llegar»; con las viejas se conservan.
+          if (snapshot.stats === null) cambiar({ errorStats: true })
+        }
       }
     }
   }
@@ -126,6 +131,7 @@ export function crearReactStore(): ReactStore {
   const cargar = (): Promise<void> => {
     cargaEnCurso ??= (async () => {
       try {
+        if (snapshot.errorStats) cambiar({ errorStats: false }) // nuevo intento: vuelve a «cargando» desde el primer momento
         await cargarSorteos()
         await cargarStats()
       } finally {

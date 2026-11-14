@@ -34,6 +34,13 @@ describe('isla Análisis: estados', () => {
     expect(screen.queryByRole('region', { name: 'Grids de frecuencia por posición' })).toBeNull()
   })
 
+  it('con la carga de estadísticas fallida dice que no se pudo y ofrece reintentar, sin esqueleto', () => {
+    montar({ stats: null, errorStats: true })
+    expect(screen.getByRole('alert').textContent).toContain('No se pudieron cargar las estadísticas.')
+    expect(screen.getByRole('button', { name: 'Reintentar' })).toBeTruthy()
+    expect(screen.queryByRole('status')).toBeNull()
+  })
+
   it('sin frecuencias por posición deja la rejilla vacía y la tarjeta del mapa sin tabla', () => {
     montar({ stats: { ...STATS, position_frequency: [] } })
     expect(rejilla().children).toHaveLength(0)

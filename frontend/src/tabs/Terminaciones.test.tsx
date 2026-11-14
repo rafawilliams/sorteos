@@ -56,6 +56,13 @@ describe('isla Terminaciones: estados', () => {
     expect(screen.queryByRole('region', { name: 'Terminaciones recomendadas' })).toBeNull()
   })
 
+  it('con la carga de estadísticas fallida dice que no se pudo y ofrece reintentar, sin esqueleto', () => {
+    montar({ stats: null, errorStats: true })
+    expect(screen.getByRole('alert').textContent).toContain('No se pudieron cargar las estadísticas.')
+    expect(screen.getByRole('button', { name: 'Reintentar' })).toBeTruthy()
+    expect(screen.queryByRole('status')).toBeNull()
+  })
+
   it('con las estadísticas sin terminaciones no falla y avisa de que no hay recomendaciones', () => {
     montar({ stats: { ...STATS, endings: undefined as never, ml_endings: undefined as never, endings_by_category: undefined as never } })
     expect(texto(recomendadas())).toContain('Aún no hay terminaciones recomendadas.')

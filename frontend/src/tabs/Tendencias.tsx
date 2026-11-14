@@ -5,7 +5,7 @@ import type { ChartData } from 'chart.js'
 import { useCallback } from 'react'
 import type { Stats } from '../api/types'
 import { Chart } from '../components/Chart'
-import { Skeleton } from '../components/Skeleton'
+import { EsperaStats } from '../components/EsperaStats'
 import { useReveal } from '../components/useReveal'
 import { chartOptions, DIGIT_COLORS } from '../lib/chartOptions'
 import { useStats } from '../store/hooks'
@@ -65,11 +65,7 @@ export function Componente() {
   const revelarVolumen = useReveal()
 
   if (!stats) {
-    return (
-      <div role="status" aria-label="Cargando tendencias">
-        <Skeleton lineas={4} />
-      </div>
-    )
+    return <EsperaStats etiqueta="Cargando tendencias" />
   }
   const tendencia = stats.trends ?? []
 

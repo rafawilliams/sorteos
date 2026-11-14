@@ -75,6 +75,11 @@ export function useErrorSorteos(): boolean {
   return useCampo('errorSorteos')
 }
 
+/** `true` cuando la carga de estadísticas ha fallado tras sus reintentos y no hay ninguna (la isla debe decirlo en vez de quedarse en su esqueleto). */
+export function useErrorStats(): boolean {
+  return useCampo('errorStats')
+}
+
 /** Aviso emergente de la página. */
 export function useToast(): (mensaje: string, ms?: number) => void {
   return useStore().actions.toast

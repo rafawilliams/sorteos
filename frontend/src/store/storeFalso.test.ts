@@ -15,6 +15,7 @@ describe('crearStoreFalso: estado inicial', () => {
       ready: false,
       simulacion: null,
       errorSorteos: false,
+      errorStats: false,
     })
   })
 

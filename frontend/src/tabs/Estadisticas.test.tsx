@@ -57,6 +57,14 @@ describe('isla Estadísticas: estados', () => {
     expect(screen.queryByRole('heading', { name: 'Frecuencia de Dígitos' })).toBeNull()
   })
 
+  it('con la carga de estadísticas fallida dice que no se pudo y ofrece reintentar, sin esqueleto', () => {
+    montar({ stats: null, errorStats: true })
+    expect(screen.getByRole('alert').textContent).toContain('No se pudieron cargar las estadísticas.')
+    expect(screen.getByRole('button', { name: 'Reintentar' })).toBeTruthy()
+    expect(screen.queryByRole('status')).toBeNull()
+    expect(screen.getByRole('tablist', { name: 'Seleccionar premio para estadísticas' })).toBeTruthy()
+  })
+
   it('con estadísticas pinta las ocho tarjetas del código antiguo y el panel de formatos', () => {
     montar()
     const titulos = Array.from(document.querySelectorAll('.card-title')).map((t) => texto(t))

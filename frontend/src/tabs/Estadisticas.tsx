@@ -9,7 +9,7 @@ import type { EstadisticasPremio, FormatoPremio, Premio, Sorteo, Stats } from '.
 import { Barras } from '../components/Barras'
 import { CeldasPosicion } from '../components/CeldasPosicion'
 import { Chart } from '../components/Chart'
-import { Skeleton } from '../components/Skeleton'
+import { EsperaStats } from '../components/EsperaStats'
 import { Tablist } from '../components/Tablist'
 import { useReveal } from '../components/useReveal'
 import { chartOptions } from '../lib/chartOptions'
@@ -189,9 +189,7 @@ export function Componente() {
     return (
       <>
         {pestañas}
-        <div id={ID_REGION} role="status" aria-label="Cargando estadísticas">
-          <Skeleton lineas={4} />
-        </div>
+        <EsperaStats id={ID_REGION} etiqueta="Cargando estadísticas" />
       </>
     )
   }

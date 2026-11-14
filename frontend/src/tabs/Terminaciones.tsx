@@ -9,7 +9,7 @@ import type { Stats, TerminacionConteo } from '../api/types'
 import { Balls } from '../components/Balls'
 import { BotonCopiar } from '../components/BotonCopiar'
 import { Chart } from '../components/Chart'
-import { Skeleton } from '../components/Skeleton'
+import { EsperaStats } from '../components/EsperaStats'
 import { Tablist } from '../components/Tablist'
 import { useReveal } from '../components/useReveal'
 import { chartOptions, DIGIT_COLORS } from '../lib/chartOptions'
@@ -139,11 +139,7 @@ export function Componente() {
   const categorias = useMemo(() => categoriasDe(sorteos), [sorteos])
 
   if (!stats) {
-    return (
-      <div role="status" aria-label="Cargando terminaciones">
-        <Skeleton lineas={4} />
-      </div>
-    )
+    return <EsperaStats etiqueta="Cargando terminaciones" />
   }
 
   // Si tras recargar los datos desaparece la categoría elegida, el selector y las recomendaciones vuelven a «Todos».

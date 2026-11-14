@@ -48,6 +48,14 @@ describe('isla Tendencias', () => {
     expect(graficos.props).toHaveLength(0)
   })
 
+  it('con la carga de estadísticas fallida dice que no se pudo y ofrece reintentar, sin esqueleto', () => {
+    montar({ stats: null, errorStats: true })
+    expect(screen.getByRole('alert').textContent).toContain('No se pudieron cargar las estadísticas.')
+    expect(screen.getByRole('button', { name: 'Reintentar' })).toBeTruthy()
+    expect(screen.queryByRole('status')).toBeNull()
+    expect(graficos.props).toHaveLength(0)
+  })
+
   it('pinta dos tarjetas con su título, su insignia y su gráfico', () => {
     montar()
     const tarjetas = Array.from(document.querySelectorAll('.card.reveal')) as HTMLElement[]
