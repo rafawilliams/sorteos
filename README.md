@@ -23,11 +23,12 @@ Aplicación web para analizar los resultados históricos de la Lotería Nacional
 | Backend | Python 3.13, Flask, Flask-Limiter |
 | Datos | MariaDB, SQLAlchemy 2.0 |
 | ML | scikit-learn, pandas, numpy, joblib |
-| Frontend | HTML, CSS y JavaScript vanilla, Chart.js |
+| Frontend | React 19 + TypeScript (Vite, Vitest), Chart.js |
 
 ## Requisitos
 
 - Python 3.13
+- Node.js 22.x (versión exacta en `.nvmrc`) para construir la interfaz
 - Un servidor MariaDB con una base de datos `sorteos`
 
 ## Instalación
@@ -41,7 +42,12 @@ python -m venv .venv
 # source .venv/bin/activate     # Linux / macOS
 
 pip install -r requirements-dev.txt
+
+npm --prefix frontend ci          # dependencias del frontend
+npm --prefix frontend run build   # genera static/dist/app.js
 ```
+
+> Toda la interfaz es React: la página que sirve Flask solo trae un `<div id="root">` y el script `static/dist/app.js`, que está en `.gitignore`. Sin ese build la página muestra el comando para construirlo; vuelve a ejecutar el `build` tras cada `git pull` que toque `frontend/`.
 
 ## Configuración
 
@@ -71,6 +77,14 @@ python actualizar_db.py  # sincroniza desde el mes del último sorteo guardado h
 python actualizar_db.py --desde 2026-01  # o desde un mes concreto (YYYY-MM)
 ```
 
+Para trabajar en la interfaz con recarga en caliente, deja `python app.py` corriendo y, en otra terminal:
+
+```bash
+npm --prefix frontend run dev    # http://localhost:5173, reenvía /api y /static a Flask (puerto 5000)
+```
+
+Si Flask corre en otro puerto (por ejemplo contra una base de pruebas), pasa `FLASK_URL`: `FLASK_URL=http://127.0.0.1:5001 npm --prefix frontend run dev`. Abre `localhost`, no `127.0.0.1` (Vite escucha ahí en Windows). El servidor de desarrollo solo sirve para desarrollar: la aplicación real la sirve Flask con el build.
+
 La primera llamada a `/api/stats` entrena el modelo ML si no está en caché (`models/predictor.joblib`), lo que tarda entre 50 y 100 segundos. Las siguientes tardan menos de 1 segundo.
 
 El botón **↻ Actualizar datos** de la web pide el `ACTUALIZAR_TOKEN` la primera vez y lo guarda solo durante la sesión de la pestaña.
@@ -93,11 +107,15 @@ Todas las rutas tienen límite de peticiones por IP: 120/min por defecto, `/api/
 ## Tests
 
 ```bash
-pytest                         # suite completa
+pytest                         # suite completa del backend
 pip-audit -r requirements.txt  # vulnerabilidades conocidas en dependencias
+
+npm --prefix frontend run typecheck       # tipos de TypeScript
+npm --prefix frontend test -- --run       # pruebas del frontend (Vitest)
+npm --prefix frontend audit --audit-level=high
 ```
 
-GitHub Actions ejecuta ambos en cada Pull Request, contra un MariaDB con sorteos sintéticos (`tests/seed_db.py`).
+GitHub Actions ejecuta ambos conjuntos en cada Pull Request: el backend contra un MariaDB con sorteos sintéticos (`tests/seed_db.py`) y el frontend con typecheck, pruebas, build y `npm audit`.
 
 ## Estructura
 
@@ -109,7 +127,8 @@ seguimiento.py    Registro congelado de recomendaciones y comparación con resul
 base.py           Configuración (.env) y conexión SQLAlchemy
 loteria.py        Modelo ORM de la tabla sorteos
 actualizar_db.py  Sincronización desde api.loteriapanama.net
-static/           app.js y style.css
+frontend/         Interfaz React + TypeScript: shell/ (armazón, barra de pestañas, menú, tema, botón de actualizar), tabs/ (una por sección), components/, store/ (ReactStore y contrato), lib/ y api/ (cliente tipado)
+static/           style.css y dist/ (build de React, no versionado)
 templates/        index.html
 tests/            Tests con pytest
 ```

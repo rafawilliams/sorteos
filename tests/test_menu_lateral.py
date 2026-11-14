@@ -1,6 +1,6 @@
 """Menú lateral (decisión del dueño, 2026-11-11): la barra de 14 pestañas pasa a barra lateral y, en pantallas
 estrechas, se esconde y la abre un botón con el icono de menú. El comportamiento lo prueba
-`frontend/src/store/menu.test.ts` contra `app.js`; aquí se fijan el marcado y las reglas de CSS que lo hacen posible
+`frontend/src/shell/Tabs.test.tsx` contra los componentes de React; aquí se fijan la plantilla y las reglas de CSS que lo hacen posible
 y que jsdom no puede ver (posición fija, punto de corte, orden de apilamiento).
 """
 import re
@@ -9,12 +9,6 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parent.parent
 PLANTILLA = (RAIZ / "templates/index.html").read_text(encoding="utf-8")
 CSS = (RAIZ / "static/style.css").read_text(encoding="utf-8")
-
-PESTANAS = [
-    "predicciones", "decenas", "terminaciones", "resultados", "estadisticas", "tendencias", "analisis",
-    "comparador", "gaps", "simulador", "favoritos", "mensual", "precision", "seguimiento",
-]
-
 
 def regla(selector: str) -> str:
     """Cuerpo de la regla CSS de nivel superior (columna 0, fuera de @media) cuyo selector es exactamente `selector`."""
@@ -38,30 +32,15 @@ def bloque_media(consulta: str) -> str:
     return "\n".join(contenido)
 
 
-class TestMarcado:
-    def test_las_14_secciones_siguen_en_la_lista_de_pestanas_vertical(self):
-        nav = re.search(r'<nav class="nav-tabs" id="navTabs"([^>]*)>(.*?)</nav>', PLANTILLA, re.S)
-        assert nav, "falta <nav id=navTabs>"
-        assert 'role="tablist"' in nav.group(1) and 'aria-orientation="vertical"' in nav.group(1)
-        assert re.findall(r'data-tab="([a-z]+)"', nav.group(2)) == PESTANAS
+class TestPlantilla:
+    """El marcado del menú (la lista de pestañas, el botón y el fondo) lo pinta React; su prueba está en `Tabs.test.tsx`."""
 
-    def test_tres_marcas_de_grupo(self):
-        grupos = re.findall(r'class="nav-tab nav-tab-group" data-tab="([a-z]+)"', PLANTILLA)
-        assert grupos == ["resultados", "comparador", "precision"]
+    def test_la_plantilla_ya_no_trae_el_menu_a_mano(self):
+        for resto in ('id="navTabs"', 'id="menuToggle"', 'id="menuBackdrop"', "nav-tab"):
+            assert resto not in PLANTILLA, f"«{resto}» lo pinta ahora el armazón de React"
 
-    def test_boton_del_menu_con_icono_y_nombre_accesible(self):
-        boton = re.search(r'<button class="menu-toggle"[^>]*>(.*?)</button>', PLANTILLA, re.S)
-        assert boton, "falta el botón .menu-toggle"
-        etiqueta = re.search(r'<button class="menu-toggle"([^>]*)>', PLANTILLA).group(1)
-        assert 'aria-label="Abrir menú de secciones"' in etiqueta
-        assert 'aria-expanded="false"' in etiqueta and 'aria-controls="navTabs"' in etiqueta
-        assert boton.group(1).count("<svg") == 2 and boton.group(1).count('aria-hidden="true"') == 2
-
-    def test_el_fondo_esta_oculto_y_dentro_de_app(self):
-        """Dentro de `.app` (que crea su propio contexto de apilamiento) para que quede POR DEBAJO de la barra."""
-        app = PLANTILLA.index('<div class="app">')
-        assert PLANTILLA.index('id="menuBackdrop"') > app
-        assert re.search(r'id="menuBackdrop" hidden>', PLANTILLA)
+    def test_la_plantilla_trae_la_raiz(self):
+        assert 'id="root"' in PLANTILLA
 
 
 class TestCss:

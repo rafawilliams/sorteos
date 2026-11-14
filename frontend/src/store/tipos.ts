@@ -1,9 +1,8 @@
 /**
  * Contrato del estado compartido de la interfaz (spec frontend-react, T014; plan §3).
  *
- * Mientras convivan `static/app.js` y las islas React, `app.js` es la fuente de verdad y la implementación
- * `LegacyStore` (T015) lee su estado por un puente. Al final de la migración, `ReactStore` (T052) toma el
- * relevo. Las pestañas solo conocen esta interfaz y no cambian entre una y otra.
+ * `ReactStore` (T052) guarda el estado y hace la carga de datos. Durante la migración, `LegacyStore` (T015) leía el estado
+ * de `static/app.js` por un puente; se retiró con él (T055). Las pestañas solo conocen esta interfaz.
  */
 import type { Premio, Sorteo, Stats } from '../api/types'
 
@@ -34,12 +33,11 @@ export interface Snapshot {
   /**
    * `null` mientras no llegó `/api/stats` (puede tardar minutos la primera vez): toda isla muestra su esqueleto.
    *
-   * Ojo con el código heredado: en `static/app.js` la variable `stats` empieza como `{}` (no `null`) y se asigna
-   * sin comprobar la respuesta HTTP, así que un cuerpo de error en JSON también quedaría ahí. `LegacyStore` debe
-   * traducir `{}` y cualquier cuerpo sin `total_sorteos` numérico a `null`.
+   * Un cuerpo de error en JSON o sin `total_sorteos` numérico nunca ocupa su lugar (el `app.js` antiguo lo asignaba
+   * sin mirar la respuesta HTTP).
    *
-   * Si la carga falla tras sus reintentos, `stats` conserva lo que tuviera (`null` la primera vez, como hoy); un
-   * estado de error explícito (campo nuevo, sin romper esta interfaz) se decide en T052 con el armazón en React.
+   * Si la carga falla tras sus reintentos, `stats` conserva lo que tuviera (`null` la primera vez) y se registra en la
+   * consola; si no había ninguna, `errorStats` pasa a `true` para que la isla lo diga en vez de quedarse en su esqueleto.
    */
   stats: Stats | null
   /** Modo de predicción: `true` = aprendizaje automático, `false` = estadístico. */
@@ -57,6 +55,20 @@ export interface Snapshot {
    * La isla Simulador lanza una simulación por cada `id` nuevo, así que pedir el mismo número otra vez es otra petición.
    */
   simulacion: PeticionSimulacion | null
+  /**
+   * `true` cuando la carga de sorteos ha fallado y NO hay ninguno (red caída, un 500, un cuerpo que no es una lista): en
+   * ese caso `ready` se queda en `false` y una isla que dependa de los sorteos no puede distinguir «todavía cargando» de
+   * «no va a llegar». Un fallo al RECARGAR con datos ya cargados no lo marca (se conservan los viejos, ver `reload`), y
+   * volver a pedir los sorteos lo devuelve a `false` mientras dura el intento. Vale `false` si no ha fallado nada.
+   */
+  errorSorteos: boolean
+  /**
+   * `true` cuando la carga de estadísticas ha fallado tras todos sus reintentos y NO hay ninguna (`stats` es `null`): una
+   * isla que lee `stats` no puede distinguir «todavía cargando» de «no va a llegar». Un fallo al RECARGAR con
+   * estadísticas ya cargadas no lo marca (se conservan las viejas), y volver a pedirlas lo devuelve a `false` mientras
+   * dura el intento. Vale `false` si no ha fallado nada. Mismo patrón que `errorSorteos`.
+   */
+  errorStats: boolean
 }
 
 /** Una petición de simulación: el número (ya normalizado a 4 cifras) y un contador que crece con cada petición. */
@@ -69,6 +81,10 @@ export interface AccionesStore {
   setUseML(valor: boolean): void
   setPrize(premio: Premio): void
   setStatsPrize(premio: Premio): void
+  /** Cambia el tema (claro u oscuro), lo aplica al documento y lo recuerda en el navegador. Un valor desconocido se ignora. */
+  setTheme(tema: Tema): void
+  /** Activa una pestaña de la barra principal. Una desconocida se ignora. */
+  setActiveTab(pestaña: TabId): void
   /** Aviso emergente de la página (`#toast`). */
   toast(mensaje: string, ms?: number): void
   /**
@@ -82,10 +98,9 @@ export interface AccionesStore {
    * (`stats` y `ready` no vuelven a `null` ni a `false`) hasta que llegan los nuevos. La promesa se resuelve cuando la
    * carga termina, con éxito o sin él, y nunca rechaza: un fallo se registra y los datos viejos se quedan. Un fallo
    * es una red caída o una respuesta de error (p. ej. un 500 con cuerpo JSON): ese cuerpo NO sustituye a `stats`.
-   * Esto es MÁS estricto que `static/app.js`, que asigna `stats` sin comprobar la respuesta HTTP; `LegacyStore` debe
-   * ignorar cualquier cuerpo sin `total_sorteos` numérico y conservar el estado anterior. Otra diferencia aceptada:
-   * `app.js` repinta sus propios contenedores como esqueletos mientras recarga (`showSkeletons`); las islas
-   * conservan los datos a la vista.
+   * Toda implementación debe ignorar un cuerpo sin `total_sorteos` numérico y conservar el estado anterior (el `app.js`
+   * antiguo no comprobaba la respuesta HTTP y repintaba sus contenedores como esqueletos mientras recargaba; las islas
+   * conservan los datos a la vista).
    */
   reload(): Promise<void>
 }

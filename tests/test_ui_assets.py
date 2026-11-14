@@ -10,39 +10,16 @@ def _read(rel_path: str) -> str:
         return f.read()
 
 
-class TestLottoBallsAndDashboardJS:
-    def test_render_balls_helper_defined_and_preserves_format(self):
-        js = _read("static/app.js")
-        assert "function renderBalls(" in js
-        assert "lotto-ball ball-" in js
-        assert 'aria-label="${esc(s)}"' in js
-        assert 'aria-hidden="true"' in js
-        # renderBalls itself must never padStart(4) a prize
-        m = re.search(r"function renderBalls\([^)]*\)\{.*?\n\}", js, re.DOTALL)
-        assert m is not None
-        assert "padStart" not in m.group(0)
-        assert "zfill" not in m.group(0)
-
-    def test_dashboard_uses_hero_grid_and_last_draw_balls(self):
-        js = _read("static/app.js")
-        assert "dashboard-hero-grid" in js
-        assert "last-draw-card" in js
-        assert "last-draw-prizes" in js
-        assert "last-draw-meta" in js
-        assert "dashboard-kpis" in js
-        assert "renderBalls(last.primero,'gold','md')" in js
-        assert "renderBalls(last.segundo,'green','md')" in js
-        assert "renderBalls(last.tercero,'purple','md')" in js
-
-    def test_recommendations_and_heatmaps_use_new_ui_components(self):
-        js = _read("static/app.js")
-        assert "renderBalls(r.number,useML?'green':'gold','lg')" in js
-        assert "renderBalls(r.ending,useML?'green':'gold','md')" in js
-        assert "heatmap-legend" in js
-        assert "cell-peak" in js
-        # `prize-chip` ya no está en app.js: lo pinta la isla Resultados (T035). Lo cubren sus pruebas
-        # (frontend/src/tabs/Resultados.test.tsx: clases prize-1/2/3, guion de «sin dato» y premios tal como llegan);
-        # que la clase exista en la hoja de estilos lo sigue comprobando TestStyleCSSCompleteness.
+# Las comprobaciones sobre el JavaScript antiguo (`app.js` de `static/`, esferas, resumen, mapas de calor) se fueron con cada pestaña que
+# pasó a React; las cubren las pruebas de sus islas, y aquí solo queda lo que sigue en la hoja de estilos:
+#   - T043 a T045 (Predicciones): `renderBalls`, el resumen (dashboard-hero-grid, last-draw-*, kpi) y las esferas de las
+#     recomendaciones. frontend/src/components/Balls.test.tsx (una esfera por carácter, aria-label con el premio, `aria-hidden`
+#     y el premio tal como llega; además lo vigila frontend/src/sin-relleno.test.ts), tabs/PrediccionesResumen.test.tsx y
+#     tabs/Predicciones.test.tsx (esferas grandes doradas, verdes con reco-ml en ML, y «×N azar»).
+#   - T040 (Terminaciones): esferas doradas medianas en modo estadístico, verdes y con reco-ml en modo ML.
+#   - T049 (Análisis): el mapa de calor con su leyenda `heatmap-legend` y `cell-peak` desde el 90 % del máximo.
+#   - T035 (Resultados): `prize-chip` con las clases prize-1/2/3, el guion de «sin dato» y los premios tal como llegan.
+# Que las clases existan en la hoja de estilos lo comprueba TestStyleCSSCompleteness.
 
 
 class TestStyleCSSCompleteness:

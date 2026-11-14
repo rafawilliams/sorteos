@@ -50,6 +50,8 @@ class StoreClaseConFlechas implements Store {
     setUseML: (v: boolean) => this.poner({ useML: v }),
     setPrize: (p: Snapshot['prize']) => this.poner({ prize: p }),
     setStatsPrize: (p: Snapshot['statsPrize']) => this.poner({ statsPrize: p }),
+    setTheme: (t: Snapshot['theme']) => this.poner({ theme: t }),
+    setActiveTab: (p: Snapshot['activeTab']) => this.poner({ activeTab: p }),
     toast: () => {},
     simularNumero: (n: string) => {
       this.peticiones += 1
@@ -129,6 +131,8 @@ class StoreManual implements Store {
     setUseML: (v: boolean) => this.poner('setUseML', { useML: v }),
     setPrize: (p: Snapshot['prize']) => this.poner('setPrize', { prize: p }),
     setStatsPrize: (p: Snapshot['statsPrize']) => this.poner('setStatsPrize', { statsPrize: p }),
+    setTheme: (t: Snapshot['theme']) => this.poner('setTheme', { theme: t }),
+    setActiveTab: (p: Snapshot['activeTab']) => this.poner('setActiveTab', { activeTab: p }),
     toast: () => {},
     simularNumero: (n: string) => {
       this.peticiones += 1
@@ -329,6 +333,84 @@ function queAvisaAntesDeLaSimulacion(): Store {
       simularNumero: (numero: string) => {
         escuchas.forEach((e) => e()) // aviso con el estado todavía viejo
         base.actions.simularNumero(numero)
+      },
+    },
+  } as Store
+}
+
+/** Defecto único: el almacén no tiene el campo `errorSorteos`. */
+function sinErrorSorteos(): Store {
+  const base = crearStoreFalso()
+  const derivadas = new WeakMap<Snapshot, Snapshot>()
+  return {
+    ...base,
+    getSnapshot() {
+      const real = base.getSnapshot()
+      let derivada = derivadas.get(real)
+      if (!derivada) {
+        const { errorSorteos: _omitido, ...resto } = real
+        derivada = resto as Snapshot
+        derivadas.set(real, derivada)
+      }
+      return derivada
+    },
+  } as Store
+}
+
+/** Defecto único: `errorSorteos` está en true aunque no haya fallado nada. */
+function conErrorSorteosSinFallo(): Store {
+  return crearStoreFalso({ errorSorteos: true })
+}
+
+/** Defecto único: una recarga correcta deja `errorSorteos` en true. */
+function queMarcaErrorTrasRecargar(): Store {
+  const base = crearStoreFalso()
+  return {
+    ...base,
+    actions: {
+      ...base.actions,
+      reload: async () => {
+        await base.actions.reload()
+        base.cambiar({ errorSorteos: true })
+      },
+    },
+  } as Store
+}
+
+/** Defecto único: el almacén no tiene el campo `errorStats`. */
+function sinErrorStats(): Store {
+  const base = crearStoreFalso()
+  const derivadas = new WeakMap<Snapshot, Snapshot>()
+  return {
+    ...base,
+    getSnapshot() {
+      const real = base.getSnapshot()
+      let derivada = derivadas.get(real)
+      if (!derivada) {
+        const { errorStats: _omitido, ...resto } = real
+        derivada = resto as Snapshot
+        derivadas.set(real, derivada)
+      }
+      return derivada
+    },
+  } as Store
+}
+
+/** Defecto único: `errorStats` está en true aunque no haya fallado nada. */
+function conErrorStatsSinFallo(): Store {
+  return crearStoreFalso({ errorStats: true })
+}
+
+/** Defecto único: una recarga correcta deja `errorStats` en true. */
+function queMarcaErrorStatsTrasRecargar(): Store {
+  const base = crearStoreFalso()
+  return {
+    ...base,
+    actions: {
+      ...base.actions,
+      reload: async () => {
+        await base.actions.reload()
+        base.cambiar({ errorStats: true })
       },
     },
   } as Store
@@ -600,6 +682,30 @@ describe('la suite de contrato detecta cada defecto por su causa', () => {
 
   it('simularNumero que avisa antes de actualizar `simulacion`', async () => {
     await rechaza(() => comprobaciones.simulacion!(queAvisaAntesDeLaSimulacion, control), /avisó antes de actualizar/)
+  })
+
+  it('un almacén sin el campo `errorSorteos`', async () => {
+    await rechaza(() => comprobaciones.errorDeCargaDeSorteos!(sinErrorSorteos, control), /debe ser un booleano/)
+  })
+
+  it('un almacén con `errorSorteos` en true sin que haya fallado nada', async () => {
+    await rechaza(() => comprobaciones.errorDeCargaDeSorteos!(conErrorSorteosSinFallo, control), /debe ser false/)
+  })
+
+  it('una recarga correcta que deja `errorSorteos` en true', async () => {
+    await rechaza(() => comprobaciones.errorDeCargaDeSorteos!(queMarcaErrorTrasRecargar, control), /tras una recarga correcta/)
+  })
+
+  it('un almacén sin el campo `errorStats`', async () => {
+    await rechaza(() => comprobaciones.errorDeCargaDeStats!(sinErrorStats, control), /debe ser un booleano/)
+  })
+
+  it('un almacén con `errorStats` en true sin que haya fallado nada', async () => {
+    await rechaza(() => comprobaciones.errorDeCargaDeStats!(conErrorStatsSinFallo, control), /debe ser false/)
+  })
+
+  it('una recarga correcta que deja `errorStats` en true', async () => {
+    await rechaza(() => comprobaciones.errorDeCargaDeStats!(queMarcaErrorStatsTrasRecargar, control), /tras una recarga correcta/)
   })
 
   it('acciones que cambian de identidad entre lecturas', async () => {

@@ -23,7 +23,9 @@ class TestIndex:
     def test_returns_html(self, client):
         r = client.get("/")
         assert r.status_code == 200
-        assert b"Sorteos" in r.data
+        # El título de la sección y el resto de la interfaz los pinta React; la plantilla solo trae la raíz y el título de la página.
+        assert b'<div id="root">' in r.data
+        assert "Lotería de Panamá".encode() in r.data
 
 
 # ---------------------------------------------------------------------------

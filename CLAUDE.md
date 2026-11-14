@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Lotería de Panamá — a full-stack web app for analyzing and predicting Panama lottery results. Flask REST API backend with MariaDB, scikit-learn ML models, and a vanilla JS frontend with Chart.js visualizations.
+Lotería de Panamá — a full-stack web app for analyzing and predicting Panama lottery results. Flask REST API backend with MariaDB, scikit-learn ML models, and a React + TypeScript frontend (Vite, Vitest) with Chart.js visualizations.
 
 ## Development Commands
 
@@ -21,6 +21,10 @@ pip-audit -r requirements.txt
 # Run dev server (port 5000)
 python app.py
 
+# Frontend dev server with hot reload (http://localhost:5173), proxies /api and /static to Flask
+# (FLASK_URL overrides http://127.0.0.1:5000; the build for Flask is `npm --prefix frontend run build`)
+npm --prefix frontend run dev
+
 # Sync new lottery draws from external API
 python actualizar_db.py
 ```
@@ -36,7 +40,7 @@ python actualizar_db.py
 ```
 External API (loteriapanama.net) → actualizar_db.py → MariaDB
                                                          ↓
-                        Frontend (app.js) ← JSON ← Flask API (app.py)
+                  Frontend (React, frontend/src) ← JSON ← Flask API (app.py)
                                                          ↑
                                               ml_model.py (predictions)
 ```
@@ -77,17 +81,17 @@ SQLAlchemy ORM on MariaDB. Single table `sorteos` with columns: `id`, `tipo` (ca
 
 The DB keeps prizes **as published by the source — do not pad them in the DB**. Formats vary: gordito since 1996 has 2-digit `segundo`/`tercero`; miercolito 1962–1966 has 2-digit prizes; extraordinario has 5-digit prizes; 57 gordito 1991–1995 and 2 extraordinario 1940 have empty `segundo`/`tercero`. `get_sorteos()` (via `_row_to_dict` → `loteria.premio_en_formato`) returns each prize padded to its **real format** (`"98"`, `"0074"`, `"05309"`; empty stays `""`), so `len(premio)` tells the format. The rule lives in `loteria.formato_premio`; short values outside the known 2-digit formats are 4-digit numbers that lost their zeros. Two draws can share fecha+categoría (1973-02-07 miercolito, 2002-12-29 dominical are both real per the API).
 
-### Frontend (static/app.js + static/style.css + templates/index.html)
+### Frontend (frontend/src + static/style.css + templates/index.html)
 
-Single-page app with vanilla JS. State variables:
-- `allSorteos` — full draw array
-- `stats` — computed statistics object from `/api/stats`
-- `useML` — toggle between ML and Statistical prediction modes
-- `currentPrize` — selected prize tier (primero/segundo/tercero)
+React 19 + TypeScript SPA built with Vite into `static/dist/app.js` (gitignored: run `npm --prefix frontend ci && npm --prefix frontend run build`; without it the page shows how to build it). `templates/index.html` only serves `<div id="root">`, the toast element and the build script; everything else is React (`frontend/src/main.tsx` → `shell/Armazon.tsx`). Spec: `02-DOCS/wiki/sdd/specs/frontend-react.md`.
+- `store/reactStore.ts` — the `Store` (contract in `store/tipos.ts`): `sorteos`, `stats` (`null` until `/api/stats` arrives; a body without numeric `total_sorteos` never replaces it), `useML`, `prize`, `statsPrize`, `theme`, `activeTab`, `ready`, `errorSorteos`, `simulacion`. Two-phase load (draws, then stats with a 180 000 ms limit and 3 retries), one load at a time. Components read it with the hooks in `store/hooks.ts`.
+- `shell/` — `Armazon` (layout), `Tabs` (14-tab vertical bar + side menu with focus/Escape/inert handling), `Cabecera`/`Marco` (skip link, theme button, header, footer), `Actualizar` (update button: token in `sessionStorage`, errors always the server's public text or a generic one), `Secciones` (one `<section>` per tab: title + `tabs/<Tab>.tsx`).
+- `tabs/` — one component per section; `components/` — `Tablist`, `Chart` (Chart.js bundled, destroyed/recreated on theme change), `Balls`, `Barras`, etc.; `lib/` — pure helpers; `api/` — typed client (opaque error messages).
+- Tests: `npm --prefix frontend test -- --run` (Vitest + Testing Library), `npm --prefix frontend run typecheck`.
 
-**Theming**: CSS variables with `[data-theme="light"]` overrides, persisted in localStorage. Use `isLight()` helper and `chartOpts()` for theme-aware Chart.js config.
+**Theming**: CSS variables with `[data-theme="light"]` overrides; the Store sets `data-theme` on `<html>` and persists it in localStorage. Charts take their colors from `lib/chartOptions.ts` (`chartOptions(tema)`), keyed by the theme.
 
-**Accessibility**: ARIA roles on all interactive elements, keyboard navigation (Arrow keys in tablists), skip-link, `focus-visible` styles.
+**Accessibility**: ARIA roles on all interactive elements, keyboard navigation (Arrow keys, Home, End in every `Tablist`), skip-link, `focus-visible` styles, the rest of the page is `inert` while the side menu is open.
 
 **Sections** are tab-navigated: Predicciones, Decenas, Terminaciones, Resultados, Estadísticas, Tendencias, Análisis, Comparador, Gaps, Simulador, Mis Números, Mensual, Precisión, Seguimiento.
 

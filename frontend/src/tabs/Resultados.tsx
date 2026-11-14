@@ -3,16 +3,19 @@
 // fechas), la tabla de sorteos con paginación de 50 y la exportación a CSV. Los premios se muestran tal como llegan (AC4).
 //
 // Lee los sorteos del Store (no necesita `stats`). El botón «Exportar CSV» vive en la cabecera de la pestaña, junto al de
-// «↻ Actualizar datos» (que es del armazón y se migra en T054): la isla lo dibuja en la ranura `#resultadosCsv` de la
-// plantilla con un portal, y sin ranura (pruebas, otra plantilla) lo pinta en su sitio.
-import { useMemo, useRef, useState, type ReactNode } from 'react'
+// «↻ Actualizar datos»: la isla lo dibuja en la ranura `#resultadosCsv` de la cabecera de la sección con un portal, y sin
+// ranura (pruebas) lo pinta en su sitio. La ranura la crea React en el mismo ciclo que la isla, así que se busca tras montar.
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { Skeleton } from '../components/Skeleton'
 import { catClase, catLabel, formatDate } from '../lib/formato'
 import { aCsv, categoriasDe, contarPorCategoria, filtrarSorteos, nombreArchivoCsv, POR_PAGINA, SIN_FILTROS, totalPaginas, ventanaPaginas, type Filtros } from '../lib/resultados'
-import { useReady, useSorteos, useToast } from '../store/hooks'
+import { useErrorSorteos, useReady, useReload, useSorteos, useToast } from '../store/hooks'
 
 export const nombre = 'resultados'
+
+/** Cuánto se espera para liberar la dirección del CSV: antes de eso algunos navegadores cortarían la descarga (FileSaver espera 40 s). */
+const MS_LIBERAR_URL = 40_000
 
 const etiqueta = (cat: unknown) => catLabel(String(cat ?? ''))
 
@@ -28,13 +31,23 @@ export function Componente() {
   const sorteos = useSorteos()
   const listo = useReady()
   const toast = useToast()
+  const errorSorteos = useErrorSorteos()
+  const recargar = useReload()
   const [filtros, setFiltros] = useState<Filtros>(SIN_FILTROS)
   const [pagina, setPagina] = useState(1)
   const tablaRef = useRef<HTMLDivElement>(null)
+  const zonaRef = useRef<HTMLDivElement>(null)
+  const [ranura, setRanura] = useState<HTMLElement | null>(null)
+  useEffect(() => {
+    setRanura(document.getElementById('resultadosCsv'))
+  }, [])
 
   const categorias = useMemo(() => categoriasDe(sorteos), [sorteos])
   const contadores = useMemo(() => contarPorCategoria(sorteos), [sorteos])
-  const filtrados = useMemo(() => filtrarSorteos(sorteos, filtros), [sorteos, filtros])
+  // Si tras recargar los datos ya no existe la categoría elegida, el selector y el filtro vuelven a «Todas»: sin esto el
+  // selector enseñaría otra opción mientras la tabla seguiría filtrando por una que ya no está.
+  const catValida = filtros.cat === 'all' || categorias.includes(filtros.cat) ? filtros.cat : 'all'
+  const filtrados = useMemo(() => filtrarSorteos(sorteos, { ...filtros, cat: catValida }), [sorteos, filtros, catValida])
 
   const total = filtrados.length
   const paginas = totalPaginas(total)
@@ -58,8 +71,7 @@ export function Componente() {
     enlace.href = url
     enlace.download = nombreArchivoCsv(new Date())
     enlace.click()
-    // Liberar la dirección en el mismo instante del clic puede cortar la descarga en algunos navegadores.
-    setTimeout(() => URL.revokeObjectURL(url), 0)
+    setTimeout(() => URL.revokeObjectURL(url), MS_LIBERAR_URL)
     toast(`CSV exportado: ${total} registros`)
   }
 
@@ -68,21 +80,35 @@ export function Componente() {
       ⬇ Exportar CSV
     </button>
   )
-  const ranura = document.getElementById('resultadosCsv')
   const accion: ReactNode = ranura ? createPortal(boton, ranura) : <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>{boton}</div>
 
   if (!listo) {
+    const reintentar = () => {
+      zonaRef.current?.focus() // el botón desaparece al reintentar: el foco pasa al contenedor, no a <body>
+      void recargar()
+    }
     return (
       <>
         {accion}
-        <div role="status" aria-label="Cargando resultados">
-          <div className="skel-grid">
-            <Skeleton lineas={2} />
-            <Skeleton lineas={2} />
-            <Skeleton lineas={2} />
-            <Skeleton lineas={2} />
-          </div>
-          <Skeleton lineas={6} />
+        <div ref={zonaRef} tabIndex={-1} style={{ outline: 'none' }}>
+          {errorSorteos ? (
+            <div role="alert">
+              <p style={{ color: '#f87171' }}>No se pudieron cargar los sorteos.</p>
+              <button type="button" className="btn" onClick={reintentar}>
+                Reintentar
+              </button>
+            </div>
+          ) : (
+            <div role="status" aria-label="Cargando resultados">
+              <div className="skel-grid">
+                <Skeleton lineas={2} />
+                <Skeleton lineas={2} />
+                <Skeleton lineas={2} />
+                <Skeleton lineas={2} />
+              </div>
+              <Skeleton lineas={6} />
+            </div>
+          )}
         </div>
       </>
     )
@@ -110,7 +136,7 @@ export function Componente() {
 
       <div className="filter-bar" role="search" aria-label="Filtros de búsqueda">
         <input className="filter-input" type="search" placeholder="Buscar número…" aria-label="Buscar número" value={filtros.q} onChange={(e) => cambiar({ q: e.target.value })} />
-        <select className="filter-select" aria-label="Filtrar por categoría" value={filtros.cat} onChange={(e) => cambiar({ cat: e.target.value })}>
+        <select className="filter-select" aria-label="Filtrar por categoría" value={catValida} onChange={(e) => cambiar({ cat: e.target.value })}>
           <option value="all">Todas las categorías</option>
           {categorias.map((c) => (
             <option key={c} value={c}>

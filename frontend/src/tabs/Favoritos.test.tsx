@@ -21,7 +21,7 @@ const statsCon = (recs: string[], ml: string[]): Stats => ({
   ml_recommendations: ml.map((number) => ({ number, score: 1, confidence: 1 })),
 })
 
-function montar(estado: Partial<{ sorteos: Sorteo[]; stats: Stats | null }> = {}, estricto = false) {
+function montar(estado: Partial<{ sorteos: Sorteo[]; stats: Stats | null; errorStats: boolean }> = {}, estricto = false) {
   const store = crearStoreFalso({ activeTab: 'favoritos', sorteos: SORTEOS, stats: STATS, ready: true, ...estado })
   const arbol = (
     <StoreProvider store={store}>
@@ -78,6 +78,15 @@ describe('lista guardada', () => {
     expect(entrada()).toBeInTheDocument()
     const lista = screen.getByRole('region', { name: 'Lista de números favoritos' })
     expect(within(lista).getByRole('status', { name: 'Cargando favoritos' }).querySelectorAll('.skeleton').length).toBeGreaterThan(0)
+    expect(screen.queryByText('0042')).toBeNull()
+  })
+
+  it('con la carga de estadísticas fallida dice que no se pudo y ofrece reintentar, sin esqueleto', () => {
+    montar({ stats: null, errorStats: true })
+    expect(screen.getByRole('alert').textContent).toContain('No se pudieron cargar las estadísticas.')
+    expect(screen.getByRole('button', { name: 'Reintentar' })).toBeTruthy()
+    expect(screen.queryByRole('status')).toBeNull()
+    expect(entrada()).toBeInTheDocument()
     expect(screen.queryByText('0042')).toBeNull()
   })
 

@@ -55,9 +55,29 @@ export function useActiveTab(): TabId {
   return useCampo('activeTab')
 }
 
+/** Cambia el tema (claro u oscuro). */
+export function useSetTheme(): (tema: Tema) => void {
+  return useStore().actions.setTheme
+}
+
+/** Activa una pestaña de la barra principal. */
+export function useSetActiveTab(): (pestaña: TabId) => void {
+  return useStore().actions.setActiveTab
+}
+
 /** La última petición de «simular este número» (`null` si no hubo ninguna): la isla Simulador simula por cada `id` nuevo. */
 export function useSimulacion(): Snapshot['simulacion'] {
   return useCampo('simulacion')
+}
+
+/** `true` cuando la carga de sorteos ha fallado y no hay ninguno (la isla debe decirlo en vez de quedarse en su esqueleto). */
+export function useErrorSorteos(): boolean {
+  return useCampo('errorSorteos')
+}
+
+/** `true` cuando la carga de estadísticas ha fallado tras sus reintentos y no hay ninguna (la isla debe decirlo en vez de quedarse en su esqueleto). */
+export function useErrorStats(): boolean {
+  return useCampo('errorStats')
 }
 
 /** Aviso emergente de la página. */

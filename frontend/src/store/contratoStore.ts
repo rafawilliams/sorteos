@@ -1,6 +1,6 @@
 /**
  * Suite de contrato de `Store` (spec frontend-react, T014): lo que toda implementación tiene que cumplir para que
- * los hooks y las islas funcionen con ella. La pasan el doble de pruebas, `LegacyStore` (T015) y `ReactStore` (T052).
+ * los hooks y las islas funcionen con ella. La pasan el doble de pruebas y `ReactStore` (T052); `LegacyStore` (T015), que leía el estado de `static/app.js`, se retiró con él.
  *
  * Cada comprobación es una función que lanza si el contrato se rompe, para poder probarla también contra almacenes
  * defectuosos (`contratoStore.test.ts`) y asegurar que no pasa en vacío. `describirContratoDeStore` las registra como
@@ -12,8 +12,8 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { Snapshot, Store } from './tipos'
 
-const CAMPOS = ['sorteos', 'stats', 'useML', 'prize', 'statsPrize', 'theme', 'activeTab', 'ready', 'simulacion'] as const satisfies readonly (keyof Snapshot)[]
-const ACCIONES = ['setUseML', 'setPrize', 'setStatsPrize', 'toast', 'simularNumero', 'reload'] as const
+const CAMPOS = ['sorteos', 'stats', 'useML', 'prize', 'statsPrize', 'theme', 'activeTab', 'ready', 'simulacion', 'errorSorteos', 'errorStats'] as const satisfies readonly (keyof Snapshot)[]
+const ACCIONES = ['setUseML', 'setPrize', 'setStatsPrize', 'setTheme', 'setActiveTab', 'toast', 'simularNumero', 'reload'] as const
 
 /** Cómo llevar a un almacén concreto a un estado cargado y cómo hacer que falle su siguiente recarga. */
 export interface ControlDeCarga {
@@ -28,6 +28,10 @@ export interface ControlDeCarga {
 }
 
 type Comprobacion = (crear: () => Store, control: ControlDeCarga) => Promise<void> | void
+
+/** El otro tema y otra pestaña, para forzar un cambio. */
+const otroTema = (t: Snapshot['theme']): Snapshot['theme'] => (t === 'light' ? 'dark' : 'light')
+const otraPestaña = (p: Snapshot['activeTab']): Snapshot['activeTab'] => (p === 'gaps' ? 'mensual' : 'gaps')
 
 /** El otro valor posible de un premio, para forzar un cambio. */
 const otroPremio = (p: Snapshot['prize']): Snapshot['prize'] => (p === 'primero' ? 'segundo' : 'primero')
@@ -96,6 +100,8 @@ export const comprobaciones: Record<string, Comprobacion> = {
       ['useML', (s) => s.actions.setUseML(!s.getSnapshot().useML), (a) => !a.useML],
       ['prize', (s) => s.actions.setPrize(otroPremio(s.getSnapshot().prize)), (a) => otroPremio(a.prize)],
       ['statsPrize', (s) => s.actions.setStatsPrize(otroPremio(s.getSnapshot().statsPrize)), (a) => otroPremio(a.statsPrize)],
+      ['theme', (s) => s.actions.setTheme(otroTema(s.getSnapshot().theme)), (a) => otroTema(a.theme)],
+      ['activeTab', (s) => s.actions.setActiveTab(otraPestaña(s.getSnapshot().activeTab)), (a) => otraPestaña(a.activeTab)],
     ]
     for (const [campo, cambiar, esperado] of cambios) {
       await enEstados(crear, control, (store, momento) => {
@@ -121,6 +127,8 @@ export const comprobaciones: Record<string, Comprobacion> = {
       ['setUseML', (s) => s.actions.setUseML(!s.getSnapshot().useML), 'useML', (a) => !a.useML],
       ['setPrize', (s) => s.actions.setPrize(otroPremio(s.getSnapshot().prize)), 'prize', (a) => otroPremio(a.prize)],
       ['setStatsPrize', (s) => s.actions.setStatsPrize(otroPremio(s.getSnapshot().statsPrize)), 'statsPrize', (a) => otroPremio(a.statsPrize)],
+      ['setTheme', (s) => s.actions.setTheme(otroTema(s.getSnapshot().theme)), 'theme', (a) => otroTema(a.theme)],
+      ['setActiveTab', (s) => s.actions.setActiveTab(otraPestaña(s.getSnapshot().activeTab)), 'activeTab', (a) => otraPestaña(a.activeTab)],
     ]
     for (const [nombre, ejecutar, campo, esperado] of cambios) {
       const store = crear()
@@ -145,19 +153,22 @@ export const comprobaciones: Record<string, Comprobacion> = {
   async sinDependerDeThis(crear) {
     const store = crear()
     const { subscribe } = store
-    const { setUseML, setPrize, setStatsPrize, toast, simularNumero, reload } = store.actions
+    const { setUseML, setPrize, setStatsPrize, setTheme, setActiveTab, toast, simularNumero, reload } = store.actions
     const escucha = vi.fn()
     const cancelar = suelta('subscribe', () => subscribe(escucha))
     suelta('setUseML', () => setUseML(true))
     suelta('setPrize', () => setPrize('tercero'))
     suelta('setStatsPrize', () => setStatsPrize('segundo'))
+    suelta('setTheme', () => setTheme('light'))
+    suelta('setActiveTab', () => setActiveTab('gaps'))
+    expect(store.getSnapshot().activeTab, '`setActiveTab` suelta no activó la pestaña').toBe('gaps')
     suelta('toast', () => toast('aviso', 100))
     suelta('simularNumero', () => simularNumero('0042'))
     const recarga = suelta('reload', () => reload())
     expect(recarga, 'reload debe devolver una promesa').toBeInstanceOf(Promise)
     await recarga
     const s = store.getSnapshot()
-    expect([s.useML, s.prize, s.statsPrize]).toEqual([true, 'tercero', 'segundo'])
+    expect([s.useML, s.prize, s.statsPrize, s.theme]).toEqual([true, 'tercero', 'segundo', 'light'])
     expect(escucha).toHaveBeenCalled()
     cancelar()
   },
@@ -171,9 +182,6 @@ export const comprobaciones: Record<string, Comprobacion> = {
   async simulacion(crear, control) {
     await enEstados(crear, control, (store, momento) => {
       expect(store.getSnapshot().simulacion, `sin pedir nada, «simulacion» debe ser null (${momento})`).toBeNull()
-      // `LegacyStore` solo tiene enganchadas las pestañas tras el arranque de app.js (`DOMContentLoaded`), y nadie
-      // puede pulsar «Simular» antes de que lleguen los datos: lo demás se exige con el almacén ya cargado.
-      if (momento === 'recién creado') return
       const vistos: Snapshot[] = []
       const cancelar = store.subscribe(() => vistos.push(store.getSnapshot()))
       store.actions.simularNumero('0042')
@@ -189,6 +197,38 @@ export const comprobaciones: Record<string, Comprobacion> = {
       expect(store.getSnapshot().simulacion?.numero, `un número distinto no reemplazó la petición (${momento})`).toBe('9614')
       cancelar()
     })
+  },
+
+  /**
+   * `errorSorteos` (`tipos.ts`): un booleano que vale false mientras no haya fallado la carga de sorteos, vacío y cargado, y
+   * que una recarga correcta no toca. (Que pase a true al fallar la primera carga, y a false al reintentar, depende de cómo
+   * cargue cada implementación y se prueba contra ella: `ReactStore` lo hace en reactStore.test.ts.)
+   */
+  async errorDeCargaDeSorteos(crear, control) {
+    await enEstados(crear, control, (store, momento) => {
+      expect(typeof store.getSnapshot().errorSorteos, `«errorSorteos» debe ser un booleano (${momento})`).toBe('boolean')
+      expect(store.getSnapshot().errorSorteos, `sin ningún fallo de carga «errorSorteos» debe ser false (${momento})`).toBe(false)
+    })
+    const store = crear()
+    await control.cargar(store)
+    await store.actions.reload()
+    expect(store.getSnapshot().errorSorteos, 'tras una recarga correcta «errorSorteos» sigue en false').toBe(false)
+  },
+
+  /**
+   * `errorStats` (`tipos.ts`): igual que `errorSorteos`, para la carga de estadísticas. Un booleano que vale false mientras
+   * no haya fallado, vacío y cargado, y que una recarga correcta no toca. (Que pase a true al fallar todos los intentos de
+   * la primera carga, y a false al reintentar, se prueba contra cada implementación: `ReactStore` en reactStore.test.ts.)
+   */
+  async errorDeCargaDeStats(crear, control) {
+    await enEstados(crear, control, (store, momento) => {
+      expect(typeof store.getSnapshot().errorStats, `«errorStats» debe ser un booleano (${momento})`).toBe('boolean')
+      expect(store.getSnapshot().errorStats, `sin ningún fallo de carga «errorStats» debe ser false (${momento})`).toBe(false)
+    })
+    const store = crear()
+    await control.cargar(store)
+    await store.actions.reload()
+    expect(store.getSnapshot().errorStats, 'tras una recarga correcta «errorStats» sigue en false').toBe(false)
   },
 
   /** Las acciones y `subscribe` van en dependencias de efectos: deben ser la misma función siempre, también tras cambios. */
@@ -248,6 +288,8 @@ export function describirContratoDeStore(nombre: string, crear: () => Store, con
     it('cambiar un campo no toca la referencia de los demás, vacío y cargado', () => comprobaciones.camposIndependientes!(crear, control))
     it('subscribe avisa tras un cambio y deja de avisar al cancelar', () => comprobaciones.suscripcion!(crear, control))
     it('simularNumero deja el Simulador activo y una petición nueva en `simulacion`, también al repetir el número', () => comprobaciones.simulacion!(crear, control))
+    it('errorSorteos es un booleano que vale false sin fallos de carga, vacío y cargado', () => comprobaciones.errorDeCargaDeSorteos!(crear, control))
+    it('errorStats es un booleano que vale false sin fallos de carga, vacío y cargado', () => comprobaciones.errorDeCargaDeStats!(crear, control))
     it('subscribe y las acciones funcionan sueltas, sin depender de this', () => comprobaciones.sinDependerDeThis!(crear, control))
     it('las acciones y subscribe conservan su identidad, también tras cambios de estado', () => comprobaciones.identidadDeAcciones!(crear, control))
     it('reload conserva los datos viejos, se resuelve y nunca rechaza, ni aunque falle', () => comprobaciones.recarga!(crear, control))

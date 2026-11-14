@@ -1,10 +1,8 @@
 """Guardia de ids retirados (spec frontend-react, T018).
 
-Cada pestaña que pasa a React deja de tener en `static/app.js`, `static/style.css` y `templates/index.html` sus `id`
-y sus funciones antiguas. Esta prueba falla si alguien los reintroduce (por ejemplo al resolver un conflicto de fusión
-con una rama vieja): código muerto que además vuelve a pelear con la isla por el mismo contenedor.
-
-Al migrar otra pestaña, añade aquí sus `id` y funciones retirados y el nombre de su isla.
+Cada pestaña que pasó a React dejó de tener en `static/style.css` y `templates/index.html` sus `id` antiguos, y
+el JavaScript antiguo (`app.js` de `static/`) ya no existe. Esta prueba falla si alguien los reintroduce (por ejemplo al resolver
+un conflicto de fusión con una rama vieja): código muerto que además vuelve a pelear con la sección por el mismo contenedor.
 """
 import re
 from pathlib import Path
@@ -12,9 +10,9 @@ from pathlib import Path
 import pytest
 
 RAIZ = Path(__file__).resolve().parent.parent
-ARCHIVOS = ("static/app.js", "static/style.css", "templates/index.html")
+ARCHIVOS = ("static/style.css", "templates/index.html")
 
-# id retirado -> isla que lo sustituye (su marcador `data-react-root` debe existir en la plantilla)
+# id retirado -> sección de React que lo sustituye (`<Seccion id="…">` en frontend/src/shell/Secciones.tsx)
 IDS_RETIRADOS = {
     "gapsContent": "gaps",
     "segLoader": "seguimiento",
@@ -52,21 +50,39 @@ IDS_RETIRADOS = {
     "dateTo": "resultados",
     "sorteosBody": "resultados",
     "csvBtn": "resultados",
+    "decenaContainer": "decenas",
+    "endCatTabs": "terminaciones",
+    "endingsRecoContainer": "terminaciones",
+    "endingsBacktestNote": "terminaciones",
+    "endingsHotChart": "terminaciones",
+    "endingsColdChart": "terminaciones",
+    "endP1Chart": "terminaciones",
+    "endP2Chart": "terminaciones",
+    "endP3Chart": "terminaciones",
+    "endingsHeatmap": "terminaciones",
+    "endingsTrendChart": "terminaciones",
+    "statsPrizeTabs": "estadisticas",
+    "digitChart": "estadisticas",
+    "endingsChart": "estadisticas",
+    "hotChart": "estadisticas",
+    "coldChart": "estadisticas",
+    "seriesChart": "estadisticas",
+    "letrasChart": "estadisticas",
+    "radarChart": "estadisticas",
+    "scatterChart": "estadisticas",
+    "formatosCard": "estadisticas",
+    "formatosGrid": "estadisticas",
+    "trendChart": "tendencias",
+    "volumeChart": "tendencias",
+    "positionGrids": "analisis",
+    "heatmap": "analisis",
+    "dashboardSummary": "predicciones-resumen",
+    "prizeTabs": "predicciones",
+    "recoCatTabs": "predicciones",
+    "recoContainer": "predicciones",
     # `pagination` (id) no se vigila: `.pagination` sigue siendo una clase de style.css que usa la isla.
-    # `updateBtn` tampoco: el botón de actualizar es del armazón y se migra en T054.
+    # `updateBtn` tampoco se vigila: es el `id` del botón «Actualizar datos» que pinta `shell/Actualizar.tsx` (no está en la plantilla).
 }
-# funciones de app.js que ya no deben existir ni llamarse
-FUNCIONES_RETIRADAS = (
-    "loadGaps", "renderGaps",
-    "loadSeguimiento", "renderSeguimiento", "segPct", "segNum", "SEG_METODOS",
-    "getFavorites", "saveFavorites", "addFavorite", "removeFavorite", "renderFavorites", "updateFavBadge",
-    "addCompNumber", "removeCompNumber", "clearCompNumbers", "renderCompTags", "runComparison", "renderCompResults",
-    "compNumbers", "compChartInstance",
-    "initSimCats", "runSimulation", "renderSimResults", "simChartInstance",
-    "renderMonthlySection", "monthlyProfileChartInstance",
-    "loadBacktesting", "renderBacktesting", "renderPrecisionTrend", "backtestData", "precisionChartInstance",
-    "renderStatCounters", "getFilteredSorteos", "renderSorteos", "renderPagination", "goPage", "initFilters", "exportCSV", "currentPage", "PER_PAGE",
-)
 
 
 def menciones(texto: str, palabra: str) -> list[int]:
@@ -119,11 +135,31 @@ def test_ningun_id_retirado_vuelve(archivo, id_retirado):
     )
 
 
-@pytest.mark.parametrize("funcion", FUNCIONES_RETIRADAS)
-def test_ninguna_funcion_retirada_vuelve(funcion):
-    assert menciones(leer("static/app.js"), funcion) == [], f"«{funcion}» está retirada de static/app.js: la sustituye una isla React."
+def test_el_javascript_antiguo_ya_no_existe():
+    assert not (RAIZ / "static" / "app.js").exists(), "el app.js de static/ está retirado: toda la interfaz es React (frontend/src)."
 
 
 @pytest.mark.parametrize("isla", sorted(set(IDS_RETIRADOS.values())))
-def test_cada_isla_sustituta_tiene_su_marcador(isla):
-    assert f'data-react-root="{isla}"' in leer("templates/index.html")
+def test_cada_seccion_sustituta_existe_en_el_armazon(isla):
+    # `predicciones-resumen` es la primera isla de la sección «predicciones»
+    seccion = isla.split("-")[0]
+    assert f'<Seccion id="{seccion}">' in leer("frontend/src/shell/Secciones.tsx")
+
+
+class TestPlantillaMinima:
+    """La plantilla solo trae la raíz de React: ni marcadores de islas, ni el JavaScript antiguo, ni la CDN de Chart.js."""
+
+    def test_trae_la_raiz_donde_se_pinta_la_interfaz(self):
+        assert 'id="root"' in leer("templates/index.html")
+
+    def test_no_quedan_marcadores_de_islas(self):
+        assert "data-react-root" not in leer("templates/index.html")
+
+    def test_no_carga_el_javascript_antiguo_ni_chart_js_de_una_cdn(self):
+        plantilla = leer("templates/index.html")
+        assert "filename='app.js'" not in plantilla
+        assert "cdn.jsdelivr" not in plantilla
+        assert "chart.umd" not in plantilla
+
+    def test_solo_carga_el_build_de_react_como_modulo(self):
+        assert "filename='dist/app.js'" in leer("templates/index.html")
